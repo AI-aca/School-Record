@@ -93,11 +93,17 @@ ul.tight{margin:4px 0 0;padding-left:18px}
 a{color:var(--pri-t)}
 
 .note{background:#f0fdf9;border:1px solid #bdeedd;color:#065f46;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:14px}
-.rh{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--pri);padding-bottom:12px;margin-bottom:18px}
+.rh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;border-bottom:3px solid var(--pri);padding-bottom:12px;margin-bottom:18px}
+.rh-c{text-align:center;font-size:22px;font-weight:800;letter-spacing:-.5px;white-space:nowrap}
 .rh-l{display:flex;align-items:center;gap:14px}.rh-l b{display:block;font-size:18px;letter-spacing:-.3px}.rh-l span{font-size:13px;color:var(--sub)}
 .rlogo{height:40px;width:auto;display:block}
 .rh-r{font-size:13px;color:var(--sub);text-align:right;line-height:1.55}
-.rs h2{font-size:32px;margin:0 0 8px;letter-spacing:-.5px}.rs .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.rs{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px}.rs h2{font-size:30px;margin:0;padding:3px 20px;border:3px solid var(--pri);border-radius:14px;background:#f0fdf9;letter-spacing:-.5px}.rs .meta{display:flex;gap:8px;flex-wrap:wrap;margin:0}
+.sub{display:flex;align-items:center;background:#f1f5f9;border-radius:9px;padding:7px 13px;margin:16px 0 10px;font-size:15.5px;font-weight:700;color:#334155}.sub::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--pri);margin-right:9px}.sub span,.sub small{margin-left:auto;color:var(--sub);font-weight:600;font-size:14px}
+.gh{font-size:17px;font-weight:800;margin:22px 0 10px;padding:9px 16px;border-radius:10px;background:var(--c);color:#fff}
+.gd h2{font-size:17px;margin:0 0 10px}.gl{list-style:none;margin:0;padding:0}.gl li{position:relative;padding:5px 0 5px 24px;font-size:14.5px;line-height:1.7}.gl li::before{content:"✓";position:absolute;left:2px;color:var(--pri-t);font-weight:800}.gl code{background:#f1f5f9;border-radius:6px;padding:1px 7px;font-size:13px}
+.gwarn{margin-top:10px;background:#fff8eb;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.6}
+.admwarn{background:#fef2f2;border:2px solid #fca5a5;color:#b91c1c;font-weight:800;border-radius:10px;padding:8px 14px;margin-bottom:10px;text-align:center}
 .rs .pill{font-size:13.5px;padding:4px 12px}
 .sec{font-size:18px;font-weight:800;margin:24px 0 10px;padding-left:11px;border-left:5px solid var(--pri);letter-spacing:-.3px}
 .sec small{font-size:13px;color:var(--sub);font-weight:500;margin-left:8px}
@@ -118,7 +124,7 @@ a{color:var(--pri-t)}
 .ar-f{display:flex;justify-content:space-between;font-size:13px;color:var(--sub)}
 .lg2{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin:4px 0 12px}
 .lg2 i{display:inline-block;width:13px;height:13px;border-radius:3px;margin-right:6px;vertical-align:-2px;border:1px solid #cbd5e1}
-.grp h4{margin:18px 0 10px;font-size:16px;display:flex;justify-content:space-between;border-left:5px solid var(--pri);padding-left:10px}.grp h4 span{color:var(--sub);font-weight:600;font-size:14px}
+.grp .sub{margin:18px 0 10px}
 .cells{display:grid;grid-template-columns:repeat(3,1fr)!important;gap:10px!important}
 .cell{padding:10px 12px!important;font-size:13.5px!important;border-radius:11px!important;position:relative;border:1px solid var(--line)}
 .cell .cn{font-size:12px;color:var(--sub)}.cell .ct{font-weight:600;line-height:1.35;min-height:36px;font-size:14px}
@@ -149,13 +155,13 @@ a{color:var(--pri-t)}
   #main{padding:0}
   .page{border:0;border-radius:0;padding:0;margin:0;box-shadow:none;page-break-after:always;break-after:page}
   .page:last-child{page-break-after:auto}
-  .rlogo{height:34px}.rh{padding-bottom:8px;margin-bottom:12px}.rs h2{font-size:26px;margin-bottom:6px}.rs .meta{margin-bottom:6px}
+  .rlogo{height:34px}.rh{padding-bottom:8px;margin-bottom:12px}.rs{margin:0 0 8px}.rs h2{font-size:24px;padding:2px 16px}.sub{margin:10px 0 6px;padding:5px 12px}
   .sec{margin:14px 0 7px;font-size:17px}
   .gate{padding:7px 14px;margin:6px 0;font-size:14px;line-height:1.5}
   .ring{width:150px;height:150px}.hero{grid-template-columns:160px 1fr;padding:10px 16px;gap:16px}.ring .c b{font-size:36px}.hs b{font-size:21px}.hs>div{padding:8px 12px}
   .ar{margin:8px 0 9px}.ar-n em{font-size:24px}.trk{height:16px}.ar.tot .trk{height:20px}
   .lg2{margin:2px 0 8px}
-  .grp h4{margin:9px 0 6px}.cells{gap:6px!important}
+  .grp .sub{margin:9px 0 6px}.cells{gap:6px!important}
   .cell{padding:5px 10px!important}.cell .ct{min-height:0;font-size:13.5px}.cell .cv b{font-size:19px}.cell .mb{height:4px;margin-top:4px}
   .page th,.page td{padding:6px 10px}.page table{font-size:13.5px}
   .sum{padding:10px 14px;font-size:14px}.adv{padding:9px 14px;margin:7px 0;font-size:13.5px;line-height:1.55}.adv b{font-size:14.5px}
@@ -171,6 +177,7 @@ a{color:var(--pri-t)}
   <nav class="menu">
     <a id="m-home" href="#/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> 초기 화면</a>
     <a id="m-set" href="#/settings" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg> 설정</a>
+    <a id="m-guide" href="#/guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".6"/></svg> 사용 안내</a>
   </nav>
   <div class="prof">
     <div class="who"><div class="av" id="av">-</div><div><b id="who">-</b><span>로그인 중</span></div></div>
@@ -187,6 +194,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const STAGE = { A: '1학년 2학기까지 완료', B: '2학년 1학기까지 완료', C: '2학년 2학기까지 완료' };
 const TERM_UP = { A: '1-2까지', B: '2-1까지', C: '2-2까지' };
+const TERM_KO = { A: '1학년 2학기', B: '2학년 1학기', C: '2학년 2학기' };
 const NEXT = { A: 'B', B: 'C', C: 'C' };
 const LOGO = '<svg viewBox="0 0 40 40" width="34" height="34"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06b6d4"/><stop offset="1" stop-color="#10b981"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#g2)"/><path d="M12 11h12l5 5v13a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V13a2 2 0 0 1 2-2z" fill="#fff" fill-opacity=".95"/><path d="M15 23l4 4 7-8" fill="none" stroke="#059669" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const LOGO_WIDE = 'data:image/png;base64,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';
@@ -213,12 +221,14 @@ async function route() {
   $('#m-set').classList.toggle('hidden', !(token && role === 'director'));
   if (!token) return viewLogin();
   const h = location.hash;
-  $('#m-home').classList.toggle('on', !h.startsWith('#/settings') && h !== '#/new');
+  $('#m-home').classList.toggle('on', !h.startsWith('#/settings') && h !== '#/new' && h !== '#/guide');
+  $('#m-guide').classList.toggle('on', h === '#/guide');
   $('#m-set').classList.toggle('on', h === '#/settings');
   if (h === '#/new') return viewNew();
+  if (h === '#/guide') return viewGuide();
   if (h === '#/settings') return role === 'director' ? viewSettings() : viewList();
   if (h.startsWith('#/student/')) return viewStudent(h.split('/')[2]);
-  if (h.startsWith('#/result/')) return viewResult(h.split('/')[2]);
+  if (h.startsWith('#/result/')) return viewResult(h.split('/')[2], h.split('/')[3] === 'admin' && role === 'director');
   return viewList();
 }
 $('#regbtn').onclick = () => (location.hash = '#/new');
@@ -329,10 +339,11 @@ async function viewStudent(id) {
       <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line pv" data-id="${f.id}">파싱 보기</button>${role === 'director' ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ''}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th style="text-align:center">진단지 보기</th></tr></thead><tbody>
-    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="text-align:center"><span class="btn-s">열기</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
+    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="text-align:center;white-space:nowrap"><span class="btn-s">열기</span> <span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 점수 보기</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
   </tbody></table>
   ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
+  app.querySelectorAll('.adm').forEach((b) => b.onclick = (e) => { e.stopPropagation(); if (role !== 'director') return alert('관리자에게 문의하세요.'); location.hash = '#/result/' + b.dataset.aid + '/admin'; });
   if ($('#arch')) $('#arch').onclick = async () => { if (confirm('목록에서 숨깁니다. (설정 화면에서 복구할 수 있습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
   const busy = (m) => { $('#prog').innerHTML = m ? '<span class="spin"></span>' + m : ''; };
   app.querySelectorAll('.rx').forEach((b) => b.onclick = async () => {
@@ -438,12 +449,70 @@ async function viewSettings() {
   };
 }
 
+// ── 사용 안내 (강사 / 관리자) ──
+function viewGuide() {
+  const app = $('#main'), dir = role === 'director';
+  const sec = (t, items, warn) => `<div class="card gd"><h2>${t}</h2><ul class="gl">${items.map((x) => `<li>${x}</li>`).join('')}</ul>${warn ? `<div class="gwarn">${warn}</div>` : ''}</div>`;
+  const part = (t, c) => `<div class="gh" style="--c:${c}">${t}</div>`;
+  const teacher = part('강사 사용 안내', '#10b981') +
+    sec('1. 학생 등록과 초기 화면', [
+      '<b>학생 등록:</b> 사이드바 <code>학생 등록</code> → 이름(필수) · 학교 · 센터(필수) · 메모를 입력합니다. 등록할 때 생기부를 올릴 필요는 없습니다.',
+      '<b>초기 화면 상단:</b> 전체 학생, 진단 완료, 목표 점수 이상, 내신 주의·탈락 요건 학생 수를 한눈에 보여 줍니다.',
+      '<b>찾기:</b> 학생명·학교 검색, 센터 선택, 내신 관문(통과/주의/탈락 요건/진단 전) 선택으로 목록을 좁힐 수 있습니다.',
+      '<b>상세보기 열:</b> <code>열기</code>를 누르면 학생 상세(진단 이력, 업로드한 생기부)로 이동합니다.',
+      '<b>진단지 보기 열:</b> <code>열기</code>를 누르면 그 학생의 가장 최근 진단지(보고서)가 바로 열립니다.']) +
+    sec('2. 진단지(보고서) 읽기', [
+      '<b>1쪽:</b> ① 내신(성취도) 관문 → ② 생기부 총점(목표까지 부족한 점수, 남은 학기 최대 도달 점수, 지원 구간) → ③ 영역별 현황.',
+      '<b>2쪽:</b> ④ 30개 항목 한눈에 보기. 항목별로는 점수가 아니라 달성 비율(%)로 표시됩니다.',
+      '<b>3쪽:</b> ⑤ 종합 의견과 우선 보완 항목별 방법.',
+      '<b>4쪽:</b> ⑥ 남은 학기별 실행 계획 추천과 감점 주의.',
+      '<b>저장·인쇄:</b> 보고서 상단 <code>PDF로 저장 / 인쇄</code>를 누르고 인쇄 창의 대상을 <b>PDF로 저장</b>으로 선택하면 A4 4쪽 PDF가 만들어집니다.',
+      '<b>원본 확인:</b> <code>원본 생기부 PDF 열기</code>로 학생이 낸 생기부 원본을 볼 수 있습니다.'],
+      '진단지는 AI가 생기부에서 항목을 추출해 서버 코드로 채점한 결과입니다. 학부모에게 전달하기 전에 원본 생기부와 비교해 확인하세요.') +
+    sec('3. 내신 관문과 점수 읽는 법', [
+      '<b>탈락 요건:</b> 수학·과학에 B가 하나라도 있으면 해당됩니다. 그 외 핵심 과목은 B가 3개 이상이거나 C가 1개 이상이면 해당됩니다.',
+      '<b>주의:</b> B가 2개이면 주의로 표시됩니다.',
+      '<b>남은 학기:</b> 내신 관문을 통과한 학생에게도 남은 학기는 전 과목 A 관리가 필요하다고 안내합니다.',
+      '<b>총점:</b> 400점 만점이며 기본 목표는 310점입니다. 지원 구간은 기본값으로 310점 이상 적극 권장, 290점 이상 권장, 270점 이상 소극 권장, 250점 이상 비권장이며 관리자가 설정에서 바꿀 수 있습니다.',
+      '<b>반영 학기:</b> 1학년 2학기까지 / 2학년 1학기까지 / 2학년 2학기까지 중 진단에 쓴 생기부의 작성 시점을 뜻합니다.']) +
+    sec('4. 강사가 할 수 없는 기능', [
+      '생기부 업로드, 진단, 다시 진단, 조언 다시 만들기, 관리자용 점수 보기, 설정은 <b>관리자 전용</b>입니다.',
+      '강사가 해당 버튼을 누르면 "관리자에게 문의하세요."라고 안내됩니다. 새 진단이나 업데이트가 필요하면 원장님께 요청하세요.']);
+  const admin = part('관리자 사용 안내', '#0891b2') +
+    sec('1. 생기부 올리고 진단하기', [
+      '학생 상세에서 <code>첫 생기부 올리기</code>(처음) 또는 <code>생기부 업데이트</code>(이후)를 누릅니다.',
+      '<b>학기 선택은 필수:</b> 올리는 생기부가 어디까지 작성되었는지(1학년 2학기까지 / 2학년 1학기까지 / 2학년 2학기까지)를 직접 고릅니다. 1년 뒤에 올리더라도 그 생기부에 맞는 학기를 고르면 됩니다.',
+      'PDF를 선택하고 <code>업로드하고 진단하기</code>를 누르면 ① PDF 텍스트 변환 → ② 영역별 근거 추출·채점 → ③ 학기별 조언 생성 순서로 진행되며 2~5분 걸립니다. 진행 중에는 창을 닫지 마세요.',
+      '진단이 끝나면 진단 이력에 쌓이고, 이전 진단은 지워지지 않아 점수 변화를 비교할 수 있습니다.']) +
+    sec('2. 관리자용 점수 보기', [
+      '학생 상세의 진단 이력에서 <code>관리자용 점수 보기</code>를 누르면 항목별 점수·배점·"최대 +N점"이 모두 보이는 보고서가 열립니다.',
+      '학부모용 진단지(<code>열기</code>)와 달리 이 화면에는 인쇄 버튼이 없습니다. 배점이 노출되므로 학부모에게 보여 주거나 전달하지 마세요.']) +
+    sec('3. 다시 진단과 조언 다시 만들기', [
+      '<b>다시 진단:</b> 학생 상세의 업로드한 생기부 목록에서 누르면 저장된 텍스트로 다시 추출·채점하고 조언까지 새로 만듭니다. AI 지시문이나 점수 기준을 바꾼 뒤 적용할 때 사용합니다.',
+      '<b>조언 다시 만들기:</b> 보고서 상단 버튼입니다. 점수는 그대로 두고 종합 의견과 실행 계획만 새로 만듭니다.',
+      '기준이나 지시문을 바꿔도 이미 만든 진단 결과는 자동으로 바뀌지 않으며, 새로 진단하거나 다시 진단할 때부터 적용됩니다.']) +
+    sec('4. 학생·파일 관리', [
+      '<b>숨기기:</b> 학생 상세의 <code>이 학생 목록에서 숨기기</code>를 누르면 초기 화면에서 사라집니다. 설정의 "숨긴 학생"에서 복구하거나 완전 삭제할 수 있습니다.',
+      '<b>파싱 보기:</b> PDF에서 변환된 텍스트를 열어 AI가 읽은 내용을 확인합니다.',
+      '<b>원본 PDF 삭제:</b> 원본 파일만 지웁니다. 변환된 텍스트와 진단 결과는 남고, 되돌릴 수 없습니다.'],
+      '삭제와 완전 삭제는 되돌릴 수 없습니다. 확인 창의 문구를 읽고 진행하세요.') +
+    sec('5. 설정 (사이드바 설정)', [
+      '<b>센터 목록:</b> 한 줄에 센터 하나씩 입력하면 학생 등록의 선택 목록이 됩니다. 기존 학생의 센터 표기는 바뀌지 않습니다.',
+      '<b>목표 점수와 구간 기준:</b> 목표 점수와 지원 구간별 점수·문구를 바꿉니다.',
+      '<b>비밀번호 변경:</b> 강사 공용 또는 관리자 비밀번호를 8자 이상으로 바꿉니다. 확인을 위해 현재 관리자 비밀번호를 입력합니다.',
+      '<b>AI 지시문 편집:</b> 단계별 지시문을 고칠 수 있고, 저장하면 직전 버전이 보관되어 <code>이전 버전으로 되돌리기</code>가 가능합니다. 진단 결과가 달라질 수 있으니 수정 후 한 명으로 먼저 확인하세요.']);
+  app.innerHTML = head('사용 안내', dir ? '강사 안내와 관리자 안내' : '강사 안내', '') + teacher + (dir ? admin : '');
+}
+
 // ── 결과 리포트 (4쪽): 1 진단 / 2 30개 항목 / 3 보완 항목 / 4 남은 학기 실행 계획 ──
-async function viewResult(aid) {
+async function viewResult(aid, adm = false) {
   const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const { analysis: a, student: stu } = await api('getAnalysis', { analysisId: aid });
   const s = a.scores_json, adv = a.advice_json, g = s.gate;
   const areaNames = ['학업역량', '진로적합성', '인성'];
+  const pub = (t) => adm ? String(t ?? '') : String(t ?? '').replace(/\s*[(（\[]?\s*(?:최대\s*)?[+＋]\s*\d+(?:\.\d+)?\s*점\s*[)）\]]?/g, '').trim();
+  const T = (t) => esc(pub(t));
+  const pc1 = (c, m) => (Math.max(0, c) / m * 100).toFixed(1) + '%';
   const remOf = (i) => s.items.filter((x) => x.area === i + 1).reduce((t, x) => t + x.remaining, 0);
   const rows = [0, 1, 2].map((i) => ({ name: '영역 ' + (i + 1) + ' · ' + areaNames[i], cur: s.areaCurrent[i], max: s.areaMax[i], rem: remOf(i) }));
   const bar = (r, tot) => { const c = Math.max(0, r.cur), p1 = c / r.max * 100, p2 = Math.min(r.rem, r.max - c) / r.max * 100;
@@ -451,9 +520,9 @@ async function viewResult(aid) {
       <div class="trk"><i class="a" style="width:${p1}%"></i><i class="b" style="left:${p1}%;width:${p2}%"></i></div>
       <div class="ar-f"><span>달성 ${Math.round(p1)}%</span><span>남은 학기에 최대 +${r.rem}점</span><span>만점까지 ${r.max - c}점</span></div></div>`; };
     const cell = (i) => { const mx = i.no === 30 ? 0 : i.max; const pct = mx > 0 ? Math.max(0, i.current) / mx * 100 : 0;
-    return `<div class="cell ${i.status}"><div class="ct">${i.no}. ${esc(i.title)}</div><div class="cv"><b>${i.current}</b><span>${i.no === 30 ? '점 (감점)' : '/ ' + mx + '점'}</span></div><div class="mb"><i style="width:${pct}%"></i></div></div>`; };
-  const grp = [[1, 12, 0], [13, 18, 1], [19, 30, 2]].map(([lo, hi, ai]) => `<div class="grp"><h4>영역 ${ai + 1} · ${areaNames[ai]} <span>${s.areaCurrent[ai]} / ${s.areaMax[ai]}점</span></h4><div class="cells">${s.items.filter((x) => x.no >= lo && x.no <= hi).map(cell).join('')}</div></div>`).join('');
-  const gateHtml = g ? `<div class="gate ${g.status}"><b class="t">① 내신(성취도) 관문 — ${g.status === 'fail' ? '탈락 요건 해당' : g.status === 'warn' ? '주의 (B 2개)' : '현재 통과'}</b>
+    return `<div class="cell ${i.status}"><div class="ct">${i.no}. ${esc(i.title)}</div><div class="cv">${adm ? `<b>${i.current}</b><span>${i.no === 30 ? '점 (감점)' : '/ ' + mx + '점'}</span>` : mx > 0 ? `<b>${pct.toFixed(1)}</b><span>%</span>` : `<b style="font-size:16px">${i.status === 'penalized' ? '감점 발생' : '감점 없음'}</b>`}</div><div class="mb"><i style="width:${pct}%"></i></div></div>`; };
+  const grp = [[1, 12, 0], [13, 18, 1], [19, 30, 2]].map(([lo, hi, ai]) => `<div class="grp"><div class="sub"><b>영역 ${ai + 1} · ${areaNames[ai]}</b><span>${s.areaCurrent[ai]} / ${s.areaMax[ai]}점</span></div><div class="cells">${s.items.filter((x) => x.no >= lo && x.no <= hi).map(cell).join('')}</div></div>`).join('');
+  const gateHtml = g ? `<div class="gate ${g.status}"><b class="t">${g.status === 'fail' ? '탈락 요건 해당' : g.status === 'warn' ? '주의 (B 2개)' : '현재 통과'}</b>
     <div>${esc(g.message)}</div>
     <div class="muted" style="margin-top:4px;font-size:14px">반영 과목 ${g.counted}개 · B ${g.bCount}개 · C 이하 ${g.cCount}개${g.mathSciB?.length ? ' · 수학·과학 B 이하: ' + esc(g.mathSciB.join(', ')) : ''}</div>
     ${g.reasons?.length ? `<ul class="tight">${g.reasons.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}</div>` : '';
@@ -473,29 +542,31 @@ async function viewResult(aid) {
     <div class="lg2" style="margin-top:8px"><span><i style="background:#10b981"></i>현재 점수</span><span><i style="background:#a7e8d3"></i>남은 학기 최대 도달</span><span><i style="background:#0f172a"></i>목표 점수 위치</span></div>`;
   const itm = (no) => s.items.find((y) => y.no === no);
   const adviceItems = adv ? `
-    <div class="sum">${esc(adv.summary)}</div>
-    <div class="sec" style="margin-top:16px">우선 보완 항목별 방법 <small>더 얻을 수 있는 점수가 큰 순</small></div>
-    ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${x.no}. ${esc(x.title)}</b>${it ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : ''}</div><div>${esc(x.advice)}</div>
+    <div class="sum">${T(adv.summary)}</div>
+    <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
+    ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${x.no}. ${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
       ${x.examples?.length ? `<div class="ex">합격자 기록 사례: ${x.examples.map(esc).join(' / ')}</div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
-    ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${esc(t)}</b></div></div>`
-    : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${esc(t.what)}</b>${t.why ? `<span class="w">${esc(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${esc(t.how)}</div>` : ''}</div></div>`;
-  const roadmap = adv ? (adv.roadmap || []).map((r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${esc(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>`).join('') : '';
-  const head3 = (t) => `<div class="rh"><div class="rh-l"><img class="rlogo" src="${LOGO_WIDE}" alt="와이즈만 송도센터"><div><b>과학고 생기부 진단 리포트</b><span>${t}</span></div></div><div class="rh-r">${esc(stu.name)} · ${TERM_UP[a.stage]} 반영</div></div>`;
-  const foot = (n, m) => `<div class="pf"><span>${m || '과학고 생기부 진단 · ' + esc(stu.name)}</span><span>${n} / 4</span></div>`;
+    ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${T(t)}</b></div></div>`
+    : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b>${t.why && T(t.why).trim() ? `<span class="w">${T(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}</div></div>`;
+  const roadmap = adv ? (adv.roadmap || []).map((r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${T(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>`).join('') : '';
+  const head3 = () => `<div class="rh"><div class="rh-l"><img class="rlogo" src="${LOGO_WIDE}" alt="와이즈만 송도센터"></div><div class="rh-c">생활기록부 진단 리포트</div><div class="rh-r">${TERM_KO[a.stage]}까지 반영</div></div>`;
+  const foot = (n, m) => `<div class="pf"><span>${m || '생활기록부 진단 · ' + esc(stu.name)}</span><span>${n} / 4</span></div>`;
 
   app.innerHTML = `
   <div class="row noprint" style="margin-bottom:12px"><a href="#/student/${a.student_id}">← ${esc(stu.name)} 학생</a><span style="flex:1"></span>
-    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2">조언 다시 만들기</button>' : ''}<button id="pdf">PDF로 저장 / 인쇄</button></div>
+    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2">조언 다시 만들기</button>' : ''}${adm ? '' : '<button id="pdf">PDF로 저장 / 인쇄</button>'}</div>
+  ${adm ? '<div class="admwarn">관리자 전용 보기 · 항목별 점수·배점 포함 · 학부모에게 제공하지 마세요</div>' : ''}
 
   <section class="page">
-    ${head3('1쪽 · 현재 위치')}
+    ${head3()}
     <div class="rs"><h2>${esc(stu.name)}</h2><div class="meta"><span class="pill none">${esc(stu.school || '학교 미입력')}</span><span class="pill none">${esc(stu.center_name || '')}</span><span class="pill">반영 학기 ${TERM_UP[a.stage]}</span></div></div>
+    ${g ? '<div class="sec" style="margin-top:4px">① 내신(성취도) 관문</div>' : ''}
     ${gateHtml}
     <div class="sec">② 생기부 총점 <small>내신 관문 통과 후 평가</small></div>
     ${hero}
-    <div class="sec">영역별 현황</div>
+    <div class="sec">③ 영역별 현황</div>
     <div class="lg2"><span><i style="background:linear-gradient(90deg,#06b6d4,#10b981)"></i>현재 점수</span><span><i style="background:repeating-linear-gradient(135deg,#a7e8d3 0 3px,#d1f4e7 3px 6px)"></i>남은 학기에 더 얻을 수 있는 점수</span><span><i style="background:#e8eef3"></i>올리기 어려운 부분</span></div>
     ${rows.map((r) => bar(r)).join('')}
     ${bar({ name: '전체 합계', cur: s.currentTotal, max: 400, rem: s.bestCaseTotal - s.currentTotal }, true)}
@@ -503,30 +574,30 @@ async function viewResult(aid) {
   </section>
 
   <section class="page">
-    ${head3('2쪽 · 30개 항목 한눈에')}
-    <div class="sec" style="margin-top:4px">30개 항목 한눈에</div>
+    ${head3()}
+    <div class="sec" style="margin-top:4px">④ 30개 항목 한눈에</div>
     <div class="lg2"><span><i style="background:#ecfdf3;border-color:#86efac"></i>만점</span><span><i style="background:#fff8eb;border-color:#fcd34d"></i>보완하면 더 얻을 수 있음</span><span><i style="background:#eef2ff;border-color:#a5b4fc"></i>감점형(현재 감점 없음)</span><span><i style="background:#fef2f2;border-color:#fca5a5"></i>감점 발생</span><span><i style="background:#f8fafc"></i>더 올릴 수 없음</span></div>
     ${grp}
     ${foot(2)}
   </section>
 
   <section class="page">
-    ${head3('3쪽 · 무엇을 보완할까')}
-    <div class="sec" style="margin-top:4px">종합 의견</div>
+    ${head3()}
+    <div class="sec" style="margin-top:4px">⑤ 종합 의견</div>
     ${adviceItems}
     ${foot(3)}
   </section>
 
   <section class="page">
-    ${head3('4쪽 · 남은 학기별 실행 계획 추천')}
-    <div class="sec" style="margin-top:4px">남은 학기별 실행 계획 추천</div>
+    ${head3()}
+    <div class="sec" style="margin-top:4px">⑥ 남은 학기별 실행 계획 추천</div>
     ${g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류에서 탈락합니다.</div>` : ''}
     ${roadmap || '<p class="muted">실행 계획이 아직 없습니다.</p>'}
-    ${adv?.penaltyWarnings?.length ? '<div class="sec">감점 주의 <small>지켜야 할 점수</small></div>' : ''}
-    ${adv?.penaltyWarnings?.length ? `<ul class="wn">${adv.penaltyWarnings.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+    ${adv?.penaltyWarnings?.length ? '<div class="sub"><b>감점 주의</b><small>지켜야 할 점수</small></div>' : ''}
+    ${adv?.penaltyWarnings?.length ? `<ul class="wn">${adv.penaltyWarnings.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : ''}
     ${foot(4, '대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.')}
   </section>`;
-  $('#pdf').onclick = () => print();
+  if ($('#pdf')) $('#pdf').onclick = () => print();
   $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { alert(e.message); } };
   const reAdv = async (btn) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (1~2분)'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
   if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
