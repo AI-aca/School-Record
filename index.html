@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>과학고 생기부 진단</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#1d2733;--sub:#6b7785;--line:#e3e8ef;--pri:#2563eb;--pri2:#eaf1ff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;font-size:15px;line-height:1.5}
+header.top{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+header.top h1{font-size:17px;margin:0;flex:1}
+.wrap{max-width:980px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+h2{font-size:17px;margin:0 0 12px}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+label{font-size:13px;color:var(--sub);display:block;margin:10px 0 4px}
+button{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--pri);color:#fff;cursor:pointer}
+button.ghost{background:var(--pri2);color:var(--pri)}
+button.line{background:#fff;border:1px solid var(--line);color:var(--ink)}
+button:disabled{opacity:.5;cursor:default}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--sub);font-size:13px}
+.err{color:var(--bad);font-size:14px;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:600;font-size:12px}
+tr.click{cursor:pointer}tr.click:hover{background:#f1f5fb}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:var(--pri2);color:var(--pri)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi b{display:block;font-size:24px}.kpi span{font-size:12px;color:var(--sub)}
+.bar{height:12px;background:#edf1f6;border-radius:6px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;background:var(--pri)}
+.bar i.r{position:absolute;top:0;background:#bcd3ff}
+.cells{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.cell{border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:11px}
+.cell b{font-size:13px}
+.cell.done{background:#ecfdf3}.cell.improvable{background:#fff8eb}.cell.pending{background:#eef2ff}.cell.penalized{background:#fef2f2}
+.gate{border:2px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0}
+.gate.pass{border-color:#16a34a;background:#f0fdf4}.gate.warn{border-color:#d97706;background:#fffbeb}.gate.fail{border-color:#dc2626;background:#fef2f2}
+.gate b.t{font-size:15px}
+.hidden{display:none!important}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:var(--pri);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes s{to{transform:rotate(360deg)}}
+.page{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin-bottom:16px}
+.page h3{margin:16px 0 8px;font-size:15px}
+ul.tight{margin:4px 0 0;padding-left:18px}
+@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+@media print{
+  @page{size:A4;margin:9mm}
+  body{background:#fff;font-size:10.5px;line-height:1.4}
+  .page h3{margin:7px 0 4px;font-size:12.5px}.page p.muted{margin:6px 0 0}.bar{height:9px}
+  .kpi b{font-size:20px}th,td{padding:4px 5px}.cell{padding:3px 5px;font-size:10px}.page h2{margin-bottom:4px}
+  header.top,.noprint{display:none!important}
+  .wrap{padding:0;max-width:none}
+  .page{border:0;border-radius:0;padding:0;margin:0;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>과학고 생기부 진단</h1>
+  <span id="who" class="muted"></span>
+  <button id="logout" class="line hidden">로그아웃</button>
+</header>
+<div class="wrap" id="app"></div>
+
+<script>
+// ▼ 서버 주소 (Supabase Edge Function 'api')
+const API = 'https://xphtctpbysbbdyjaxidh.supabase.co/functions/v1/api';
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const STAGE = { A: '1학년 2학기까지 완료', B: '2학년 1학기까지 완료', C: '2학년 2학기까지 완료' };
+let token = sessionStorage.getItem('sr_token') || '', role = sessionStorage.getItem('sr_role') || '';
+
+async function api(action, body = {}) {
+  const r = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json', 'x-app-token': token }, body: JSON.stringify({ action, ...body }) });
+  const j = await r.json().catch(() => ({ error: '서버 응답을 읽지 못했습니다.' }));
+  if (r.status === 401 && token) { logout(); }
+  if (!r.ok) throw new Error(j.error || '오류 ' + r.status);
+  return j;
+}
+function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
+$('#logout').onclick = logout;
+
+// ── 화면 전환 ──
+async function route() {
+  $('#who').textContent = role ? (role === 'director' ? '원장' : '강사') : '';
+  $('#logout').classList.toggle('hidden', !token);
+  if (!token) return viewLogin();
+  const h = location.hash;
+  if (h.startsWith('#/student/')) return viewStudent(h.split('/')[2]);
+  if (h.startsWith('#/result/')) return viewResult(h.split('/')[2]);
+  return viewList();
+}
+window.onhashchange = route;
+
+// ── 로그인 / 최초 설정 ──
+async function viewLogin() {
+  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  let st; try { st = await api('status'); } catch (e) { app.innerHTML = `<div class="card err">서버에 연결하지 못했습니다: ${esc(e.message)}</div>`; return; }
+  if (st.needsSetup) {
+    app.innerHTML = `<div class="card" style="max-width:420px;margin:40px auto"><h2>처음 설정</h2>
+      <p class="muted">이 사이트에 들어올 때 쓸 비밀번호를 정해 주세요. (각 8자 이상)</p>
+      <label>원장 비밀번호</label><input id="p1" type="password" autocomplete="new-password">
+      <label>강사 공용 비밀번호</label><input id="p2" type="password" autocomplete="new-password">
+      <div class="err" id="e"></div><div style="margin-top:14px"><button id="go">저장</button></div></div>`;
+    $('#go').onclick = async () => {
+      try { await api('setup', { directorPw: $('#p1').value, teacherPw: $('#p2').value }); viewLogin(); }
+      catch (e) { $('#e').textContent = e.message; }
+    };
+    return;
+  }
+  app.innerHTML = `<div class="card" style="max-width:380px;margin:40px auto"><h2>로그인</h2>
+    <label>비밀번호</label><input id="pw" type="password" autofocus>
+    <div class="err" id="e"></div><div style="margin-top:14px"><button id="go">들어가기</button></div></div>`;
+  const go = async () => {
+    try { const r = await api('login', { password: $('#pw').value }); token = r.token; role = r.role; sessionStorage.setItem('sr_token', token); sessionStorage.setItem('sr_role', role); route(); }
+    catch (e) { $('#e').textContent = e.message; }
+  };
+  $('#go').onclick = go; $('#pw').onkeydown = (e) => e.key === 'Enter' && go();
+}
+
+// ── 학생 목록 + 등록 ──
+async function viewList() {
+  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const { students } = await api('listStudents');
+  app.innerHTML = `
+  <div class="card"><h2>학생 등록</h2>
+    <div class="grid2">
+      <div><label>이름 *</label><input id="n"></div><div><label>학교</label><input id="sc"></div>
+      <div><label>센터/반</label><input id="ce"></div><div><label>담당 강사</label><input id="te"></div>
+    </div><label>메모</label><input id="me">
+    <div class="err" id="e"></div><div style="margin-top:12px"><button id="add">등록</button></div></div>
+  <div class="card"><h2>학생 목록 <span class="muted">(${students.length}명)</span></h2>
+    <table><thead><tr><th>이름</th><th>학교</th><th>담당</th><th>최근 진단</th></tr></thead><tbody>
+    ${students.map((s) => `<tr class="click" data-id="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(s.school)}</td><td>${esc(s.teacher_name)}</td>
+      <td>${s.last ? `<span class="pill">${STAGE[s.last.stage]}</span> ${s.last.total ?? ''}점` : '<span class="muted">없음</span>'}</td></tr>`).join('') || '<tr><td colspan=4 class="muted">아직 등록된 학생이 없습니다.</td></tr>'}
+    </tbody></table></div>`;
+  app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
+  $('#add').onclick = async () => {
+    try { await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, teacher_name: $('#te').value, memo: $('#me').value }); viewList(); }
+    catch (e) { $('#e').textContent = e.message; }
+  };
+}
+
+// ── 학생 상세: 업로드 + 진단 이력 ──
+async function viewStudent(id) {
+  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const [{ students }, { analyses }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id })]);
+  const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
+  app.innerHTML = `
+  <p><a href="#/">← 학생 목록</a></p>
+  <div class="card"><h2>${esc(s.name)} <span class="muted">${esc(s.school)} ${esc(s.teacher_name ? '· ' + s.teacher_name : '')}</span></h2>
+    <label>생기부가 어디까지 작성되어 있나요?</label>
+    <select id="stage"><option value="A">${STAGE.A}</option><option value="B">${STAGE.B}</option><option value="C">${STAGE.C}</option></select>
+    <label>생기부 PDF</label><input id="file" type="file" accept="application/pdf">
+    <div class="err" id="e"></div><div id="prog" class="muted" style="margin-top:10px"></div>
+    <div style="margin-top:12px"><button id="run">업로드하고 진단하기</button></div>
+    <p class="muted">진단에는 1~3분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div>
+  <div class="card"><h2>진단 이력</h2><table><tbody>
+    ${analyses.map((a) => `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[a.stage]}</span></td><td>${a.total ?? ''}점</td></tr>`).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
+  </tbody></table>
+  ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
+  app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
+  if ($('#arch')) $('#arch').onclick = async () => { if (confirm('목록에서 숨깁니다. (데이터는 삭제되지 않습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
+  $('#run').onclick = async () => {
+    const f = $('#file').files[0], stage = $('#stage').value, prog = $('#prog'); $('#e').textContent = '';
+    if (!f) return ($('#e').textContent = 'PDF 파일을 선택하세요.');
+    if (f.size > 18 * 1024 * 1024) return ($('#e').textContent = '파일이 18MB를 넘습니다.');
+    $('#run').disabled = true;
+    try {
+      prog.innerHTML = '<span class="spin"></span>원본 업로드 중…';
+      const u = await api('uploadUrl', { studentId: id, stage });
+      const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
+      const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
+      if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
+      prog.innerHTML = '<span class="spin"></span>AI가 생기부를 읽고 채점하는 중… (1~2분)';
+      const r = await api('analyze', { studentId: id, stage, path: u.path, fileName: f.name });
+      prog.innerHTML = '<span class="spin"></span>학기별 조언을 만드는 중…';
+      try { await api('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
+      location.hash = '#/result/' + r.analysis.id;
+    } catch (e) { $('#e').textContent = e.message; prog.textContent = ''; $('#run').disabled = false; }
+  };
+}
+
+// ── 결과: 1쪽 진단 / 2쪽 처방 ──
+async function viewResult(aid) {
+  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const { analysis: a, student: stu } = await api('getAnalysis', { analysisId: aid });
+  const s = a.scores_json, adv = a.advice_json;
+  const areaNames = ['학업역량', '진로적합성', '인성'];
+  const bars = [0, 1, 2].map((i) => {
+    const cur = s.areaCurrent[i], max = s.areaMax[i];
+    const rem = s.items.filter((x) => x.area === i + 1).reduce((t, x) => t + x.remaining, 0);
+    return `<div style="margin:8px 0"><div class="row" style="justify-content:space-between"><b>${areaNames[i]}</b><span class="muted">${cur} / ${max} <span>(남은 가능 +${rem})</span></span></div>
+      <div class="bar"><i style="width:${Math.max(0, cur / max * 100)}%"></i><i class="r" style="left:${Math.max(0, cur / max * 100)}%;width:${rem / max * 100}%"></i></div></div>`;
+  }).join('');
+  const prio = s.priorities.slice(0, 6).map((p) => `<tr><td>${p.no}</td><td>${esc(p.title)}</td><td>${p.current}/${p.max}</td><td><b>+${p.remaining}</b></td></tr>`).join('');
+  const pen = s.penaltiesAtRisk.map((p) => `<tr><td>${p.no}</td><td>${esc(p.title)}</td><td>${p.current}/${p.max}</td><td>${p.unconfirmed?.length ? '확인 대기: ' + esc(p.unconfirmed.join(', ')) : '감점 발생'}</td></tr>`).join('');
+  const cells = s.items.map((i) => `<div class="cell ${i.status}"><span class="muted">${i.no}.</span> ${esc(i.title)}<br><b>${i.current}</b><span class="muted"> / ${i.kind === 'penalty' && i.no === 30 ? '0' : i.max}</span></div>`).join('');
+  const g = s.gate;
+  const gateHtml = g ? `<div class="gate ${g.status}"><b class="t">① 내신(성취도) 관문 — ${g.status === 'fail' ? '탈락 요건 해당' : g.status === 'warn' ? '주의 (B 2개)' : '현재 통과'}</b>
+    <div>${esc(g.message)}</div>
+    <div class="muted" style="margin-top:4px">반영 과목 ${g.counted}개 · B ${g.bCount}개 · C 이하 ${g.cCount}개${g.mathSciB?.length ? ' · 수학·과학 B 이하: ' + esc(g.mathSciB.join(', ')) : ''}</div>
+    ${g.reasons?.length ? `<ul class="tight">${g.reasons.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}
+    <div style="margin-top:4px"><b>남은 학기(${esc(g.remainingTerms.join(', '))}) 전 과목 A 유지 필수</b> · 수학·과학 B 1개 불가 · 그 외 B 3개 또는 C 1개 이상도 탈락</div></div>` : '';
+  const gapTxt = s.gapToTarget > 0 ? `목표 ${s.targetScore}점까지 <b>${s.gapToTarget}점</b> 부족` : `목표 ${s.targetScore}점 이상`;
+  const adviceHtml = adv ? `
+    <p>${esc(adv.summary)}</p>
+    <h3>항목별 보완 방법</h3>
+    ${(adv.itemAdvice || []).map((x) => `<div style="margin:8px 0"><b>${x.no}. ${esc(x.title)}</b><div>${esc(x.advice)}</div>
+      ${x.examples?.length ? `<div class="muted">합격자 기록 사례: ${x.examples.map(esc).join(' / ')}</div>` : ''}</div>`).join('')}
+    <h3>학기별 실행 계획</h3>
+    ${(adv.roadmap || []).map((r) => `<div style="margin:6px 0"><span class="pill">${esc(r.term)}학기</span><ul class="tight">${(r.actions || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>`).join('')}
+    ${adv.penaltyWarnings?.length ? `<h3>감점 주의</h3><ul class="tight">${adv.penaltyWarnings.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`
+    : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
+
+  app.innerHTML = `
+  <div class="row noprint" style="margin-bottom:12px"><a href="#/student/${a.student_id}">← ${esc(stu.name)} 학생</a><span style="flex:1"></span>
+    <button class="line" id="orig">원본 PDF 열기</button><button id="pdf">PDF로 저장 / 인쇄</button></div>
+
+  <section class="page">
+    <div class="row" style="justify-content:space-between;align-items:flex-end"><div><div class="muted">과학고 생기부 진단 · 1쪽 현재 위치</div><h2 style="font-size:22px;margin:2px 0">${esc(stu.name)} <span class="muted" style="font-size:14px">${esc(stu.school)}</span></h2></div>
+      <div class="muted">${esc(s.stageLabel)} · ${new Date(a.created_at).toLocaleDateString('ko-KR')}</div></div>
+    ${gateHtml}
+    <div class="muted" style="margin-top:6px">② 생기부 총점 (내신 관문 통과 후 평가)</div>
+    <div class="kpis" style="margin-top:6px">
+      <div class="kpi"><span>현재 점수 (400점)</span><b>${s.currentTotal}</b></div>
+      <div class="kpi"><span>${gapTxt.replace(/<[^>]+>/g, '')}</span><b>${s.gapToTarget}</b></div>
+      <div class="kpi"><span>남은 학기 최대 도달</span><b>${s.bestCaseTotal}</b></div>
+      <div class="kpi"><span>최대 도달 시 구간</span><b style="font-size:14px">${esc(s.bestCaseBand)}</b></div>
+    </div>
+    <h3>영역별 현황</h3>${bars}
+    <h3>우선 보완 항목 (남은 점수 큰 순)</h3>
+    <table><thead><tr><th>#</th><th>항목</th><th>현재</th><th>더 얻을 수 있는 점수</th></tr></thead><tbody>${prio || '<tr><td colspan=4 class="muted">없음</td></tr>'}</tbody></table>
+    <h3>감점형 항목 (지켜야 할 점수)</h3>
+    <table><thead><tr><th>#</th><th>항목</th><th>현재</th><th>상태</th></tr></thead><tbody>${pen || '<tr><td colspan=4 class="muted">없음</td></tr>'}</tbody></table>
+    <h3>30개 항목 한눈에</h3><div class="cells">${cells}</div>
+    <p class="muted" style="margin-top:10px">점수는 3-1학기 기준 400점 체계로 환산한 값입니다. 아직 오지 않은 학기는 반영되지 않았습니다.</p>
+  </section>
+
+  <section class="page">
+    <div class="muted">과학고 생기부 진단 · 2쪽 처방</div><h2 style="font-size:20px;margin:2px 0 8px">${esc(stu.name)} — 무엇을 어떻게 준비할까</h2>
+    ${g ? `<div class="gate ${g.status}"><b>가장 먼저: 남은 학기 전 과목 A 관리</b> — 수학·과학은 B 1개도 안 됩니다. 다른 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류에서 탈락합니다.</div>` : ''}
+    ${adviceHtml}
+    <p class="muted" style="margin-top:14px">사례는 서류 합격자 생기부 기록에서 모은 것이며 합격을 보장하지 않습니다.</p>
+  </section>`;
+  $('#pdf').onclick = () => print();
+  $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { alert(e.message); } };
+  if ($('#reAdv')) $('#reAdv').onclick = async (ev) => { ev.target.disabled = true; ev.target.textContent = '만드는 중…'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
+}
+
+route().catch((e) => { $('#app').innerHTML = `<div class="card err">${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>
