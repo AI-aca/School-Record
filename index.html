@@ -5,70 +5,118 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>과학고 생기부 진단</title>
 <style>
-:root{color-scheme:light;--bg:#f6f8fb;--card:#fff;--ink:#1d2733;--sub:#6b7785;--line:#e3e8ef;--pri:#2563eb;--pri2:#eaf1ff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+:root{color-scheme:light;--bg:#f3f6f8;--card:#fff;--ink:#0f172a;--sub:#64748b;--line:#e2e8f0;--pri:#00a886;--pri-d:#008f72;--pri2:#e6f7f2;--pri-t:#047857;--ok:#10b981;--warn:#d97706;--bad:#dc2626;--side:#fff;--shadow:0 1px 3px rgba(15,23,42,.06),0 6px 20px rgba(15,23,42,.05)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;font-size:15px;line-height:1.5}
-header.top{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
-header.top h1{font-size:17px;margin:0;flex:1}
-.wrap{max-width:980px;margin:0 auto;padding:20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;font-size:14px;line-height:1.5;display:flex}
+#side{width:248px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px;flex-shrink:0;position:sticky;top:0;height:100vh}
+.logo{padding:0 6px 18px}.lg{display:flex;align-items:center;gap:10px}.lg div{line-height:1.25}
+.logo b{display:block;font-size:19px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,#0891b2,#059669);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.logo span{font-size:12px;color:var(--sub)}
+.reg{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:13px;font:inherit;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#06b6d4,#10b981);box-shadow:0 4px 12px rgba(6,182,212,.25);margin-bottom:18px}
+.reg:hover{filter:brightness(.95)}
+.menu{display:flex;flex-direction:column;gap:4px}
+.menu a{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:10px;color:var(--sub);text-decoration:none;font-weight:500;cursor:pointer}
+.menu a:hover{background:#f1f5f9;color:var(--ink)}
+.menu a.on{background:var(--pri2);color:var(--pri-t);font-weight:700;box-shadow:inset 3px 0 0 var(--pri)}
+.menu svg,.reg svg{width:18px;height:18px;flex-shrink:0}
+.prof{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.who{display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#10b981);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.who b{display:block;font-size:14px}.who span{font-size:12px;color:var(--sub)}
+#main{flex:1;min-width:0;padding:26px 36px 48px;overflow-x:hidden}
+body.out #side{display:none}
+body.out #main{max-width:520px;margin:0 auto}
+.ph{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.ph h2{font-size:26px;font-weight:800;margin:0;letter-spacing:-.5px}
+.ph p{margin:4px 0 0;color:var(--sub);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+h2.t{font-size:16px;margin:0 0 12px}
 h2{font-size:17px;margin:0 0 12px}
-input,select,textarea{color:#1d2733;-webkit-text-fill-color:#1d2733;caret-color:#1d2733;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+input,select,textarea{color:var(--ink);-webkit-text-fill-color:var(--ink);caret-color:var(--ink);width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(0,168,134,.15)}
 .pwm{-webkit-text-security:disc;text-security:disc}
-label{font-size:13px;color:var(--sub);display:block;margin:10px 0 4px}
-button{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--pri);color:#fff;cursor:pointer}
-button.ghost{background:var(--pri2);color:var(--pri)}
+label{font-size:13px;color:var(--sub);display:block;margin:12px 0 5px;font-weight:500}
+button{font:inherit;border:0;border-radius:9px;padding:9px 16px;background:var(--pri);color:#fff;cursor:pointer;font-weight:600}
+button:hover{background:var(--pri-d)}
+button.ghost{background:var(--pri2);color:var(--pri-t)}
 button.line{background:#fff;border:1px solid var(--line);color:var(--ink)}
+button.line:hover{background:#f1f5f9}
 button:disabled{opacity:.5;cursor:default}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .muted{color:var(--sub);font-size:13px}
 .err{color:var(--bad);font-size:14px;margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--pri))}
+.stat span{font-size:12px;color:var(--sub);font-weight:600}.stat b{display:block;font-size:28px;font-weight:800;margin-top:2px}
+.bar2{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.bar2 .sr{position:relative;flex:1;min-width:200px;max-width:340px}
+.bar2 .sr input{padding-left:36px}
+.bar2 .sr svg{position:absolute;left:11px;top:11px;width:16px;height:16px;color:var(--sub)}
+.bar2 select{width:auto}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--sub);font-weight:600;font-size:12px}
-tr.click{cursor:pointer}tr.click:hover{background:#f1f5fb}
-.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:var(--pri2);color:var(--pri)}
+th,td{padding:12px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+thead th{background:#f8fafc;color:var(--sub);font-weight:700;font-size:12px;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tr.click{cursor:pointer}tr.click:hover{background:#f8fffd}
+.chip{display:inline-block;background:var(--pri2);color:var(--pri-t);font-weight:700;padding:3px 11px;border-radius:7px}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:#eef2ff;color:#4338ca;white-space:nowrap}
+.pill.pass{background:#dcfce7;color:#15803d}.pill.warn{background:#fef3c7;color:#b45309}.pill.fail{background:#fee2e2;color:#b91c1c}.pill.none{background:#f1f5f9;color:#64748b}
+.sc{font-weight:800;font-size:15px}
+.btn-s{display:inline-block;padding:6px 14px;border-radius:99px;background:var(--pri);color:#fff;font-weight:600;font-size:13px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fafcfc}
 .kpi b{display:block;font-size:24px}.kpi span{font-size:12px;color:var(--sub)}
-.bar{height:12px;background:#edf1f6;border-radius:6px;overflow:hidden;position:relative}
-.bar i{display:block;height:100%;background:var(--pri)}
-.bar i.r{position:absolute;top:0;background:#bcd3ff}
+.bar{height:12px;background:#e8eef3;border-radius:6px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#06b6d4,#10b981)}
+.bar i.r{position:absolute;top:0;background:#bfeadf;background-image:none}
 .cells{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .cell{border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:11px}
 .cell b{font-size:13px}
 .cell.done{background:#ecfdf3}.cell.improvable{background:#fff8eb}.cell.pending{background:#eef2ff}.cell.penalized{background:#fef2f2}
-.gate{border:2px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0}
+.gate{border:2px solid var(--line);border-radius:12px;padding:12px 16px;margin:12px 0}
 .gate.pass{border-color:#16a34a;background:#f0fdf4}.gate.warn{border-color:#d97706;background:#fffbeb}.gate.fail{border-color:#dc2626;background:#fef2f2}
 .gate b.t{font-size:15px}
 .hidden{display:none!important}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid #cbd5e1;border-top-color:var(--pri);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px;margin-right:6px}
 @keyframes s{to{transform:rotate(360deg)}}
-.page{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;margin-bottom:16px}
+.page{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px;margin-bottom:16px;box-shadow:var(--shadow)}
 .page h3{margin:16px 0 8px;font-size:15px}
 ul.tight{margin:4px 0 0;padding-left:18px}
-@media(max-width:700px){.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tabs a{padding:8px 16px;border-radius:99px;background:#fff;border:1px solid var(--line);color:var(--sub);text-decoration:none;font-weight:600;cursor:pointer}
+.tabs a.on{background:var(--pri);border-color:var(--pri);color:#fff}
+a{color:var(--pri-t)}
+@media(max-width:900px){body{display:block}#side{position:static;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px}.logo{padding:0}.menu{flex-direction:row}.prof{margin:0;border:0;padding:0;flex-direction:row;align-items:center;margin-left:auto}.reg{width:auto;margin:0;padding:9px 14px}#main{padding:18px 14px}.stats,.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 @media print{
   @page{size:A4;margin:9mm}
-  body{background:#fff;font-size:10.5px;line-height:1.4}
+  body{background:#fff;font-size:10.5px;line-height:1.4;display:block}
+  #side,.noprint{display:none!important}
+  #main{padding:0}
   .page h3{margin:7px 0 4px;font-size:12.5px}.page p.muted{margin:6px 0 0}.bar{height:9px}
   .kpi b{font-size:20px}th,td{padding:4px 5px}.cell{padding:3px 5px;font-size:10px}.page h2{margin-bottom:4px}
-  header.top,.noprint{display:none!important}
-  .wrap{padding:0;max-width:none}
-  .page{border:0;border-radius:0;padding:0;margin:0;page-break-after:always;break-after:page}
+  .page{border:0;border-radius:0;padding:0;margin:0;box-shadow:none;page-break-after:always;break-after:page}
   .page:last-child{page-break-after:auto}
 }
 </style>
 </head>
 <body>
-<header class="top">
-  <h1>과학고 생기부 진단</h1>
-  <span id="who" class="muted"></span>
-  <a id="setlink" href="#/settings" class="hidden" style="margin-left:auto">설정</a>
-  <button id="logout" class="line hidden">로그아웃</button>
-</header>
-<div class="wrap" id="app"></div>
+<aside id="side">
+  <div class="logo"><div class="lg"><svg viewBox="0 0 40 40" width="38" height="38"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06b6d4"/><stop offset="1" stop-color="#10b981"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#g1)"/><path d="M12 11h12l5 5v13a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V13a2 2 0 0 1 2-2z" fill="#fff" fill-opacity=".95"/><path d="M15 23l4 4 7-8" fill="none" stroke="#059669" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>과학고 생기부 진단</b><span>서류 진단·처방 관리</span></div></div></div>
+  <button class="reg" id="regbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M19 8v6M16 11h6"/></svg> 학생 등록</button>
+  <nav class="menu">
+    <a id="m-home" href="#/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> 초기 화면</a>
+    <a id="m-set" href="#/settings" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg> 설정</a>
+  </nav>
+  <div class="prof">
+    <div class="who"><div class="av" id="av">-</div><div><b id="who">-</b><span>로그인 중</span></div></div>
+    <button id="logout" class="line">로그아웃</button>
+  </div>
+</aside>
+<main id="main"></main>
 
 <script>
 // ▼ 서버 주소 (Supabase Edge Function 'api')
@@ -88,27 +136,33 @@ async function api(action, body = {}) {
 }
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
+const head = (t, sub, right = '') => `<div class="ph"><div><h2>${t}</h2><p>${sub || ''}</p></div><div>${right}</div></div>`;
 
 // ── 화면 전환 ──
 async function route() {
-  $('#who').textContent = role ? (role === 'director' ? '관리자' : '강사') : '';
-  $('#logout').classList.toggle('hidden', !token);
-  $('#setlink').classList.toggle('hidden', !(token && role === 'director'));
+  document.body.classList.toggle('out', !token);
+  $('#who').textContent = role === 'director' ? '관리자' : role ? '강사' : '';
+  $('#av').textContent = role === 'director' ? '관' : '강';
+  $('#m-set').classList.toggle('hidden', !(token && role === 'director'));
   if (!token) return viewLogin();
   const h = location.hash;
+  $('#m-home').classList.toggle('on', !h.startsWith('#/settings') && h !== '#/new');
+  $('#m-set').classList.toggle('on', h === '#/settings');
+  if (h === '#/new') return viewNew();
   if (h === '#/settings') return role === 'director' ? viewSettings() : viewList();
   if (h.startsWith('#/student/')) return viewStudent(h.split('/')[2]);
   if (h.startsWith('#/result/')) return viewResult(h.split('/')[2]);
   return viewList();
 }
+$('#regbtn').onclick = () => (location.hash = '#/new');
 window.onhashchange = route;
 
 // ── 로그인 / 최초 설정 ──
 async function viewLogin() {
-  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   let st; try { st = await api('status'); } catch (e) { app.innerHTML = `<div class="card err">서버에 연결하지 못했습니다: ${esc(e.message)}</div>`; return; }
   if (st.needsSetup) {
-    app.innerHTML = `<div class="card" style="max-width:420px;margin:40px auto"><h2>처음 설정</h2>
+    app.innerHTML = `<div class="card" style="margin-top:40px"><h2>처음 설정</h2>
       <p class="muted">이 사이트에 들어올 때 쓸 비밀번호를 정해 주세요. (각 8자 이상)</p>
       <label>관리자 비밀번호</label><input id="p1" type="text" class="pwm" autocomplete="off" spellcheck="false">
       <label>강사 공용 비밀번호</label><input id="p2" type="text" class="pwm" autocomplete="off" spellcheck="false">
@@ -121,7 +175,7 @@ async function viewLogin() {
     };
     return;
   }
-  app.innerHTML = `<div class="card" style="max-width:380px;margin:40px auto"><h2>로그인</h2>
+  app.innerHTML = `<div style="text-align:center;margin:40px 0 18px"><b style="font-size:24px;font-weight:800;background:linear-gradient(135deg,#0891b2,#059669);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">과학고 생기부 진단</b><div class="muted">서류 진단·처방 관리사이트</div></div><div class="card"><h2>로그인</h2>
     <label>비밀번호</label><input id="pw" type="text" class="pwm" autocomplete="off" spellcheck="false" autofocus>
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="sh" style="width:auto"> 비밀번호 보기</label>
     <div class="err" id="e"></div><div style="margin-top:14px"><button id="go">들어가기</button></div></div>`;
@@ -133,38 +187,65 @@ async function viewLogin() {
   $('#go').onclick = go; $('#pw').onkeydown = (e) => { if (e.key === 'Enter') go(); };
 }
 
-// ── 학생 목록 + 등록 ──
+// ── 초기 화면(대시보드) ──
+const GATE_LABEL = { pass: '통과', warn: '주의', fail: '탈락 요건' };
 async function viewList() {
-  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
-  const [{ students }, { centers }] = await Promise.all([api('listStudents'), api('getSettings')]);
-  app.innerHTML = `
-  <div class="card"><h2>학생 등록</h2>
-    <div class="grid2">
+  const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const [{ students }, st] = await Promise.all([api('listStudents'), api('getSettings')]);
+  const target = st.scoring?.target ?? 310, centers = st.centers;
+  const done = students.filter((x) => x.last), ok = done.filter((x) => x.last.total >= target), bad = done.filter((x) => x.last.gate === 'fail' || x.last.gate === 'warn');
+  app.innerHTML = head('초기 화면 (대시보드)', '과학고 지원 학생의 생기부 진단 현황', '') + `
+  <div class="stats">
+    <div class="stat"><span>전체 학생</span><b>${students.length}</b></div>
+    <div class="stat" style="--c:#06b6d4"><span>진단 완료</span><b>${done.length}</b></div>
+    <div class="stat" style="--c:#10b981"><span>목표 ${target}점 이상</span><b>${ok.length}</b></div>
+    <div class="stat" style="--c:#f59e0b"><span>내신 주의·탈락 요건</span><b>${bad.length}</b></div>
+  </div>
+  <div class="bar2">
+    <div class="sr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="q" placeholder="학생명 또는 학교 검색"></div>
+    <select id="fc"><option value="">센터 전체</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}</select>
+    <select id="fg"><option value="">내신 관문 전체</option><option value="pass">통과</option><option value="warn">주의</option><option value="fail">탈락 요건</option><option value="none">진단 전</option></select>
+  </div>
+  <div class="tw"><table><thead><tr><th>센터</th><th>학생명</th><th>학교</th><th>최근 진단 단계</th><th>점수</th><th>내신 관문</th><th>진단일</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>`;
+  const draw = () => {
+    const q = $('#q').value.trim(), fc = $('#fc').value, fg = $('#fg').value;
+    const rows = students.filter((x) => (!q || (x.name + (x.school || '')).includes(q)) && (!fc || x.center_name === fc) && (!fg || (fg === 'none' ? !x.last : x.last?.gate === fg)));
+    $('#tb').innerHTML = rows.map((x) => `<tr class="click" data-id="${x.id}"><td>${esc(x.center_name)}</td><td><span class="chip">${esc(x.name)}</span></td><td>${esc(x.school)}</td>
+      <td>${x.last ? `<span class="pill">${STAGE[x.last.stage]}</span>` : '<span class="muted">-</span>'}</td>
+      <td>${x.last ? `<span class="sc" style="color:${x.last.total >= target ? '#059669' : '#0f172a'}">${x.last.total ?? ''}</span>` : '<span class="muted">-</span>'}</td>
+      <td>${x.last?.gate ? `<span class="pill ${x.last.gate}">${GATE_LABEL[x.last.gate]}</span>` : '<span class="pill none">진단 전</span>'}</td>
+      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : ''}</td><td><span class="btn-s">열기</span></td></tr>`).join('') || '<tr><td colspan=8 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
+    app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
+  };
+  ['q', 'fc', 'fg'].forEach((i) => ($('#' + i).oninput = draw)); draw();
+}
+
+// ── 학생 등록 ──
+async function viewNew() {
+  const app = $('#main'); const { centers } = await api('getSettings');
+  app.innerHTML = head('학생 등록', '새 학생의 기본 정보를 입력하세요. 등록 후 생기부 PDF를 올립니다.') + `
+  <div class="card" style="max-width:640px"><div class="grid2">
       <div><label>이름 *</label><input id="n"></div><div><label>학교</label><input id="sc"></div>
       <div><label>센터 *</label><select id="ce"><option value="">선택</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}</select></div>
     </div><label>메모</label><input id="me">
-    <div class="err" id="e"></div><div style="margin-top:12px"><button id="add">등록</button></div></div>
-  <div class="card"><h2>학생 목록 <span class="muted">(${students.length}명)</span></h2>
-    <table><thead><tr><th>이름</th><th>학교</th><th>센터</th><th>최근 진단</th></tr></thead><tbody>
-    ${students.map((s) => `<tr class="click" data-id="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(s.school)}</td><td>${esc(s.center_name)}</td>
-      <td>${s.last ? `<span class="pill">${STAGE[s.last.stage]}</span> ${s.last.total ?? ''}점` : '<span class="muted">없음</span>'}</td></tr>`).join('') || '<tr><td colspan=4 class="muted">아직 등록된 학생이 없습니다.</td></tr>'}
-    </tbody></table></div>`;
-  app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
+    <div class="err" id="e"></div><div class="row" style="margin-top:14px"><button id="add">등록</button><button class="line" id="cx">취소</button></div></div>`;
+  $('#cx').onclick = () => (location.hash = '#/');
   $('#add').onclick = async () => {
+    if (!$('#n').value.trim()) { $('#e').textContent = '이름을 입력하세요.'; return; }
     if (!$('#ce').value) { $('#e').textContent = '센터를 선택하세요.'; return; }
-    try { await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, memo: $('#me').value }); viewList(); }
+    try { const r = await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, memo: $('#me').value }); location.hash = '#/student/' + r.student.id; }
     catch (e) { $('#e').textContent = e.message; }
   };
 }
 
 // ── 학생 상세: 업로드 + 진단 이력 ──
 async function viewStudent(id) {
-  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const [{ students }, { analyses }, { files }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id }), api('listRecordFiles', { studentId: id })]);
   const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
   app.innerHTML = `
-  <p><a href="#/">← 학생 목록</a></p>
-  <div class="card"><h2>${esc(s.name)} <span class="muted">${esc(s.school)}</span></h2>
+  ${head(esc(s.name), esc(s.school || '') + ' · ' + esc(s.center_name || ''), '<a href="#/">← 학생 목록</a>')}
+  <div class="card"><h2 class="t">생기부 업로드</h2>
     <label>생기부가 어디까지 작성되어 있나요?</label>
     <select id="stage"><option value="A">${STAGE.A}</option><option value="B">${STAGE.B}</option><option value="C">${STAGE.C}</option></select>
     <label>생기부 PDF</label><input id="file" type="file" accept="application/pdf">
@@ -223,11 +304,11 @@ async function viewStudent(id) {
 
 // ── 관리자 설정 ──
 async function viewSettings() {
-  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const [st, ar, pr] = await Promise.all([api('getSettings'), api('listArchived'), api('listPrompts')]);
   const PN = { pdf: 'PDF 변환', common: '공통 지침', area1: '영역1 학업역량(1~12)', area2: '영역2 진로적합성(13~18)', area3: '영역3 인성(19~30)', gate: '내신 관문 추출', advice: '처방(조언) 생성' };
   const sc = st.scoring || { target: 310, cutoffs: [{ min: 310, label: '지원 매우 안정적(적극 권장)' }, { min: 290, label: '지원 다소 안정적(권장)' }, { min: 270, label: '지원 다소 불안정(소극 권장)' }, { min: 250, label: '지원 불안정(비권장)' }, { min: -1000, label: '서류 탈락 유력(지원 불가)' }] };
-  app.innerHTML = `<p><a href="#/">← 학생 목록</a></p>
+  app.innerHTML = head('설정', '관리자 전용 설정', '<a href="#/">← 초기 화면</a>') + `
   <div class="card"><h2>센터 목록</h2><p class="muted">한 줄에 센터 하나씩. 학생 등록 화면의 선택 목록이 됩니다. (기존 학생의 센터 표기는 바뀌지 않습니다)</p>
     <textarea id="cen" rows="5" style="width:100%">${esc(st.centers.join('\n'))}</textarea><div class="err" id="e1"></div><button id="sc1" style="margin-top:8px">센터 목록 저장</button></div>
 
@@ -283,7 +364,7 @@ async function viewSettings() {
 
 // ── 결과: 1쪽 진단 / 2쪽 처방 ──
 async function viewResult(aid) {
-  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const { analysis: a, student: stu } = await api('getAnalysis', { analysisId: aid });
   const s = a.scores_json, adv = a.advice_json;
   const areaNames = ['학업역량', '진로적합성', '인성'];
@@ -348,7 +429,7 @@ async function viewResult(aid) {
   if ($('#reAdv')) $('#reAdv').onclick = async (ev) => { ev.target.disabled = true; ev.target.textContent = '만드는 중…'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
 }
 
-route().catch((e) => { $('#app').innerHTML = `<div class="card err">${esc(e.message)}</div>`; });
+route().catch((e) => { $('#main').innerHTML = `<div class="card err">${esc(e.message)}</div>`; });
 </script>
 </body>
 </html>
