@@ -127,7 +127,7 @@ async function viewLogin() {
     catch (e) { $('#e').textContent = e.message; }
   };
   $('#sh').onchange = (e) => { $('#pw').classList.toggle('pwm', !e.target.checked); };
-  $('#go').onclick = go; $('#pw').onkeydown = (e) => e.key === 'Enter' && go();
+  $('#go').onclick = go; $('#pw').onkeydown = (e) => { if (e.key === 'Enter') go(); };
 }
 
 // ── 학생 목록 + 등록 ──
