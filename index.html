@@ -138,17 +138,17 @@ async function viewList() {
   <div class="card"><h2>학생 등록</h2>
     <div class="grid2">
       <div><label>이름 *</label><input id="n"></div><div><label>학교</label><input id="sc"></div>
-      <div><label>센터/반</label><input id="ce"></div><div><label>담당 강사</label><input id="te"></div>
+      <div><label>센터/반</label><input id="ce"></div>
     </div><label>메모</label><input id="me">
     <div class="err" id="e"></div><div style="margin-top:12px"><button id="add">등록</button></div></div>
   <div class="card"><h2>학생 목록 <span class="muted">(${students.length}명)</span></h2>
-    <table><thead><tr><th>이름</th><th>학교</th><th>담당</th><th>최근 진단</th></tr></thead><tbody>
-    ${students.map((s) => `<tr class="click" data-id="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(s.school)}</td><td>${esc(s.teacher_name)}</td>
+    <table><thead><tr><th>이름</th><th>학교</th><th>최근 진단</th></tr></thead><tbody>
+    ${students.map((s) => `<tr class="click" data-id="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(s.school)}</td>
       <td>${s.last ? `<span class="pill">${STAGE[s.last.stage]}</span> ${s.last.total ?? ''}점` : '<span class="muted">없음</span>'}</td></tr>`).join('') || '<tr><td colspan=4 class="muted">아직 등록된 학생이 없습니다.</td></tr>'}
     </tbody></table></div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
   $('#add').onclick = async () => {
-    try { await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, teacher_name: $('#te').value, memo: $('#me').value }); viewList(); }
+    try { await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, memo: $('#me').value }); viewList(); }
     catch (e) { $('#e').textContent = e.message; }
   };
 }
@@ -160,7 +160,7 @@ async function viewStudent(id) {
   const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
   app.innerHTML = `
   <p><a href="#/">← 학생 목록</a></p>
-  <div class="card"><h2>${esc(s.name)} <span class="muted">${esc(s.school)} ${esc(s.teacher_name ? '· ' + s.teacher_name : '')}</span></h2>
+  <div class="card"><h2>${esc(s.name)} <span class="muted">${esc(s.school)}</span></h2>
     <label>생기부가 어디까지 작성되어 있나요?</label>
     <select id="stage"><option value="A">${STAGE.A}</option><option value="B">${STAGE.B}</option><option value="C">${STAGE.C}</option></select>
     <label>생기부 PDF</label><input id="file" type="file" accept="application/pdf">
