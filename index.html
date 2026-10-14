@@ -459,6 +459,61 @@ async function viewSettings() {
   };
 }
 
+// ── 진단지 PDF 바로 다운로드 (화면을 A4 쪽 단위로 잘라 저장, 박스는 쪽 사이에서 자르지 않음) ──
+const loadScript = (src) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('PDF 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.')); document.head.appendChild(s); });
+async function downloadPdf(btn, name) {
+  const label = btn.textContent; btn.disabled = true; btn.textContent = 'PDF 만드는 중…';
+  let wrap, st;
+  try {
+    if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    if (!window.jspdf) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    let css = '';
+    for (const sh of document.styleSheets) for (const r of sh.cssRules) {
+      if (r.type !== CSSRule.MEDIA_RULE || !/print/.test(r.media.mediaText)) continue;
+      for (const q of r.cssRules) {
+        if (q.type !== CSSRule.STYLE_RULE) continue;
+        const sel = q.selectorText.split(',').map((x) => x.trim()).filter((x) => x && !/^(body|#side|\.noprint|#main|\*)/.test(x)).map((x) => '.pdfmode ' + x).join(',');
+        if (sel) css += sel + '{' + q.style.cssText + '}';
+      }
+    }
+    st = document.createElement('style'); st.textContent = css + '.pdfmode .trk i.b{background:#c6eedd}.pdfmode .sec{letter-spacing:.4px}'; document.head.appendChild(st);
+    wrap = document.createElement('div'); wrap.className = 'pdfmode'; wrap.style.cssText = 'position:absolute;left:-10000px;top:0;width:726px;background:#fff';
+    const secs = [...document.querySelectorAll('section.page')].map((s) => wrap.appendChild(s.cloneNode(true)));
+    wrap.querySelectorAll('.ring svg').forEach((sv) => { sv.style.transform = 'none'; const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.setAttribute('transform', 'rotate(-90 94 94)'); [...sv.childNodes].forEach((x) => g.appendChild(x)); sv.appendChild(g); });
+    wrap.querySelectorAll('.sec').forEach((e) => { const t = e.firstChild; if (t && t.nodeType === 3) t.textContent = t.textContent.replace(/^([①-⑥])\s*/, '$1\u2003'); });
+    document.body.appendChild(wrap);
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const PW = 726, H = Math.floor(PW * 279 / 192);
+    const ATOM = '.adv,.rt,.ac,.cell,.gate,.sum,.hero,.ar,.lg2,.sub,.pf,.sec,.rh,.rs,li,h2,h3,p';
+    const collect = (el, out) => { for (const c of el.children) { if (c.matches(ATOM) || !c.children.length) out.push(c); else collect(c, out); } };
+    const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit: 'mm', format: 'a4' }); let n = 0;
+    for (const sec of secs) {
+      const base = sec.getBoundingClientRect().top, total = sec.getBoundingClientRect().height;
+      const atoms = []; collect(sec, atoms);
+      const T = atoms.filter((a) => !a.matches('.pf')).map((a) => { const r = a.getBoundingClientRect(); return { t: r.top - base, h: a.matches('.sec,.sub') }; });
+      const cuts = [0]; let y0 = 0;
+      while (total - y0 > H + 30) {
+        let cand = -1; for (let i = 0; i < T.length; i++) if (T[i].t > y0 + 4 && T[i].t <= y0 + H) cand = i;
+        let c = y0 + H;
+        if (cand >= 0) { let i = cand; while (i > 0 && T[i - 1].h && T[i - 1].t > y0 + 4) i--; c = T[i].t; }
+        cuts.push(c); y0 = c;
+      }
+      cuts.push(total);
+      const canvas = await html2canvas(sec, { scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false });
+      const k = canvas.width / PW;
+      for (let i = 0; i < cuts.length - 1; i++) {
+        const sy = Math.round(cuts[i] * k), sh = Math.max(1, Math.round((cuts[i + 1] - cuts[i]) * k));
+        const c2 = document.createElement('canvas'); c2.width = canvas.width; c2.height = sh;
+        const g = c2.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c2.width, sh); g.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
+        if (n++) pdf.addPage();
+        pdf.addImage(c2.toDataURL('image/jpeg', 0.92), 'JPEG', 9, 9, 192, (cuts[i + 1] - cuts[i]) * 192 / PW);
+      }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(pdf.output('blob')); a.download = (name || '학생') + '_생활기록부 진단 리포트.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { alert(e.message || 'PDF를 만들지 못했습니다. 인쇄 버튼으로 PDF 저장을 이용해 주세요.'); }
+  finally { if (wrap) wrap.remove(); if (st) st.remove(); btn.disabled = false; btn.textContent = label; }
+}
+
 // ── 사용 안내 (강사 / 관리자) ──
 function viewGuide() {
   const app = $('#main'), dir = role === 'director';
@@ -549,7 +604,7 @@ async function viewResult(aid, adm = false) {
   const hero = `<div class="hero">${ring}<div class="hs">
     <div><span>목표 ${s.targetScore}점까지</span><b>${s.gapToTarget > 0 ? s.gapToTarget + '점 부족' : '달성'}</b></div>
     <div><span>남은 학기 최대 도달</span><b>${s.bestCaseTotal}점</b></div>
-    <div><span>반영 학기</span><b class="sm">${TERM_KO[a.stage]}까지 반영</b><em class="hn">현재 점수 ${s.currentTotal}점 기준</em></div>
+    <div><span>반영 학기</span><b class="sm">${TERM_KO[a.stage]}까지 반영</b></div>
     <div><span>최대 도달 시 지원 구간</span><b class="sm">${esc(s.bestCaseBand)}</b></div></div></div>
     <div class="lg2" style="margin-top:8px"><span><i style="background:#10b981"></i>현재 점수</span><span><i style="background:#a7e8d3"></i>남은 학기 최대 도달</span><span><i style="background:#0f172a"></i>목표 점수 위치</span></div>`;
   const itm = (no) => s.items.find((y) => y.no === no);
@@ -568,7 +623,7 @@ async function viewResult(aid, adm = false) {
 
   app.innerHTML = `
   <div class="row noprint" style="margin-bottom:12px"><a href="#/student/${a.student_id}">← ${esc(stu.name)} 학생</a><span style="flex:1"></span>
-    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2">조언 다시 만들기</button>' : ''}${adm ? '' : '<button id="pdf">PDF로 저장 / 인쇄</button>'}</div>
+    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2">조언 다시 만들기</button>' : ''}${adm ? '' : '<button id="pdfdl">PDF 다운로드</button><button class="line" id="pdf">인쇄</button>'}</div>
   ${adm ? '<div class="admwarn">관리자 전용 보기 · 항목별 점수·배점 포함 · 학부모에게 제공하지 마세요</div>' : ''}
 
   <section class="page">
@@ -603,13 +658,14 @@ async function viewResult(aid, adm = false) {
   <section class="page">
     ${head3()}
     <div class="sec" style="margin-top:4px">⑥ 남은 학기별 실행 계획 추천</div>
-    ${g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류에서 탈락합니다.</div>` : ''}
+    ${g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류 탈락 가능성이 매우 높습니다.</div>` : ''}
     ${roadmap || '<p class="muted">실행 계획이 아직 없습니다.</p>'}
     ${adv?.penaltyWarnings?.length ? '<div class="sub"><b>감점 주의</b><small>지켜야 할 점수</small></div>' : ''}
     ${adv?.penaltyWarnings?.length ? `<ul class="wn">${adv.penaltyWarnings.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : ''}
     ${foot(4, '대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.')}
   </section>`;
   if ($('#pdf')) $('#pdf').onclick = () => print();
+  if ($('#pdfdl')) $('#pdfdl').onclick = (ev) => downloadPdf(ev.target, stu.name);
   $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { alert(e.message); } };
   const reAdv = async (btn) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (1~2분)'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
   if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
