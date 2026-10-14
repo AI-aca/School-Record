@@ -138,16 +138,17 @@ async function viewList() {
   <div class="card"><h2>학생 등록</h2>
     <div class="grid2">
       <div><label>이름 *</label><input id="n"></div><div><label>학교</label><input id="sc"></div>
-      <div><label>센터/반</label><input id="ce"></div>
+      <div><label>센터 *</label><select id="ce"><option value="">선택</option><option>송도센터</option><option>한강센터</option><option>배곧센터</option><option>청라센터</option></select></div>
     </div><label>메모</label><input id="me">
     <div class="err" id="e"></div><div style="margin-top:12px"><button id="add">등록</button></div></div>
   <div class="card"><h2>학생 목록 <span class="muted">(${students.length}명)</span></h2>
-    <table><thead><tr><th>이름</th><th>학교</th><th>최근 진단</th></tr></thead><tbody>
-    ${students.map((s) => `<tr class="click" data-id="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(s.school)}</td>
+    <table><thead><tr><th>이름</th><th>학교</th><th>센터</th><th>최근 진단</th></tr></thead><tbody>
+    ${students.map((s) => `<tr class="click" data-id="${s.id}"><td><b>${esc(s.name)}</b></td><td>${esc(s.school)}</td><td>${esc(s.center_name)}</td>
       <td>${s.last ? `<span class="pill">${STAGE[s.last.stage]}</span> ${s.last.total ?? ''}점` : '<span class="muted">없음</span>'}</td></tr>`).join('') || '<tr><td colspan=4 class="muted">아직 등록된 학생이 없습니다.</td></tr>'}
     </tbody></table></div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
   $('#add').onclick = async () => {
+    if (!$('#ce').value) { $('#e').textContent = '센터를 선택하세요.'; return; }
     try { await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, memo: $('#me').value }); viewList(); }
     catch (e) { $('#e').textContent = e.message; }
   };
