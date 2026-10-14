@@ -65,6 +65,7 @@ ul.tight{margin:4px 0 0;padding-left:18px}
 <header class="top">
   <h1>과학고 생기부 진단</h1>
   <span id="who" class="muted"></span>
+  <a id="setlink" href="#/settings" class="hidden" style="margin-left:auto">설정</a>
   <button id="logout" class="line hidden">로그아웃</button>
 </header>
 <div class="wrap" id="app"></div>
@@ -92,8 +93,10 @@ $('#logout').onclick = logout;
 async function route() {
   $('#who').textContent = role ? (role === 'director' ? '관리자' : '강사') : '';
   $('#logout').classList.toggle('hidden', !token);
+  $('#setlink').classList.toggle('hidden', !(token && role === 'director'));
   if (!token) return viewLogin();
   const h = location.hash;
+  if (h === '#/settings') return role === 'director' ? viewSettings() : viewList();
   if (h.startsWith('#/student/')) return viewStudent(h.split('/')[2]);
   if (h.startsWith('#/result/')) return viewResult(h.split('/')[2]);
   return viewList();
@@ -133,12 +136,12 @@ async function viewLogin() {
 // ── 학생 목록 + 등록 ──
 async function viewList() {
   const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
-  const { students } = await api('listStudents');
+  const [{ students }, { centers }] = await Promise.all([api('listStudents'), api('getSettings')]);
   app.innerHTML = `
   <div class="card"><h2>학생 등록</h2>
     <div class="grid2">
       <div><label>이름 *</label><input id="n"></div><div><label>학교</label><input id="sc"></div>
-      <div><label>센터 *</label><select id="ce"><option value="">선택</option><option>송도센터</option><option>한강센터</option><option>배곧센터</option><option>청라센터</option></select></div>
+      <div><label>센터 *</label><select id="ce"><option value="">선택</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}</select></div>
     </div><label>메모</label><input id="me">
     <div class="err" id="e"></div><div style="margin-top:12px"><button id="add">등록</button></div></div>
   <div class="card"><h2>학생 목록 <span class="muted">(${students.length}명)</span></h2>
@@ -157,7 +160,7 @@ async function viewList() {
 // ── 학생 상세: 업로드 + 진단 이력 ──
 async function viewStudent(id) {
   const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
-  const [{ students }, { analyses }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id })]);
+  const [{ students }, { analyses }, { files }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id }), api('listRecordFiles', { studentId: id })]);
   const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
   app.innerHTML = `
   <p><a href="#/">← 학생 목록</a></p>
@@ -167,13 +170,35 @@ async function viewStudent(id) {
     <label>생기부 PDF</label><input id="file" type="file" accept="application/pdf">
     <div class="err" id="e"></div><div id="prog" class="muted" style="margin-top:10px"></div>
     <div style="margin-top:12px"><button id="run">업로드하고 진단하기</button></div>
-    <p class="muted">진단에는 1~3분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div>
+    <p class="muted">진단에는 2~5분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div>
+  <div class="card"><h2>업로드한 생기부</h2><table><tbody>
+    ${files.map((f) => `<tr><td>${new Date(f.uploaded_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[f.stage]}</span></td><td>${esc(f.file_name)}</td>
+      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line pv" data-id="${f.id}">파싱 보기</button>${role === 'director' ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ''}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
+  </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table><tbody>
     ${analyses.map((a) => `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[a.stage]}</span></td><td>${a.total ?? ''}점</td></tr>`).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
   </tbody></table>
   ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
-  if ($('#arch')) $('#arch').onclick = async () => { if (confirm('목록에서 숨깁니다. (데이터는 삭제되지 않습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
+  if ($('#arch')) $('#arch').onclick = async () => { if (confirm('목록에서 숨깁니다. (설정 화면에서 복구할 수 있습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
+  const busy = (m) => { $('#prog').innerHTML = m ? '<span class="spin"></span>' + m : ''; };
+  app.querySelectorAll('.rx').forEach((b) => b.onclick = async () => {
+    b.disabled = true; $('#e2').textContent = '';
+    try {
+      busy('저장된 생기부 텍스트로 다시 추출·채점 중… (1~2분)');
+      const r = await api('extract', { recordFileId: b.dataset.id, stage: b.dataset.stage });
+      busy('학기별 조언을 만드는 중…'); try { await api('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
+      location.hash = '#/result/' + r.analysis.id;
+    } catch (e) { busy(''); $('#e2').textContent = e.message; b.disabled = false; }
+  });
+  app.querySelectorAll('.pv').forEach((b) => b.onclick = async () => {
+    try { const r = await api('getParsed', { recordFileId: b.dataset.id }); const w = window.open('', '_blank'); w.document.write('<pre style="white-space:pre-wrap;font:13px/1.5 sans-serif;padding:16px">' + esc(r.text) + '</pre>'); w.document.close(); }
+    catch (e) { $('#e2').textContent = e.message; }
+  });
+  app.querySelectorAll('.dx').forEach((b) => b.onclick = async () => {
+    if (!confirm('원본 PDF 파일을 완전히 삭제합니다. (파싱 텍스트와 진단 결과는 남습니다. 되돌릴 수 없습니다.)')) return;
+    try { await api('deleteOriginal', { recordFileId: b.dataset.id }); viewStudent(id); } catch (e) { $('#e2').textContent = e.message; }
+  });
   $('#run').onclick = async () => {
     const f = $('#file').files[0], stage = $('#stage').value, prog = $('#prog'); $('#e').textContent = '';
     if (!f) return ($('#e').textContent = 'PDF 파일을 선택하세요.');
@@ -185,12 +210,74 @@ async function viewStudent(id) {
       const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
       const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
       if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
-      prog.innerHTML = '<span class="spin"></span>AI가 생기부를 읽고 채점하는 중… (1~2분)';
-      const r = await api('analyze', { studentId: id, stage, path: u.path, fileName: f.name });
-      prog.innerHTML = '<span class="spin"></span>학기별 조언을 만드는 중…';
+      busy('① PDF를 텍스트로 변환하는 중… (1~2분)');
+      const pr = await api('parse', { studentId: id, stage, path: u.path, fileName: f.name });
+      busy('② 영역별 근거를 추출하고 채점하는 중… (1~2분)');
+      const r = await api('extract', { recordFileId: pr.recordFileId, stage });
+      busy('③ 학기별 조언을 만드는 중…');
       try { await api('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
       location.hash = '#/result/' + r.analysis.id;
     } catch (e) { $('#e').textContent = e.message; prog.textContent = ''; $('#run').disabled = false; }
+  };
+}
+
+// ── 관리자 설정 ──
+async function viewSettings() {
+  const app = $('#app'); app.innerHTML = '<div class="card">불러오는 중…</div>';
+  const [st, ar, pr] = await Promise.all([api('getSettings'), api('listArchived'), api('listPrompts')]);
+  const PN = { pdf: 'PDF 변환', common: '공통 지침', area1: '영역1 학업역량(1~12)', area2: '영역2 진로적합성(13~18)', area3: '영역3 인성(19~30)', gate: '내신 관문 추출', advice: '처방(조언) 생성' };
+  const sc = st.scoring || { target: 310, cutoffs: [{ min: 310, label: '지원 매우 안정적(적극 권장)' }, { min: 290, label: '지원 다소 안정적(권장)' }, { min: 270, label: '지원 다소 불안정(소극 권장)' }, { min: 250, label: '지원 불안정(비권장)' }, { min: -1000, label: '서류 탈락 유력(지원 불가)' }] };
+  app.innerHTML = `<p><a href="#/">← 학생 목록</a></p>
+  <div class="card"><h2>센터 목록</h2><p class="muted">한 줄에 센터 하나씩. 학생 등록 화면의 선택 목록이 됩니다. (기존 학생의 센터 표기는 바뀌지 않습니다)</p>
+    <textarea id="cen" rows="5" style="width:100%">${esc(st.centers.join('\n'))}</textarea><div class="err" id="e1"></div><button id="sc1" style="margin-top:8px">센터 목록 저장</button></div>
+
+  <div class="card"><h2>목표 점수와 구간 기준</h2><p class="muted">3-1학기 기준 400점 체계. 이미 만든 진단 결과는 바뀌지 않고, 새로 진단·재진단할 때부터 적용됩니다.</p>
+    <label>목표 점수</label><input id="tg" type="number" value="${sc.target}" style="max-width:140px">
+    <label>구간 (점수 이상 → 문구). 마지막 줄은 나머지 전부입니다.</label>
+    <div id="cuts">${sc.cutoffs.map((c, i) => `<div class="row" style="margin:4px 0"><input class="cm" type="number" value="${i === sc.cutoffs.length - 1 ? '' : c.min}" ${i === sc.cutoffs.length - 1 ? 'disabled placeholder="나머지"' : ''} style="max-width:100px"><input class="cl" value="${esc(c.label)}" style="flex:1"></div>`).join('')}</div>
+    <div class="err" id="e2"></div><button id="sc2" style="margin-top:8px">기준 저장</button></div>
+
+  <div class="card"><h2>숨긴 학생</h2><table><tbody>
+    ${ar.students.map((x) => `<tr><td><b>${esc(x.name)}</b> <span class="muted">${esc(x.school)} · ${esc(x.center_name)}</span></td><td style="text-align:right"><button class="line rs" data-id="${x.id}">복구</button> <button class="line dl" data-id="${x.id}" data-name="${esc(x.name)}">완전 삭제</button></td></tr>`).join('') || '<tr><td class="muted">숨긴 학생이 없습니다.</td></tr>'}
+  </tbody></table><div class="err" id="e3"></div></div>
+
+  <div class="card"><h2>비밀번호 변경</h2>
+    <label>변경할 대상</label><select id="pt"><option value="teacher">강사 공용 비밀번호</option><option value="director">관리자 비밀번호</option></select>
+    <label>새 비밀번호 (8자 이상)</label><input id="np" type="text" class="pwm" autocomplete="off" spellcheck="false">
+    <label>현재 관리자 비밀번호 (확인용)</label><input id="cp" type="text" class="pwm" autocomplete="off" spellcheck="false">
+    <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="sh" style="width:auto"> 비밀번호 보기</label>
+    <div class="err" id="e4"></div><button id="pw1" style="margin-top:8px">비밀번호 변경</button></div>
+
+  <div class="card"><h2>AI 지시문 편집</h2><p class="muted">진단 결과가 달라질 수 있습니다. 저장하면 직전 버전이 보관되어 "이전 버전으로 되돌리기"가 가능합니다. 지시문 안의 JSON 형식 부분은 바꾸지 마세요.</p>
+    <select id="pk">${pr.prompts.map((p) => `<option value="${p.key}">${PN[p.key] || p.key} (v${p.version})</option>`).join('')}</select>
+    <textarea id="pc" rows="18" style="width:100%;margin-top:8px;font-size:12px"></textarea>
+    <div class="err" id="e5"></div><button id="p1">저장</button> <button class="line" id="p2">이전 버전으로 되돌리기</button></div>`;
+
+  const show = (id, m, ok) => { const e = $(id); e.textContent = m; e.style.color = ok ? 'var(--ok,#16a34a)' : ''; };
+  $('#sc1').onclick = async () => { try { const r = await api('setCenters', { centers: $('#cen').value.split('\n') }); $('#cen').value = r.centers.join('\n'); show('#e1', '저장했습니다.', 1); } catch (e) { show('#e1', e.message); } };
+  $('#sc2').onclick = async () => {
+    const ms = [...app.querySelectorAll('.cm')], ls = [...app.querySelectorAll('.cl')];
+    const cutoffs = ls.map((l, i) => ({ min: i === ls.length - 1 ? -1000 : Number(ms[i].value), label: l.value }));
+    try { await api('setScoring', { target: Number($('#tg').value), cutoffs }); show('#e2', '저장했습니다. 이후 진단부터 적용됩니다.', 1); } catch (e) { show('#e2', e.message); }
+  };
+  app.querySelectorAll('.rs').forEach((b) => b.onclick = async () => { await api('restoreStudent', { studentId: b.dataset.id }); viewSettings(); });
+  app.querySelectorAll('.dl').forEach((b) => b.onclick = async () => {
+    const n = prompt(`'${b.dataset.name}' 학생의 모든 자료(PDF·진단)를 완전히 삭제합니다. 되돌릴 수 없습니다.\n확인을 위해 학생 이름을 입력하세요.`);
+    if (n === null) return;
+    try { await api('deleteStudent', { studentId: b.dataset.id, confirmName: n }); viewSettings(); } catch (e) { show('#e3', e.message); }
+  });
+  $('#sh').onchange = (e) => { $('#np').classList.toggle('pwm', !e.target.checked); $('#cp').classList.toggle('pwm', !e.target.checked); };
+  $('#pw1').onclick = async () => {
+    try { await api('changePassword', { target: $('#pt').value, newPassword: $('#np').value, currentPassword: $('#cp').value }); $('#np').value = ''; $('#cp').value = ''; show('#e4', '변경했습니다.', 1); } catch (e) { show('#e4', e.message); }
+  };
+  const loadP = () => { $('#pc').value = pr.prompts.find((p) => p.key === $('#pk').value).content; };
+  $('#pk').onchange = loadP; loadP();
+  $('#p1').onclick = async () => {
+    if (!confirm('이 지시문을 저장합니다. 이후 진단부터 적용됩니다.')) return;
+    try { await api('setPrompt', { key: $('#pk').value, content: $('#pc').value }); show('#e5', '저장했습니다.', 1); const k = $('#pk').value; const f = await api('listPrompts'); pr.prompts = f.prompts; } catch (e) { show('#e5', e.message); }
+  };
+  $('#p2').onclick = async () => {
+    try { await api('restorePrompt', { key: $('#pk').value }); const f = await api('listPrompts'); pr.prompts = f.prompts; loadP(); show('#e5', '이전 버전으로 되돌렸습니다.', 1); } catch (e) { show('#e5', e.message); }
   };
 }
 
