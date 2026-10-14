@@ -89,7 +89,7 @@ $('#logout').onclick = logout;
 
 // ── 화면 전환 ──
 async function route() {
-  $('#who').textContent = role ? (role === 'director' ? '원장' : '강사') : '';
+  $('#who').textContent = role ? (role === 'director' ? '관리자' : '강사') : '';
   $('#logout').classList.toggle('hidden', !token);
   if (!token) return viewLogin();
   const h = location.hash;
@@ -106,7 +106,7 @@ async function viewLogin() {
   if (st.needsSetup) {
     app.innerHTML = `<div class="card" style="max-width:420px;margin:40px auto"><h2>처음 설정</h2>
       <p class="muted">이 사이트에 들어올 때 쓸 비밀번호를 정해 주세요. (각 8자 이상)</p>
-      <label>원장 비밀번호</label><input id="p1" type="password" autocomplete="new-password">
+      <label>관리자 비밀번호</label><input id="p1" type="password" autocomplete="new-password">
       <label>강사 공용 비밀번호</label><input id="p2" type="password" autocomplete="new-password">
       <div class="err" id="e"></div><div style="margin-top:14px"><button id="go">저장</button></div></div>`;
     $('#go').onclick = async () => {
