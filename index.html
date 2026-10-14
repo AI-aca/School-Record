@@ -249,7 +249,7 @@ async function viewList() {
     <select id="fc"><option value="">센터 전체</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}</select>
     <select id="fg"><option value="">내신 관문 전체</option><option value="pass">통과</option><option value="warn">주의</option><option value="fail">탈락 요건</option><option value="none">진단 전</option></select>
   </div>
-  <div class="tw"><table><thead><tr><th>센터</th><th>학생명</th><th>학교</th><th>반영 학기</th><th>점수</th><th>내신 관문</th><th>진단일</th><th style="text-align:center">상세보기</th></tr></thead><tbody id="tb"></tbody></table></div>`;
+  <div class="tw"><table><thead><tr><th>센터</th><th>학생명</th><th>학교</th><th>반영 학기</th><th>점수</th><th>내신 관문</th><th>진단일</th><th style="text-align:center">상세보기</th><th style="text-align:center">진단지 보기</th></tr></thead><tbody id="tb"></tbody></table></div>`;
   const draw = () => {
     const q = $('#q').value.trim(), fc = $('#fc').value, fg = $('#fg').value;
     const rows = students.filter((x) => (!q || (x.name + (x.school || '')).includes(q)) && (!fc || x.center_name === fc) && (!fg || (fg === 'none' ? !x.last : x.last?.gate === fg)));
@@ -257,8 +257,9 @@ async function viewList() {
       <td>${x.last ? `<span class="pill">${TERM_UP[x.last.stage]}</span>` : '<span class="muted">-</span>'}</td>
       <td>${x.last ? `<span class="sc" style="color:${x.last.total >= target ? '#059669' : '#0f172a'}">${x.last.total ?? ''}</span>` : '<span class="muted">-</span>'}</td>
       <td>${x.last?.gate ? `<span class="pill ${x.last.gate}">${GATE_LABEL[x.last.gate]}</span>` : '<span class="pill none">진단 전</span>'}</td>
-      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : ''}</td><td style="text-align:center"><span class="btn-s">열기</span></td></tr>`).join('') || '<tr><td colspan=8 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
+      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : ''}</td><td style="text-align:center"><span class="btn-s">열기</span></td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}">열기</span>` : '<span class="muted">-</span>'}</td></tr>`).join('') || '<tr><td colspan=9 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
     app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
+    app.querySelectorAll('.rep').forEach((b) => b.onclick = (e) => { e.stopPropagation(); location.hash = '#/result/' + b.dataset.aid; });
   };
   ['q', 'fc', 'fg'].forEach((i) => ($('#' + i).oninput = draw)); draw();
 }
@@ -303,8 +304,8 @@ async function viewStudent(id) {
     ${files.map((f) => `<tr><td>${new Date(f.uploaded_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[f.stage]}</span></td><td>${esc(f.file_name)}</td>
       <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line pv" data-id="${f.id}">파싱 보기</button>${role === 'director' ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ''}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
-  <div class="card"><h2>진단 이력</h2><table><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th></tr></thead><tbody>
-    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
+  <div class="card"><h2>진단 이력</h2><table><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th style="text-align:center">진단지 보기</th></tr></thead><tbody>
+    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="text-align:center"><span class="btn-s">열기</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
   </tbody></table>
   ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
