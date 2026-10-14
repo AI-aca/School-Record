@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>과학고 생기부 진단</title>
 <style>
-:root{--bg:#f6f8fb;--card:#fff;--ink:#1d2733;--sub:#6b7785;--line:#e3e8ef;--pri:#2563eb;--pri2:#eaf1ff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+:root{color-scheme:light;--bg:#f6f8fb;--card:#fff;--ink:#1d2733;--sub:#6b7785;--line:#e3e8ef;--pri:#2563eb;--pri2:#eaf1ff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;font-size:15px;line-height:1.5}
 header.top{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
@@ -13,7 +13,7 @@ header.top h1{font-size:17px;margin:0;flex:1}
 .wrap{max-width:980px;margin:0 auto;padding:20px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
 h2{font-size:17px;margin:0 0 12px}
-input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+input,select,textarea{color:#1d2733;-webkit-text-fill-color:#1d2733;caret-color:#1d2733;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
 label{font-size:13px;color:var(--sub);display:block;margin:10px 0 4px}
 button{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--pri);color:#fff;cursor:pointer}
 button.ghost{background:var(--pri2);color:var(--pri)}
@@ -108,7 +108,9 @@ async function viewLogin() {
       <p class="muted">이 사이트에 들어올 때 쓸 비밀번호를 정해 주세요. (각 8자 이상)</p>
       <label>관리자 비밀번호</label><input id="p1" type="password" autocomplete="new-password">
       <label>강사 공용 비밀번호</label><input id="p2" type="password" autocomplete="new-password">
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="sh" style="width:auto"> 비밀번호 보기</label>
       <div class="err" id="e"></div><div style="margin-top:14px"><button id="go">저장</button></div></div>`;
+    $('#sh').onchange = (e) => { $('#p1').type = $('#p2').type = e.target.checked ? 'text' : 'password'; };
     $('#go').onclick = async () => {
       try { await api('setup', { directorPw: $('#p1').value, teacherPw: $('#p2').value }); viewLogin(); }
       catch (e) { $('#e').textContent = e.message; }
@@ -117,11 +119,13 @@ async function viewLogin() {
   }
   app.innerHTML = `<div class="card" style="max-width:380px;margin:40px auto"><h2>로그인</h2>
     <label>비밀번호</label><input id="pw" type="password" autofocus>
+    <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="sh" style="width:auto"> 비밀번호 보기</label>
     <div class="err" id="e"></div><div style="margin-top:14px"><button id="go">들어가기</button></div></div>`;
   const go = async () => {
     try { const r = await api('login', { password: $('#pw').value }); token = r.token; role = r.role; sessionStorage.setItem('sr_token', token); sessionStorage.setItem('sr_role', role); route(); }
     catch (e) { $('#e').textContent = e.message; }
   };
+  $('#sh').onchange = (e) => { $('#pw').type = e.target.checked ? 'text' : 'password'; };
   $('#go').onclick = go; $('#pw').onkeydown = (e) => e.key === 'Enter' && go();
 }
 
