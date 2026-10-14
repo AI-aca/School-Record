@@ -340,11 +340,17 @@ async function viewStudent(id) {
       <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line pv" data-id="${f.id}">파싱 보기</button> <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button></td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th style="text-align:center">진단지 보기</th></tr></thead><tbody>
-    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="text-align:center;white-space:nowrap"><span class="btn-s">열기</span> <span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 점수 보기</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
+    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="text-align:center;white-space:nowrap"><span class="btn-s">열기</span> <span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 점수 보기</span> <span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
   </tbody></table>
   ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
   app.querySelectorAll('.adm').forEach((b) => b.onclick = (e) => { e.stopPropagation(); if (role !== 'director') return alert('관리자에게 문의하세요.'); location.hash = '#/result/' + b.dataset.aid + '/admin'; });
+  app.querySelectorAll('.dla').forEach((b) => b.onclick = async (e) => {
+    e.stopPropagation(); if (role !== 'director') return alert('관리자에게 문의하세요.');
+    const an = analyses.find((x) => x.id === b.dataset.aid);
+    if (!confirm('이 진단 기록(' + new Date(an.created_at).toLocaleString('ko-KR') + ', ' + (an.total ?? '') + '점)을 삭제합니다.\n업로드한 생기부 파일은 남습니다. 되돌릴 수 없습니다.')) return;
+    try { await api('deleteAnalysis', { analysisId: b.dataset.aid }); viewStudent(id); } catch (err) { alert(err.message); }
+  });
   if ($('#arch')) $('#arch').onclick = async () => { if (confirm('목록에서 숨깁니다. (설정 화면에서 복구할 수 있습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
   const busy = (m) => { $('#prog').innerHTML = m ? '<span class="spin"></span>' + m : ''; };
   app.querySelectorAll('.rx').forEach((b) => b.onclick = async () => {
@@ -479,7 +485,7 @@ function viewGuide() {
       '<b>총점:</b> 400점 만점이며 기본 목표는 310점입니다. 지원 구간은 기본값으로 310점 이상 적극 권장, 290점 이상 권장, 270점 이상 소극 권장, 250점 이상 비권장이며 관리자가 설정에서 바꿀 수 있습니다.',
       '<b>반영 학기:</b> 1학년 2학기까지 / 2학년 1학기까지 / 2학년 2학기까지 중 진단에 쓴 생기부의 작성 시점을 뜻합니다.']) +
     sec('4. 강사가 할 수 없는 기능', [
-      '생기부 업로드·진단, 다시 진단, 조언 다시 만들기, 관리자용 점수 보기, 파싱 보기, 원본 PDF 삭제는 <b>관리자 전용</b>입니다. 설정 메뉴는 관리자에게만 보입니다.',
+      '생기부 업로드·진단, 다시 진단, 조언 다시 만들기, 관리자용 점수 보기, 파싱 보기, 원본 PDF 삭제, 진단 기록 삭제는 <b>관리자 전용</b>입니다. 설정 메뉴는 관리자에게만 보입니다.',
       '강사가 해당 버튼을 누르면 "관리자에게 문의하세요."라고 안내됩니다. 새 진단이나 업데이트가 필요하면 원장님께 요청하세요.']);
   const admin = part('관리자 사용 안내', '#0891b2') +
     sec('1. 생기부 올리고 진단하기', [
@@ -496,6 +502,7 @@ function viewGuide() {
       '기준이나 지시문을 바꿔도 이미 만든 진단 결과는 자동으로 바뀌지 않으며, 새로 진단하거나 다시 진단할 때부터 적용됩니다.']) +
     sec('4. 학생·파일 관리', [
       '<b>숨기기:</b> 학생 상세의 <code>이 학생 목록에서 숨기기</code>를 누르면 초기 화면에서 사라집니다. 설정의 "숨긴 학생"에서 복구하거나 완전 삭제할 수 있습니다.',
+      '<b>진단 기록 삭제:</b> 진단 이력의 <code>삭제</code>로 기록 한 건만 지웁니다. 가장 최근 기록을 지우면 바로 이전 진단이 현재 기록이 되고, 하나뿐이면 진단 전 상태가 됩니다. 업로드한 생기부 파일은 남고, 삭제는 되돌릴 수 없습니다.',
       '<b>파싱 보기:</b> PDF에서 변환된 텍스트를 열어 AI가 읽은 내용을 확인합니다.',
       '<b>원본 PDF 삭제:</b> 원본 파일만 지웁니다. 변환된 텍스트와 진단 결과는 남고, 되돌릴 수 없습니다.'],
       '삭제와 완전 삭제는 되돌릴 수 없습니다. 확인 창의 문구를 읽고 진행하세요.') +
