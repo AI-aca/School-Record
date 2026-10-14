@@ -95,7 +95,7 @@ a{color:var(--pri-t)}
 .note{background:#f0fdf9;border:1px solid #bdeedd;color:#065f46;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:14px}
 .rh{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--pri);padding-bottom:12px;margin-bottom:18px}
 .rh-l{display:flex;align-items:center;gap:14px}.rh-l b{display:block;font-size:18px;letter-spacing:-.3px}.rh-l span{font-size:13px;color:var(--sub)}
-.rlogo{height:66px;width:auto;display:block}
+.rlogo{height:40px;width:auto;display:block}
 .rh-r{font-size:13px;color:var(--sub);text-align:right;line-height:1.55}
 .rs h2{font-size:32px;margin:0 0 8px;letter-spacing:-.5px}.rs .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .rs .pill{font-size:13.5px;padding:4px 12px}
@@ -149,7 +149,7 @@ a{color:var(--pri-t)}
   #main{padding:0}
   .page{border:0;border-radius:0;padding:0;margin:0;box-shadow:none;page-break-after:always;break-after:page}
   .page:last-child{page-break-after:auto}
-  .rlogo{height:54px}.rh{padding-bottom:8px;margin-bottom:12px}.rs h2{font-size:26px;margin-bottom:6px}.rs .meta{margin-bottom:6px}
+  .rlogo{height:34px}.rh{padding-bottom:8px;margin-bottom:12px}.rs h2{font-size:26px;margin-bottom:6px}.rs .meta{margin-bottom:6px}
   .sec{margin:14px 0 7px;font-size:17px}
   .gate{padding:7px 14px;margin:6px 0;font-size:14px;line-height:1.5}
   .ring{width:150px;height:150px}.hero{grid-template-columns:160px 1fr;padding:10px 16px;gap:16px}.ring .c b{font-size:36px}.hs b{font-size:21px}.hs>div{padding:8px 12px}
@@ -482,7 +482,7 @@ async function viewResult(aid) {
     ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${esc(t)}</b></div></div>`
     : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${esc(t.what)}</b>${t.why ? `<span class="w">${esc(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${esc(t.how)}</div>` : ''}</div></div>`;
   const roadmap = adv ? (adv.roadmap || []).map((r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${esc(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>`).join('') : '';
-  const head3 = (t) => `<div class="rh"><div class="rh-l"><img class="rlogo" src="${LOGO_IMG}" alt="와이즈만 송도센터"><div><b>과학고 생기부 진단 리포트</b><span>${t}</span></div></div><div class="rh-r">${esc(stu.name)} · ${TERM_UP[a.stage]} 반영</div></div>`;
+  const head3 = (t) => `<div class="rh"><div class="rh-l"><img class="rlogo" src="${LOGO_WIDE}" alt="와이즈만 송도센터"><div><b>과학고 생기부 진단 리포트</b><span>${t}</span></div></div><div class="rh-r">${esc(stu.name)} · ${TERM_UP[a.stage]} 반영</div></div>`;
   const foot = (n, m) => `<div class="pf"><span>${m || '과학고 생기부 진단 · ' + esc(stu.name)}</span><span>${n} / 4</span></div>`;
 
   app.innerHTML = `
