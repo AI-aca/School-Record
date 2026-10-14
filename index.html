@@ -91,54 +91,75 @@ ul.tight{margin:4px 0 0;padding-left:18px}
 .tabs a.on{background:var(--pri);border-color:var(--pri);color:#fff}
 a{color:var(--pri-t)}
 
-.note{background:#f0fdf9;border:1px solid #bdeedd;color:#065f46;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px}
-.rh{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--pri);padding-bottom:10px;margin-bottom:14px}
-.rh-l{display:flex;align-items:center;gap:10px}.rh-l b{display:block;font-size:15px;letter-spacing:-.3px}.rh-l span{font-size:11px;color:var(--sub)}
-.rlogo{height:64px;width:auto;display:block}
-.rh-r{font-size:12px;color:var(--sub);text-align:right}
-.rs h2{font-size:26px;margin:0 0 6px;letter-spacing:-.5px}.rs .meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.sec{font-size:14px;font-weight:800;margin:18px 0 8px;padding-left:9px;border-left:4px solid var(--pri)}
-.kpi{position:relative}.kpi.hl{background:linear-gradient(135deg,#ecfeff,#ecfdf5);border-color:#a7f3d0}
-.ar{margin:12px 0 14px}.ar-h{display:flex;justify-content:space-between;align-items:baseline}.ar-h b{font-size:14px}
-.ar-n{font-size:12px;color:var(--sub)}.ar-n em{font-style:normal;font-size:22px;font-weight:800;color:var(--ink)}
-.trk{position:relative;height:16px;border-radius:8px;background:#e8eef3;overflow:hidden;margin:5px 0}
-.trk i{position:absolute;top:0;bottom:0}.trk i.a{left:0;background:linear-gradient(90deg,#06b6d4,#10b981);border-radius:8px 0 0 8px}
+.note{background:#f0fdf9;border:1px solid #bdeedd;color:#065f46;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:14px}
+.rh{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--pri);padding-bottom:12px;margin-bottom:18px}
+.rh-l{display:flex;align-items:center;gap:14px}.rh-l b{display:block;font-size:18px;letter-spacing:-.3px}.rh-l span{font-size:13px;color:var(--sub)}
+.rlogo{height:66px;width:auto;display:block}
+.rh-r{font-size:13px;color:var(--sub);text-align:right;line-height:1.55}
+.rs h2{font-size:32px;margin:0 0 8px;letter-spacing:-.5px}.rs .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.rs .pill{font-size:13.5px;padding:4px 12px}
+.sec{font-size:18px;font-weight:800;margin:24px 0 10px;padding-left:11px;border-left:5px solid var(--pri);letter-spacing:-.3px}
+.sec small{font-size:13px;color:var(--sub);font-weight:500;margin-left:8px}
+.gate{font-size:15px;line-height:1.6}.gate b.t{font-size:17px}
+.hero{display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:center;border:1px solid #a7f3d0;background:linear-gradient(135deg,#ecfeff,#ecfdf5);border-radius:16px;padding:16px 24px}
+.ring{position:relative;width:188px;height:188px}.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+.ring .c b{font-size:46px;font-weight:800}.ring .c span{font-size:14px;color:var(--sub)}
+.hs{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hs>div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.hs span{display:block;font-size:13.5px;color:var(--sub)}.hs b{display:block;font-size:24px;margin-top:2px;line-height:1.25}
+.hs .wide{grid-column:1/3}.hs .wide b{font-size:18px}
+.ar{margin:14px 0 16px}.ar-h{display:flex;justify-content:space-between;align-items:baseline}.ar-h b{font-size:17px}
+.ar-n{font-size:14px;color:var(--sub)}.ar-n em{font-style:normal;font-size:28px;font-weight:800;color:var(--ink)}
+.trk{position:relative;height:20px;border-radius:10px;background:#e8eef3;overflow:hidden;margin:6px 0}
+.trk i{position:absolute;top:0;bottom:0}.trk i.a{left:0;background:linear-gradient(90deg,#06b6d4,#10b981);border-radius:10px 0 0 10px}
 .trk i.b{background:repeating-linear-gradient(135deg,#a7e8d3 0 4px,#d1f4e7 4px 8px)}
-.ar.tot .trk{height:20px;border-radius:10px}
-.ar-f{display:flex;justify-content:space-between;font-size:11px;color:var(--sub)}
-.lg2{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--sub);margin:4px 0 10px}
-.lg2 i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid #cbd5e1}
-.grp h4{margin:16px 0 8px;font-size:14px;display:flex;justify-content:space-between;border-left:4px solid var(--pri);padding-left:9px}.grp h4 span{color:var(--sub);font-weight:600}
-.cells{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}
-.cell{padding:8px 10px!important;font-size:12px!important;border-radius:10px!important;position:relative}
-.cell .cn{font-size:10px;color:var(--sub)}.cell .ct{font-weight:600;line-height:1.3;min-height:31px}
-.cell .cv b{font-size:18px}.cell .cv span{color:var(--sub);font-size:11px;margin-left:3px}
-.cell .mb{height:4px;border-radius:2px;background:rgba(15,23,42,.08);margin-top:5px;overflow:hidden}.cell .mb i{display:block;height:100%;background:#10b981}
+.ar.tot .trk{height:24px;border-radius:12px}
+.ar-f{display:flex;justify-content:space-between;font-size:13px;color:var(--sub)}
+.lg2{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin:4px 0 12px}
+.lg2 i{display:inline-block;width:13px;height:13px;border-radius:3px;margin-right:6px;vertical-align:-2px;border:1px solid #cbd5e1}
+.grp h4{margin:18px 0 10px;font-size:16px;display:flex;justify-content:space-between;border-left:5px solid var(--pri);padding-left:10px}.grp h4 span{color:var(--sub);font-weight:600;font-size:14px}
+.cells{display:grid;grid-template-columns:repeat(3,1fr)!important;gap:10px!important}
+.cell{padding:10px 12px!important;font-size:13.5px!important;border-radius:11px!important;position:relative;border:1px solid var(--line)}
+.cell .cn{font-size:12px;color:var(--sub)}.cell .ct{font-weight:600;line-height:1.35;min-height:36px;font-size:14px}
+.cell .cv b{font-size:21px}.cell .cv span{color:var(--sub);font-size:13px;margin-left:4px}
+.cell .mb{height:5px;border-radius:3px;background:rgba(15,23,42,.08);margin-top:6px;overflow:hidden}.cell .mb i{display:block;height:100%;background:#10b981}
+.cell.done{background:#ecfdf3}.cell.improvable{background:#fff8eb}.cell.pending{background:#eef2ff}.cell.penalized{background:#fef2f2}
 .cell.safe,.cell.locked{background:#f8fafc}
-.pf{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;border-top:1px solid var(--line);margin-top:16px;padding-top:6px}
-.adv{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0;background:#fcfffe}.adv b{font-size:13px}
-.rm{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.rm>div{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fff}
-.sum{background:linear-gradient(135deg,#ecfeff,#ecfdf5);border:1px solid #a7f3d0;border-radius:12px;padding:12px 16px;margin:6px 0 10px}
+.page table{font-size:14.5px}.page th{font-size:13px}.page th,.page td{padding:10px 12px}
+.pf{display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;border-top:1px solid var(--line);margin-top:22px;padding-top:8px}
+.sum{background:linear-gradient(135deg,#ecfeff,#ecfdf5);border:1px solid #a7f3d0;border-radius:14px;padding:14px 18px;font-size:15px;line-height:1.65}
+.adv{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:10px 0;background:#fcfffe;font-size:14.5px;line-height:1.6}
+.adv b{font-size:15.5px;margin-bottom:3px}.adv .w{display:inline-block;font-size:12.5px;color:var(--pri-t);background:var(--pri2);border-radius:8px;padding:2px 10px;white-space:nowrap;flex-shrink:0}.adv .ex{margin-top:6px;font-size:13.5px;color:var(--sub)}
+.rt{border:1px solid var(--line);border-radius:16px;padding:14px 18px 8px;margin:14px 0;background:#fff;break-inside:avoid}
+.rt-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}.rt-h .pill{font-size:15px;padding:5px 14px;background:var(--pri);color:#fff}
+.rt-h span.f{font-size:15px;font-weight:700;color:var(--ink)}
+.ac{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 0;border-top:1px dashed var(--line);break-inside:avoid}
+.ac .n{width:26px;height:26px;border-radius:50%;background:var(--pri2);color:var(--pri-t);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13.5px}
+.ac b{display:block;font-size:15.5px;line-height:1.45}.ac .h{font-size:14.5px;line-height:1.6;margin-top:2px}
+.ar2{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.ar2 b{flex:1}
+.ac .w{display:inline-block;flex-shrink:0;margin-top:1px;font-size:12.5px;color:var(--pri-t);background:var(--pri2);border-radius:8px;padding:2px 10px;white-space:nowrap}
+.wn{padding-left:20px;margin:6px 0 0;font-size:14.5px;line-height:1.65}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:900px){body{display:block}#side{position:static;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px}.logo{padding:0}.menu{flex-direction:row}.prof{margin:0;border:0;padding:0;flex-direction:row;align-items:center;margin-left:auto}.reg{width:auto;margin:0;padding:9px 14px}#main{padding:18px 14px}.stats,.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 @media print{
   @page{size:A4;margin:9mm}
-  body{background:#fff;font-size:10.5px;line-height:1.4;display:block}
+  body{background:#fff;display:block}
   #side,.noprint{display:none!important}
   #main{padding:0}
-  .page h3{margin:7px 0 4px;font-size:12.5px}.page p.muted{margin:6px 0 0}.bar{height:9px}
-  .kpi b{font-size:20px}th,td{padding:4px 5px}.cell{padding:3px 5px;font-size:10px}.page h2{margin-bottom:4px}
-  .rlogo{height:52px}
-  .rh{padding-bottom:6px;margin-bottom:8px}.rs h2{font-size:20px;margin-bottom:3px}.sec{margin:9px 0 5px;font-size:12.5px}
-  .gate{margin:6px 0;padding:6px 10px}.kpi{padding:7px 10px}.kpi b{font-size:18px}
-  .ar{margin:5px 0 7px}.ar-n em{font-size:16px}.trk{height:10px;margin:3px 0}.ar.tot .trk{height:13px}.ar-f{font-size:9.5px}
-  .lg2{margin:2px 0 6px;gap:10px;font-size:9.5px}
-  .grp h4{margin:7px 0 4px;font-size:12px}.cells{gap:5px!important}
-  .cell{padding:4px 8px!important;font-size:10px!important}.cell .cn{display:none}.cell .ct{min-height:0;font-size:10.5px}.cell .cv b{font-size:14px}.cell .mb{height:3px;margin-top:3px}
-  .adv{padding:6px 10px;margin:5px 0}.sum{padding:8px 12px}.pf{margin-top:8px}
-  table{font-size:10px}
   .page{border:0;border-radius:0;padding:0;margin:0;box-shadow:none;page-break-after:always;break-after:page}
   .page:last-child{page-break-after:auto}
+  .rlogo{height:54px}.rh{padding-bottom:8px;margin-bottom:12px}.rs h2{font-size:26px;margin-bottom:6px}.rs .meta{margin-bottom:6px}
+  .sec{margin:14px 0 7px;font-size:17px}
+  .gate{padding:7px 14px;margin:6px 0;font-size:14px;line-height:1.5}
+  .ring{width:150px;height:150px}.hero{grid-template-columns:160px 1fr;padding:10px 16px;gap:16px}.ring .c b{font-size:36px}.hs b{font-size:21px}.hs>div{padding:8px 12px}
+  .ar{margin:8px 0 9px}.ar-n em{font-size:24px}.trk{height:16px}.ar.tot .trk{height:20px}
+  .lg2{margin:2px 0 8px}
+  .grp h4{margin:9px 0 6px}.cells{gap:6px!important}
+  .cell{padding:5px 10px!important}.cell .ct{min-height:0;font-size:13.5px}.cell .cv b{font-size:19px}.cell .mb{height:4px;margin-top:4px}
+  .page th,.page td{padding:6px 10px}.page table{font-size:13.5px}
+  .sum{padding:10px 14px;font-size:14px}.adv{padding:9px 14px;margin:7px 0;font-size:13.5px;line-height:1.55}.adv b{font-size:14.5px}
+  .rt{padding:8px 16px 2px;margin:8px 0}.ac{padding:4px 0;gap:10px}.ac b{font-size:14.5px}.ac .h{font-size:13.5px;line-height:1.45}.ac .w{margin-top:0}
+  .pf{margin-top:8px}
 }
 </style>
 </head>
@@ -413,7 +434,7 @@ async function viewSettings() {
   };
 }
 
-// ── 결과 리포트 (3쪽): 1쪽 진단 / 2쪽 30개 항목 / 3쪽 준비 방법 ──
+// ── 결과 리포트 (4쪽): 1 진단 / 2 30개 항목 / 3 보완 항목 / 4 남은 학기 실행 계획 ──
 async function viewResult(aid) {
   const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const { analysis: a, student: stu } = await api('getAnalysis', { analysisId: aid });
@@ -426,74 +447,87 @@ async function viewResult(aid) {
     return `<div class="ar ${tot ? 'tot' : ''}"><div class="ar-h"><b>${r.name}</b><span class="ar-n"><em>${r.cur}</em> / ${r.max}점</span></div>
       <div class="trk"><i class="a" style="width:${p1}%"></i><i class="b" style="left:${p1}%;width:${p2}%"></i></div>
       <div class="ar-f"><span>달성 ${Math.round(p1)}%</span><span>남은 학기에 최대 +${r.rem}점</span><span>만점까지 ${r.max - c}점</span></div></div>`; };
-  const prio = s.priorities.slice(0, 6).map((p) => `<tr><td>${p.no}</td><td>${esc(p.title)}</td><td>${p.current} / ${p.max}</td><td><b style="color:#059669">+${p.remaining}</b></td></tr>`).join('');
-  const pen = s.penaltiesAtRisk.map((p) => `<tr><td>${p.no}</td><td>${esc(p.title)}</td><td>${p.current} / ${p.max}</td><td>${p.unconfirmed?.length ? '남은 학기 확인 필요: ' + esc(p.unconfirmed.join(', ')) : '감점 발생'}</td></tr>`).join('');
-  const cell = (i) => { const mx = i.no === 30 ? 0 : i.max; const pct = mx > 0 ? Math.max(0, i.current) / mx * 100 : 0;
-    return `<div class="cell ${i.status}"><div class="cn">${i.no}</div><div class="ct">${esc(i.title)}</div><div class="cv"><b>${i.current}</b><span>${i.no === 30 ? '점 (감점)' : '/ ' + mx + '점'}</span></div><div class="mb"><i style="width:${pct}%"></i></div></div>`; };
+    const cell = (i) => { const mx = i.no === 30 ? 0 : i.max; const pct = mx > 0 ? Math.max(0, i.current) / mx * 100 : 0;
+    return `<div class="cell ${i.status}"><div class="ct">${i.no}. ${esc(i.title)}</div><div class="cv"><b>${i.current}</b><span>${i.no === 30 ? '점 (감점)' : '/ ' + mx + '점'}</span></div><div class="mb"><i style="width:${pct}%"></i></div></div>`; };
   const grp = [[1, 12, 0], [13, 18, 1], [19, 30, 2]].map(([lo, hi, ai]) => `<div class="grp"><h4>영역 ${ai + 1} · ${areaNames[ai]} <span>${s.areaCurrent[ai]} / ${s.areaMax[ai]}점</span></h4><div class="cells">${s.items.filter((x) => x.no >= lo && x.no <= hi).map(cell).join('')}</div></div>`).join('');
   const gateHtml = g ? `<div class="gate ${g.status}"><b class="t">① 내신(성취도) 관문 — ${g.status === 'fail' ? '탈락 요건 해당' : g.status === 'warn' ? '주의 (B 2개)' : '현재 통과'}</b>
     <div>${esc(g.message)}</div>
-    <div class="muted" style="margin-top:4px">반영 과목 ${g.counted}개 · B ${g.bCount}개 · C 이하 ${g.cCount}개${g.mathSciB?.length ? ' · 수학·과학 B 이하: ' + esc(g.mathSciB.join(', ')) : ''}</div>
-    ${g.reasons?.length ? `<ul class="tight">${g.reasons.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}
-    <div style="margin-top:4px"><b>남은 학기(${esc(g.remainingTerms.join(', '))}) 전 과목 A 유지 필수</b> · 수학·과학 B 1개 불가 · 그 외 B 3개 또는 C 1개 이상도 탈락</div></div>` : '';
-  const adviceHtml = adv ? `
+    <div class="muted" style="margin-top:4px;font-size:14px">반영 과목 ${g.counted}개 · B ${g.bCount}개 · C 이하 ${g.cCount}개${g.mathSciB?.length ? ' · 수학·과학 B 이하: ' + esc(g.mathSciB.join(', ')) : ''}</div>
+    ${g.reasons?.length ? `<ul class="tight">${g.reasons.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}</div>` : '';
+  // 점수 링: 현재(진한 색) + 남은 학기 최대(연한 색) + 목표 눈금
+  const R = 78, C = 2 * Math.PI * R, pc = Math.max(0, s.currentTotal) / 400, pb = Math.max(pc, Math.min(1, s.bestCaseTotal / 400)), tg = Math.min(1, s.targetScore / 400);
+  const ta = tg * 2 * Math.PI, tx1 = 94 + (R - 9) * Math.cos(ta), ty1 = 94 + (R - 9) * Math.sin(ta), tx2 = 94 + (R + 9) * Math.cos(ta), ty2 = 94 + (R + 9) * Math.sin(ta);
+  const ring = `<div class="ring"><svg viewBox="0 0 188 188"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06b6d4"/><stop offset="1" stop-color="#10b981"/></linearGradient></defs>
+    <circle cx="94" cy="94" r="${R}" fill="none" stroke="#dbe7ee" stroke-width="15"/>
+    <circle cx="94" cy="94" r="${R}" fill="none" stroke="#a7e8d3" stroke-width="15" stroke-dasharray="${pb * C} ${C}" stroke-linecap="round"/>
+    <circle cx="94" cy="94" r="${R}" fill="none" stroke="url(#rg)" stroke-width="15" stroke-dasharray="${pc * C} ${C}" stroke-linecap="round"/>
+    <line x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>
+    <div class="c"><span>현재 점수</span><b>${s.currentTotal}</b><span>/ 400점</span></div></div>`;
+  const hero = `<div class="hero">${ring}<div class="hs">
+    <div><span>목표 ${s.targetScore}점까지</span><b>${s.gapToTarget > 0 ? s.gapToTarget + '점 부족' : '달성'}</b></div>
+    <div><span>남은 학기 최대 도달</span><b>${s.bestCaseTotal}점</b></div>
+    <div class="wide"><span>최대 도달 시 지원 구간</span><b>${esc(s.bestCaseBand)}</b></div></div></div>
+    <div class="lg2" style="margin-top:8px"><span><i style="background:#10b981"></i>현재 점수</span><span><i style="background:#a7e8d3"></i>남은 학기 최대 도달</span><span><i style="background:#0f172a"></i>목표 점수 위치</span></div>`;
+  const itm = (no) => s.items.find((y) => y.no === no);
+  const adviceItems = adv ? `
     <div class="sum">${esc(adv.summary)}</div>
-    <div class="sec">항목별 보완 방법</div>
-    ${(adv.itemAdvice || []).map((x) => `<div class="adv"><b>${x.no}. ${esc(x.title)}</b><div>${esc(x.advice)}</div>
-      ${x.examples?.length ? `<div class="muted">합격자 기록 사례: ${x.examples.map(esc).join(' / ')}</div>` : ''}</div>`).join('')}
-    <div class="sec">학기별 실행 계획</div>
-    <div class="rm">${(adv.roadmap || []).map((r) => `<div><span class="pill">${esc(r.term)}학기</span><ul class="tight">${(r.actions || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>`).join('')}</div>
-    ${adv.penaltyWarnings?.length ? `<div class="sec">감점 주의</div><ul class="tight">${adv.penaltyWarnings.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`
+    <div class="sec" style="margin-top:16px">우선 보완 항목별 방법 <small>더 얻을 수 있는 점수가 큰 순</small></div>
+    ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${x.no}. ${esc(x.title)}</b>${it ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : ''}</div><div>${esc(x.advice)}</div>
+      ${x.examples?.length ? `<div class="ex">합격자 기록 사례: ${x.examples.map(esc).join(' / ')}</div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
-  const head3 = (n, t) => `<div class="rh"><div class="rh-l"><img class="rlogo" src="${LOGO_IMG}" alt="와이즈만 송도센터"><div><b>과학고 생기부 진단 리포트</b><span>${t}</span></div></div><div class="rh-r">${esc(stu.name)} · ${TERM_UP[a.stage]} 반영<br>${date}</div></div>`;
-  const foot = (n) => `<div class="pf"><span>과학고 생기부 진단 · ${esc(stu.name)}</span><span>${n} / 3</span></div>`;
+  const act = (t, i) => typeof t === 'string'
+    ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${esc(t)}</b></div></div>`
+    : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${esc(t.what)}</b>${t.why ? `<span class="w">${esc(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${esc(t.how)}</div>` : ''}</div></div>`;
+  const roadmap = adv ? (adv.roadmap || []).map((r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${esc(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>`).join('') : '';
+  const head3 = (t) => `<div class="rh"><div class="rh-l"><img class="rlogo" src="${LOGO_IMG}" alt="와이즈만 송도센터"><div><b>과학고 생기부 진단 리포트</b><span>${t}</span></div></div><div class="rh-r">${esc(stu.name)} · ${TERM_UP[a.stage]} 반영<br>${date}</div></div>`;
+  const foot = (n, m) => `<div class="pf"><span>${m || '과학고 생기부 진단 · ' + esc(stu.name)}</span><span>${n} / 4</span></div>`;
 
   app.innerHTML = `
   <div class="row noprint" style="margin-bottom:12px"><a href="#/student/${a.student_id}">← ${esc(stu.name)} 학생</a><span style="flex:1"></span>
-    <button class="line" id="orig">원본 생기부 PDF 열기</button><button id="pdf">PDF로 저장 / 인쇄</button></div>
+    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2">조언 다시 만들기</button>' : ''}<button id="pdf">PDF로 저장 / 인쇄</button></div>
 
   <section class="page">
-    ${head3(1, '1쪽 · 현재 위치')}
+    ${head3('1쪽 · 현재 위치')}
     <div class="rs"><h2>${esc(stu.name)}</h2><div class="meta"><span class="pill none">${esc(stu.school || '학교 미입력')}</span><span class="pill none">${esc(stu.center_name || '')}</span><span class="pill">반영 학기 ${TERM_UP[a.stage]}</span></div></div>
     ${gateHtml}
-    <div class="sec">② 생기부 총점 (내신 관문 통과 후 평가)</div>
-    <div class="kpis">
-      <div class="kpi hl"><span>현재 점수 (400점 만점)</span><b>${s.currentTotal}</b></div>
-      <div class="kpi"><span>목표 ${s.targetScore}점까지</span><b>${s.gapToTarget > 0 ? s.gapToTarget + '점 부족' : '달성'}</b></div>
-      <div class="kpi"><span>남은 학기 최대 도달</span><b>${s.bestCaseTotal}</b></div>
-      <div class="kpi"><span>최대 도달 시 구간</span><b style="font-size:14px;line-height:1.3">${esc(s.bestCaseBand)}</b></div>
-    </div>
+    <div class="sec">② 생기부 총점 <small>내신 관문 통과 후 평가</small></div>
+    ${hero}
     <div class="sec">영역별 현황</div>
     <div class="lg2"><span><i style="background:linear-gradient(90deg,#06b6d4,#10b981)"></i>현재 점수</span><span><i style="background:repeating-linear-gradient(135deg,#a7e8d3 0 3px,#d1f4e7 3px 6px)"></i>남은 학기에 더 얻을 수 있는 점수</span><span><i style="background:#e8eef3"></i>올리기 어려운 부분</span></div>
     ${rows.map((r) => bar(r)).join('')}
     ${bar({ name: '전체 합계', cur: s.currentTotal, max: 400, rem: s.bestCaseTotal - s.currentTotal }, true)}
-    <div class="sec">우선 보완 항목 (더 얻을 수 있는 점수가 큰 순)</div>
-    <table><thead><tr><th>#</th><th>항목</th><th>현재</th><th>더 얻을 수 있는 점수</th></tr></thead><tbody>${prio || '<tr><td colspan=4 class="muted">없음</td></tr>'}</tbody></table>
-    <div class="sec">감점형 항목 (지켜야 할 점수)</div>
-    <table><thead><tr><th>#</th><th>항목</th><th>현재</th><th>상태</th></tr></thead><tbody>${pen || '<tr><td colspan=4 class="muted">없음</td></tr>'}</tbody></table>
     ${foot(1)}
   </section>
 
   <section class="page">
-    ${head3(2, '2쪽 · 30개 항목 한눈에')}
+    ${head3('2쪽 · 30개 항목 한눈에')}
     <div class="sec" style="margin-top:4px">30개 항목 한눈에</div>
-    <div class="lg2"><span><i style="background:#ecfdf3;border-color:#86efac"></i>만점</span><span><i style="background:#fff8eb;border-color:#fcd34d"></i>보완하면 점수를 더 얻을 수 있음</span><span><i style="background:#eef2ff;border-color:#a5b4fc"></i>감점형 · 남은 학기 확인 전(현재 감점 없음)</span><span><i style="background:#fef2f2;border-color:#fca5a5"></i>감점 발생</span><span><i style="background:#f8fafc"></i>감점 없음 · 현 단계에서 더 올릴 수 없음</span></div>
+    <div class="lg2"><span><i style="background:#ecfdf3;border-color:#86efac"></i>만점</span><span><i style="background:#fff8eb;border-color:#fcd34d"></i>보완하면 더 얻을 수 있음</span><span><i style="background:#eef2ff;border-color:#a5b4fc"></i>감점형(현재 감점 없음)</span><span><i style="background:#fef2f2;border-color:#fca5a5"></i>감점 발생</span><span><i style="background:#f8fafc"></i>더 올릴 수 없음</span></div>
     ${grp}
-    <p class="muted" style="margin-top:10px">점수는 3-1학기 기준 400점 체계로 환산한 값입니다. 아직 오지 않은 학기는 반영되지 않았습니다.</p>
     ${foot(2)}
   </section>
 
   <section class="page">
-    ${head3(3, '3쪽 · 무엇을 어떻게 준비할까')}
-    <div class="sec" style="margin-top:4px">무엇을 어떻게 준비할까</div>
-    ${g ? `<div class="gate ${g.status}"><b>가장 먼저: 남은 학기 전 과목 A 관리</b> — 수학·과학은 B 1개도 안 됩니다. 다른 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류에서 탈락합니다.</div>` : ''}
-    ${adviceHtml}
-    <p class="muted" style="margin-top:14px">사례는 서류 합격자 생기부 기록에서 모은 것이며 합격을 보장하지 않습니다.</p>
+    ${head3('3쪽 · 무엇을 보완할까')}
+    <div class="sec" style="margin-top:4px">종합 의견</div>
+    ${adviceItems}
     ${foot(3)}
+  </section>
+
+  <section class="page">
+    ${head3('4쪽 · 남은 학기별 실행 계획 추천')}
+    <div class="sec" style="margin-top:4px">남은 학기별 실행 계획 추천</div>
+    ${g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류에서 탈락합니다.</div>` : ''}
+    ${roadmap || '<p class="muted">실행 계획이 아직 없습니다.</p>'}
+    ${adv?.penaltyWarnings?.length ? '<div class="sec">감점 주의 <small>지켜야 할 점수</small></div>' : ''}
+    ${adv?.penaltyWarnings?.length ? `<ul class="wn">${adv.penaltyWarnings.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+    ${foot(4, '대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.')}
   </section>`;
   $('#pdf').onclick = () => print();
   $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { alert(e.message); } };
-  if ($('#reAdv')) $('#reAdv').onclick = async (ev) => { ev.target.disabled = true; ev.target.textContent = '만드는 중…'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
+  const reAdv = async (btn) => { btn.disabled = true; btn.textContent = '만드는 중… (1~2분)'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
+  if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
+  if ($('#reAdv2')) $('#reAdv2').onclick = (ev) => { if (confirm('조언(보완 방법·실행 계획)만 새로 만듭니다. 점수는 바뀌지 않습니다.')) reAdv(ev.target); };
 }
 
 route().catch((e) => { $('#main').innerHTML = `<div class="card err">${esc(e.message)}</div>`; });
