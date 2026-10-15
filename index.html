@@ -8,7 +8,7 @@
 <style>
 :root{color-scheme:light;--bg:#f3f6f8;--card:#fff;--ink:#0f172a;--sub:#64748b;--line:#e2e8f0;--pri:#00a886;--pri-d:#008f72;--pri2:#e6f7f2;--pri-t:#047857;--ok:#10b981;--warn:#d97706;--bad:#dc2626;--side:#fff;--shadow:0 1px 3px rgba(15,23,42,.06),0 6px 20px rgba(15,23,42,.05)}
 *{box-sizing:border-box}
-html,body{height:100%}
+html{height:100%}body{min-height:100%}
 html{overflow-y:scroll}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;font-size:14px;line-height:1.5;display:flex}
 #side{width:248px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px;flex-shrink:0;position:sticky;top:0;height:100vh}
@@ -213,6 +213,14 @@ tr.click:hover{background:#f4faf8}
 .tabs a{transition:background .15s,color .15s}
 .page{border-radius:18px}
 @media(max-width:900px){#main{padding:18px 14px}}
+.uimo{position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}.uibox{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,23,42,.3);max-width:520px;width:100%;padding:24px 24px 18px}.uimsg{white-space:pre-wrap;line-height:1.7;font-size:14.5px;color:#0f172a;max-height:60vh;overflow:auto}.uibtn{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.sb{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;line-height:1.5}
+.sb.wait{background:#f1f5f9;color:#64748b}.sb.run{background:#e0f2fe;color:#0369a1}.sb.done{background:#dcfce7;color:#047857}.sb.fail{background:#fee2e2;color:#b91c1c}.sb.warn{background:#ffedd5;color:#c2410c}.sb.skip{background:#f1f5f9;color:#94a3b8}
+.sb.run:before{content:'';width:7px;height:7px;border-radius:50%;background:#0284c7;animation:sbp 1s infinite}@keyframes sbp{50%{opacity:.25}}
+.stp{font-size:12px;color:#64748b;margin-left:6px;white-space:nowrap}
+.tsc{overflow:auto;max-height:max(220px,calc(100vh - 380px))}.tsc thead th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 var(--line)}
+.fn{max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cg{min-width:170px;width:170px;white-space:nowrap}.cd{width:110px;min-width:110px;white-space:nowrap}.cs{min-width:100px;white-space:nowrap}.ce{width:90px;min-width:90px;white-space:nowrap;color:#64748b}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:900px){body{display:block}#side{position:static;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px}.logo{padding:0}.menu{flex-direction:row}.prof{margin:0;border:0;padding:0;flex-direction:row;align-items:center;margin-left:auto}.reg{width:auto;margin:0;padding:9px 14px}#main{padding:18px 14px}.stats,.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 @media print{
@@ -288,9 +296,38 @@ function workSync() {
   let bar = document.getElementById('workbar');
   if (n) {
     if (!bar) { bar = document.createElement('div'); bar.id = 'workbar'; bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:10px 16px;font-size:14.5px;font-weight:700;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.25)'; document.body.appendChild(bar); document.body.style.paddingTop = '44px'; }
-    bar.textContent = '⚠ 작업이 진행 중입니다 — 이 창을 닫거나 새로고침·뒤로 가기를 하면 진행 중인 작업이 끊깁니다. 다른 메뉴로 이동하는 것은 괜찮습니다.';
+    bar.textContent = '⚠ 작업이 진행 중입니다 — 이 창을 닫거나 새로고침·뒤로 가기를 하면 진행 중인 작업이 끊깁니다.';
     document.title = '⏳ 작업 중 · ' + BASE_TITLE;
   } else { bar?.remove(); document.body.style.paddingTop = ''; document.title = BASE_TITLE; }
+}
+
+// ── 공통 알림·확인 창 (디자인 v2) ──
+function uiModal(msg, btns) {
+  return new Promise((res) => {
+    const o = document.createElement('div'); o.className = 'uimo';
+    o.innerHTML = '<div class="uibox" role="dialog" aria-modal="true"><div class="uimsg"></div><div class="uibtn"></div></div>';
+    o.querySelector('.uimsg').textContent = msg;
+    const bx = o.querySelector('.uibtn');
+    const done = (v) => { o.remove(); document.removeEventListener('keydown', kd, true); res(v); };
+    btns.forEach((b, i) => { const e = document.createElement('button'); e.textContent = b.t; e.className = b.c || ''; e.onclick = () => done(b.v); bx.appendChild(e); if (i === btns.length - 1) setTimeout(() => e.focus(), 0); });
+    const kd = (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); done(btns.length > 1 ? false : true); } };
+    document.addEventListener('keydown', kd, true);
+    document.body.appendChild(o);
+  });
+}
+const uiAlert = (msg) => uiModal(msg, [{ t: '확인', v: true }]);
+const uiConfirm = (msg, ok = '확인', no = '취소') => uiModal(msg, [{ t: no, v: false, c: 'line' }, { t: ok, v: true }]);
+const sb = (k, label, step) => `<span class="sb ${k}">${label}</span>${step ? `<span class="stp">${esc(step)}</span>` : ''}`;
+const fmtDur = (s) => (s > 0 ? (s >= 60 ? Math.floor(s / 60) + '분 ' + (s % 60) + '초' : s + '초') : '');
+const elapsed = (o) => (o && o.t0 ? (o.dur || Math.round((Date.now() - o.t0) / 1000)) : 0);
+const tEnd = (o) => { if (o && o.t0 && !o.dur) o.dur = Math.max(1, Math.round((Date.now() - o.t0) / 1000)); };
+async function stopFlow(btnId, what, info, setFlag, log) {
+  const b = document.getElementById(btnId); if (!b || b.disabled) return;
+  const a = info(), names = a.run.slice(0, 6).join(', ') + (a.run.length > 6 ? ' 외 ' + (a.run.length - 6) + '건' : '');
+  const msg = `${what}을(를) 중지할까요?\n\n지금 진행 중: ${a.run.length}건${a.run.length ? ' (' + names + ')' : ''}\n시작 전: ${a.wait}건 · 이미 끝난 건: ${a.done}건\n\n진행 중인 건은 끝까지 마치고 멈추기 때문에 최대 몇 분 걸릴 수 있습니다. 시작 전인 건은 건너뛰며, 건너뛴 건은 목록에 남아 나중에 다시 선택해 진행할 수 있습니다. 목록은 초기화되지 않습니다.`;
+  if (!await uiConfirm(msg, '중지하기', '계속 진행')) return;
+  setFlag(); b.disabled = true; b.textContent = '중지 중…';
+  log(`중지 요청 접수 — 진행 중인 ${info().run.length}건이 끝나면 멈춥니다`);
 }
 function workBegin(k) { WORK.set(k, (WORK.get(k) || 0) + 1); workSync(); }
 function workEnd(k) { const v = (WORK.get(k) || 0) - 1; if (v > 0) WORK.set(k, v); else WORK.delete(k); workSync(); }
@@ -338,7 +375,7 @@ async function openRecordViewer(title, getUrl, fileName) {
   dl.onclick = async () => {
     dl.disabled = true;
     try { const r = await fetch((await getUrl()).url); if (!r.ok) throw new Error('다운로드 실패 (' + r.status + ')'); const u = URL.createObjectURL(await r.blob()); const a = document.createElement('a'); a.href = u; a.download = fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); }
-    catch (e) { alert(e.message); } dl.disabled = false;
+    catch (e) { uiAlert(e.message); } dl.disabled = false;
   };
   try {
     const { url } = await getUrl(); await loadPdfJs();
@@ -528,17 +565,17 @@ async function viewStudent(id) {
   ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
   app.querySelectorAll('.pv2').forEach((b) => b.onclick = (e) => { e.stopPropagation(); location.hash = '#/result/' + b.dataset.aid + '/' + b.dataset.m; });
-  app.querySelectorAll('.adm').forEach((b) => b.onclick = (e) => { e.stopPropagation(); if (role !== 'director') return alert('관리자에게 문의하세요.'); location.hash = '#/result/' + b.dataset.aid + '/admin'; });
+  app.querySelectorAll('.adm').forEach((b) => b.onclick = (e) => { e.stopPropagation(); if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); location.hash = '#/result/' + b.dataset.aid + '/admin'; });
   app.querySelectorAll('.dla').forEach((b) => b.onclick = async (e) => {
-    e.stopPropagation(); if (role !== 'director') return alert('관리자에게 문의하세요.');
+    e.stopPropagation(); if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
     const an = analyses.find((x) => x.id === b.dataset.aid);
-    if (!confirm('이 진단 기록(' + new Date(an.created_at).toLocaleString('ko-KR') + ', ' + (an.total ?? '') + '점)을 삭제합니다.\n업로드한 생기부 파일은 남습니다. 되돌릴 수 없습니다.')) return;
-    try { await api('deleteAnalysis', { analysisId: b.dataset.aid }); viewStudent(id); } catch (err) { alert(err.message); }
+    if (!await uiConfirm('이 진단 기록(' + new Date(an.created_at).toLocaleString('ko-KR') + ', ' + (an.total ?? '') + '점)을 삭제합니다.\n업로드한 생기부 파일은 남습니다. 되돌릴 수 없습니다.')) return;
+    try { await api('deleteAnalysis', { analysisId: b.dataset.aid }); viewStudent(id); } catch (err) { uiAlert(err.message); }
   });
-  if ($('#arch')) $('#arch').onclick = async () => { if (confirm('목록에서 숨깁니다. (설정 화면에서 복구할 수 있습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
+  if ($('#arch')) $('#arch').onclick = async () => { if (await uiConfirm('목록에서 숨깁니다. (설정 화면에서 복구할 수 있습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
   const busy = (m) => { $('#prog').innerHTML = m ? '<span class="spin"></span>' + m : ''; };
   app.querySelectorAll('.rx').forEach((b) => b.onclick = async () => {
-    if (role !== 'director') return alert('관리자에게 문의하세요.');
+    if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
     b.disabled = true; $('#e2').textContent = '';
     try {
       busy('저장된 생기부 텍스트로 다시 추출·채점 중… (몇 분 걸릴 수 있습니다)');
@@ -548,28 +585,28 @@ async function viewStudent(id) {
     } catch (e) { busy(''); $('#e2').textContent = e.message; b.disabled = false; }
   });
   app.querySelectorAll('.vw').forEach((b) => b.onclick = () => {
-    if (role !== 'director') return alert('관리자에게 문의하세요.');
+    if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
     const stg = STAGE[b.dataset.stage].replace(/\s*완료$/, '');
     openRecordViewer(s.name + ' 학생 생기부 (' + stg + ')', () => api('recordFileUrl', { recordFileId: b.dataset.id }), safeFn('[생기부] ' + [s.name, sch(s.school), stg].filter(Boolean).join(' ')) + '.pdf');
   });
   app.querySelectorAll('.pv').forEach((b) => b.onclick = async () => {
-    if (role !== 'director') return alert('관리자에게 문의하세요.');
+    if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
     try { const r = await api('getParsed', { recordFileId: b.dataset.id }); const w = window.open('', '_blank'); w.document.write('<pre style="white-space:pre-wrap;font:13px/1.5 sans-serif;padding:16px">' + esc(r.text) + '</pre>'); w.document.close(); }
     catch (e) { $('#e2').textContent = e.message; }
   });
   app.querySelectorAll('.dx').forEach((b) => b.onclick = async () => {
-    if (role !== 'director') return alert('관리자에게 문의하세요.');
-    if (!confirm(b.textContent.includes('목록에서') ? '이 파일을 목록에서 삭제합니다.\n(진단 기록이 있으면 줄은 남습니다.)' : '원본 PDF 파일을 삭제합니다.\n· 진단 기록이 없는 파일은 목록에서도 완전히 사라집니다.\n· 진단 기록이 있으면 파싱 텍스트와 진단 결과는 남습니다.\n되돌릴 수 없습니다.')) return;
+    if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
+    if (!await uiConfirm(b.textContent.includes('목록에서') ? '이 파일을 목록에서 삭제합니다.\n(진단 기록이 있으면 줄은 남습니다.)' : '원본 PDF 파일을 삭제합니다.\n· 진단 기록이 없는 파일은 목록에서도 완전히 사라집니다.\n· 진단 기록이 있으면 파싱 텍스트와 진단 결과는 남습니다.\n되돌릴 수 없습니다.')) return;
     try { await api('deleteOriginal', { recordFileId: b.dataset.id }); viewStudent(id); } catch (e) { $('#e2').textContent = e.message; }
   });
-  $('#editSt').onclick = () => { if (role !== 'director') return alert('관리자에게 문의하세요.'); $('#stEdit').style.display = $('#stEdit').style.display === 'none' ? 'block' : 'none'; };
+  $('#editSt').onclick = () => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); $('#stEdit').style.display = $('#stEdit').style.display === 'none' ? 'block' : 'none'; };
   $('#ecx').onclick = () => ($('#stEdit').style.display = 'none');
   $('#esave').onclick = async () => {
     const e = $('#ee'); e.textContent = ''; const b = $('#esave'); b.disabled = true;
     try { await api('updateStudent', { studentId: id, name: $('#en').value.trim(), school: $('#es').value, center_name: $('#ec').value }); viewStudent(id); }
     catch (er) { e.textContent = er.message; b.disabled = false; }
   };
-  if ($('#openUp')) $('#openUp').onclick = () => { if (role !== 'director') return alert('관리자에게 문의하세요.'); $('#upBox').style.display = 'block'; $('#openUp').style.display = 'none'; };
+  if ($('#openUp')) $('#openUp').onclick = () => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); $('#upBox').style.display = 'block'; $('#openUp').style.display = 'none'; };
   if ($('#closeUp')) $('#closeUp').onclick = () => { $('#upBox').style.display = 'none'; $('#openUp').style.display = ''; };
   if ($('#run')) $('#run').onclick = async () => {
     const f = $('#file').files[0], stage = $('#stage').value, prog = $('#prog'); $('#e').textContent = '';
@@ -604,7 +641,8 @@ async function viewBulkHub(tab) {
   if (tab === 'diag') document.getElementById('diagTop')?.scrollIntoView();
 }
 // ── 생기부 일괄 업로드 ──
-const BULK = { stage: '', items: [], logs: [], students: [], phase: 'idle', redo: false };
+const BULK = { stage: '', items: [], logs: [], students: [], phase: 'idle', redo: false, stop: false };
+let BULK_TICK = null;
 const RANK = { A: 1, B: 2, C: 3 };
 const nm = (s) => String(s || '').replace(/\s+/g, '');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -612,7 +650,7 @@ function bulkLog(msg, kind = '') {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false });
   BULK.logs.push({ t, msg, kind });
   const el = document.getElementById('blog');
-  if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">[${t}] ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
+  if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">${t} ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
 }
 const B_ST = { wait: '대기', upl: '업로드 중…', upd: '업로드 완료', par: 'PDF 변환 중…', ext: '채점 중…', adv: '조언 생성 중…', done: '업로드 완료', fail: '실패', mis: '확인 필요', skip: '건너뜀' };
 function bulkRender() {
@@ -625,10 +663,11 @@ function bulkRender() {
     const done = st?.last && RANK[st.last.stage] >= RANK[BULK.stage] && !BULK.redo;
     let note = it.msg || '';
     if (BULK.phase === 'ready') note = !it.sid ? it.hint || '학생을 선택하세요' : dup ? '같은 학생에 파일이 2개 연결됨' : done ? '이미 ' + TERM_UP[st.last.stage] + ' 진단됨 → 건너뜀(아래 체크로 다시 올리기 가능)' : '';
-    const color = it.state === 'done' ? '#059669' : it.state === 'fail' ? '#dc2626' : it.state === 'mis' ? '#d97706' : '#475569';
-    return `<tr data-i="${i}"><td style="word-break:break-all">${esc(it.file.name)}</td>
+    const BM = { wait: ['wait', '대기'], upl: ['run', '진행 중', '업로드'], upd: ['run', '진행 중', '변환 대기'], par: ['run', '진행 중', 'PDF 변환'], ext: ['run', '진행 중', '채점'], adv: ['run', '진행 중', '조언 생성'], done: ['done', '완료'], fail: ['fail', '실패'], mis: ['warn', '확인 필요'], skip: ['skip', '건너뜀'] }[it.state];
+    const stc = BULK.phase === 'ready' || !BM ? '' : sb(BM[0], BM[1], BM[2]);
+    return `<tr data-i="${i}"><td class="fn" title="${esc(it.file.name)}">${esc(it.file.name)}</td>
       <td><select class="bsel" ${locked ? 'disabled' : ''}>${opts(it.sid)}</select></td>
-      <td style="color:${color};font-weight:600;white-space:nowrap">${BULK.phase === 'ready' ? '' : B_ST[it.state] || ''}</td>
+      <td class="cs">${stc}</td><td class="ce">${BULK.phase === 'ready' ? '' : fmtDur(elapsed(it))}</td>
       <td style="font-size:13px;color:${dup ? '#dc2626' : '#64748b'}">${esc(note)}${it.state === 'mis' ? ` <button class="line bgo" style="padding:4px 10px">맞음, 그대로 사용</button>` : ''}</td></tr>`;
   }).join('');
   tb.querySelectorAll('.bsel').forEach((s) => (s.onchange = () => { const i = +s.closest('tr').dataset.i; BULK.items[i].sid = s.value; bulkRender(); bulkSummary(); }));
@@ -646,7 +685,7 @@ function bulkSummary() {
     const go = document.getElementById('bgo'); if (go) go.disabled = !t.length || dup;
   } else {
     const c = (s) => BULK.items.filter((i) => i.state === s).length;
-    el.textContent = `업로드 완료 ${c('done')} · 실패 ${c('fail')} · 확인 필요 ${c('mis')} · 진행 중 ${BULK.items.filter((i) => ['upl', 'par', 'ext', 'adv'].includes(i.state)).length} / 전체 ${BULK.items.length}`;
+    el.textContent = `업로드 완료 ${c('done')} · 실패 ${c('fail')} · 확인 필요 ${c('mis')} · 건너뜀 ${c('skip')} · 진행 중 ${BULK.items.filter((i) => ['upl', 'par', 'ext', 'adv'].includes(i.state)).length} / 전체 ${BULK.items.length}`;
   }
 }
 async function bulkRetry(fn, label) {
@@ -659,7 +698,7 @@ async function bulkRetry(fn, label) {
 }
 async function bulkUpload(it) {
   const st = BULK.students.find((s) => s.id === it.sid);
-  it.state = 'upl'; bulkRender();
+  it.state = 'upl'; it.t0 = Date.now(); it.dur = 0; it.stopped = false; bulkRender();
   try {
     await bulkRetry(async () => {
       const u = await api('uploadUrl', { studentId: it.sid, stage: BULK.stage });
@@ -669,12 +708,14 @@ async function bulkUpload(it) {
       it.path = u.path;
     }, st.name + ' 업로드');
     it.state = 'upd'; bulkLog(`${st.name} 업로드 완료`, 'o');
-  } catch (e) { it.state = 'fail'; it.msg = e.message; bulkLog(`${st.name} 업로드 실패: ${e.message}`, 'x'); }
+  } catch (e) { it.state = 'fail'; it.msg = e.message; tEnd(it); bulkLog(`${st.name} 업로드 실패: ${e.message}`, 'x'); }
   bulkRender();
 }
 async function bulkOne(it, force) {
   const st = BULK.students.find((s) => s.id === it.sid);
   try {
+    if (!it.t0 || it.dur) { it.t0 = Date.now(); it.dur = 0; }
+    it.stopped = false;
     if (!it.rfId) {
       it.state = 'par'; it.msg = ''; bulkRender(); bulkLog(`${st.name} PDF 변환 시작`);
       const pr = await bulkRetry(() => apiJob('parse', { studentId: it.sid, stage: BULK.stage, path: it.path, fileName: it.file.name, bulk: true }), st.name + ' 변환');
@@ -684,36 +725,42 @@ async function bulkOne(it, force) {
         const head = nm(g.text).slice(0, 3000), bad = [];
         if (!head.includes(nm(st.name))) bad.push(`이름 불일치 또는 확인 불가(등록: ${st.name})`);
         if (st.school && !head.includes(nm(sch(st.school)))) bad.push(`학교 불일치 또는 확인 불가(등록: ${sch(st.school)})`);
-        if (bad.length) { it.state = 'mis'; it.msg = bad.join(' / '); bulkLog(`${st.name} 확인 필요(파일은 보관됨): ${it.msg}`, 'w'); bulkRender(); return; }
+        if (bad.length) { it.state = 'mis'; it.msg = bad.join(' / '); tEnd(it); bulkLog(`${st.name} 확인 필요(파일은 보관됨): ${it.msg}`, 'w'); bulkRender(); return; }
       }
     }
-    it.state = 'done'; it.msg = '진단 대기 → 아래 ② 진단에서 선택'; bulkLog(`${st.name} 업로드·변환 완료`, 'o');
-  } catch (e) { it.state = 'fail'; it.msg = e.message; bulkLog(`${st.name} 실패: ${e.message}`, 'x'); }
+    it.state = 'done'; it.msg = '진단 대기 → 아래 ② 진단에서 선택'; tEnd(it); bulkLog(`${st.name} 업로드·변환 완료`, 'o');
+  } catch (e) { it.state = 'fail'; it.msg = e.message; tEnd(it); bulkLog(`${st.name} 실패: ${e.message}`, 'x'); }
   bulkRender();
 }
-async function bulkPool(list, n, fn) {
-  let k = 0; await Promise.all(Array.from({ length: n }, async () => { while (k < list.length) { const it = list[k++]; await fn(it); } }));
+async function bulkPool(list, n, fn, stopped, onSkip) {
+  let k = 0; await Promise.all(Array.from({ length: n }, async () => { while (k < list.length) { const it = list[k++]; if (stopped && stopped()) { if (onSkip) onSkip(it); continue; } await fn(it); } }));
 }
+function bulkSkip(it) { const st = BULK.students.find((s) => s.id === it.sid); it.state = 'skip'; it.stopped = true; it.msg = '중지됨 — 시작하지 않음'; tEnd(it); bulkLog(`${st ? st.name : it.file.name} 건너뜀(중지됨)`, 'w'); bulkRender(); }
 async function bulkStart(onlyFailed) {
-  const targets = onlyFailed ? BULK.items.filter((i) => i.state === 'fail') : bulkTargets();
+  const targets = onlyFailed ? BULK.items.filter((i) => i.state === 'fail' || i.stopped) : bulkTargets();
+  BULK.stop = false; { const sbn = document.getElementById('bstop'); if (sbn) { sbn.style.display = ''; sbn.disabled = false; sbn.textContent = '중지'; } }
+  clearInterval(BULK_TICK); BULK_TICK = setInterval(() => { if (BULK.phase === 'run') bulkRender(); }, 5000);
   BULK.items.forEach((it) => { if (!targets.includes(it) && !onlyFailed) { it.state = 'skip'; it.msg = it.sid ? '이미 진단됨 또는 중복' : '선택 안 함'; } });
   BULK.phase = 'run'; workBegin('bulk');
   document.getElementById('bgo')?.setAttribute('disabled', ''); document.getElementById('bretry')?.setAttribute('disabled', '');
   bulkRender();
   bulkLog(onlyFailed ? `실패 ${targets.length}건 다시 시작` : `업로드 시작 (${targets.length}건)`);
-  await bulkPool(targets.filter((i) => !i.path), 2, bulkUpload);
-  const ready = targets.filter((i) => i.path && i.state !== 'fail');
-  bulkLog(`업로드 끝 → PDF 변환 시작 (2건씩, ${ready.length}건)`);
-  await bulkPool(ready, 2, (it) => bulkOne(it, false));
-  BULK.phase = 'end'; workEnd('bulk');
+  await bulkPool(targets.filter((i) => !i.path), 2, bulkUpload, () => BULK.stop, bulkSkip);
+  const ready = targets.filter((i) => i.path && i.state !== 'fail' && i.state !== 'skip');
+  if (!BULK.stop) bulkLog(`업로드 끝 → PDF 변환 시작 (2건씩, ${ready.length}건)`);
+  await bulkPool(ready, 2, (it) => bulkOne(it, false), () => BULK.stop, bulkSkip);
+  BULK.phase = 'end'; workEnd('bulk'); clearInterval(BULK_TICK);
+  { const sbn = document.getElementById('bstop'); if (sbn) sbn.style.display = 'none'; }
   const c = (s) => BULK.items.filter((i) => i.state === s).length;
   bulkLog(`전체 종료 — 업로드 완료 ${c('done')} · 실패 ${c('fail')} · 확인 필요 ${c('mis')}`, c('fail') || c('mis') ? 'w' : 'o');
-  const rb = document.getElementById('bretry'); if (rb) { rb.disabled = !c('fail'); }
-  bulkSummary();
+  const skN = BULK.items.filter((i) => i.stopped).length;
+  const rb = document.getElementById('bretry'); if (rb) { rb.disabled = !(c('fail') || skN); }
+  bulkRender();
   if (document.getElementById('subv2') && DIAG.phase !== 'run') viewDiag();
   const okN = c('done'), bad = c('fail') + c('mis');
-  if (!bad) { alert(`업로드가 모두 끝났습니다. (${okN}건 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n올린 생기부는 아래 ② 진단에서 선택해 진단하세요.`); BULK.items = []; BULK.logs = []; BULK.phase = 'idle'; BULK.stage = ''; if (document.getElementById('subv')) viewBulkHub('up'); }
-  else alert(`업로드가 끝났습니다. 완료 ${okN}건 · 실패 ${c('fail')}건 · 확인 필요 ${c('mis')}건\n실패·확인 필요 건이 목록에 남아 있습니다. "실패만 다시 업로드" 또는 "맞음, 그대로 사용"으로 처리해 주세요.`);
+  if (BULK.stop) await uiAlert(`업로드를 중지했습니다. 완료 ${okN}건 · ${skN}건 중지됨 · 실패 ${c('fail')}건 · 확인 필요 ${c('mis')}건\n목록은 그대로 남아 있습니다. "실패·중지된 것 다시 업로드"로 이어서 진행할 수 있습니다.`);
+  else if (!bad) { await uiAlert(`업로드가 모두 끝났습니다. (${okN}건 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n올린 생기부는 아래 ② 진단에서 선택해 진단하세요.`); BULK.items = []; BULK.logs = []; BULK.phase = 'idle'; BULK.stage = ''; if (document.getElementById('subv')) viewBulkHub('up'); }
+  else await uiAlert(`업로드가 끝났습니다. 완료 ${okN}건 · 실패 ${c('fail')}건 · 확인 필요 ${c('mis')}건\n실패·확인 필요 건이 목록에 남아 있습니다. "실패·중지된 것 다시 업로드" 또는 "맞음, 그대로 사용"으로 처리해 주세요.`);
 }
 async function viewBulk() {
   const app = $('#subv');
@@ -726,11 +773,11 @@ async function viewBulk() {
     <div><label>생기부 PDF (여러 개 선택)</label><input id="bfiles" type="file" accept="application/pdf" multiple${BULK.phase === 'run' ? ' disabled' : ''}></div></div>
     <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:400"><input type="checkbox" id="bredo" style="width:auto"${BULK.redo ? ' checked' : ''}> 이미 해당 학기까지 진단된 학생도 다시 올리기</label>
     <div class="err" id="be"></div>
-    <div id="bwrap" style="margin-top:14px;${BULK.items.length ? '' : 'display:none'}"><div style="overflow:auto"><table style="font-size:14px"><thead><tr><th style="text-align:left">파일명</th><th style="text-align:left;min-width:220px">연결된 학생</th><th>상태</th><th style="text-align:left">메모</th></tr></thead><tbody id="bt"></tbody></table></div>
-    <div class="row" style="margin-top:12px;align-items:center"><button id="bgo"${BULK.phase === 'ready' ? '' : ' disabled'}>업로드 시작</button><button class="line" id="bretry" disabled>실패만 다시 업로드</button><span id="bsum" class="muted"></span></div></div>
+    <div id="bwrap" style="margin-top:14px;${BULK.items.length ? '' : 'display:none'}"><div class="tsc"><table style="font-size:14px"><thead><tr><th style="text-align:left">파일명</th><th style="text-align:left;min-width:220px">연결된 학생</th><th class="cs">상태</th><th class="ce">경과</th><th style="text-align:left">메모</th></tr></thead><tbody id="bt"></tbody></table></div>
+    <div class="row" style="margin-top:12px;align-items:center"><button id="bgo"${BULK.phase === 'ready' ? '' : ' disabled'}>업로드 시작</button><button class="line" id="bretry" disabled>실패·중지된 것 다시 업로드</button><button class="line" id="bstop" style="display:none">중지</button><span id="bsum" class="muted"></span></div></div>
     <h3 style="margin:18px 0 6px;font-size:15px">진행 로그</h3><div id="blog" style="background:#f8fafc;border:1px solid #e5e7eb;color:#334155;border-radius:10px;padding:10px 14px;height:180px;overflow:auto;font-size:13px;line-height:1.8"></div>
   </div><style>#blog:empty:before{content:'아직 진행 내용이 없습니다.';color:#94a3b8}#blog .o{color:#047857}#blog .x{color:#dc2626;font-weight:600}#blog .w{color:#b45309}</style>`;
-  document.getElementById('blog').innerHTML = BULK.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
+  document.getElementById('blog').innerHTML = BULK.logs.map((l) => `<div class="${l.kind}">${l.t} ${esc(l.msg)}</div>`).join('');
   bulkRender();
   const build = () => {
     const files = [...$('#bfiles').files], stage = $('#bstage').value, e = $('#be'); e.textContent = '';
@@ -750,32 +797,35 @@ async function viewBulk() {
   };
   $('#bfiles').onchange = build; $('#bstage').onchange = () => { if (BULK.phase === 'ready') { BULK.stage = $('#bstage').value; bulkRender(); } };
   $('#bredo').onchange = () => { BULK.redo = $('#bredo').checked; bulkRender(); };
-  $('#bgo').onclick = () => { if (!confirm(`${STAGE[BULK.stage]} 기준으로 ${bulkTargets().length}건을 업로드합니다. 시작할까요?`)) return; bulkStart(false); };
+  $('#bgo').onclick = async () => { if (!await uiConfirm(`${STAGE[BULK.stage]} 기준으로 ${bulkTargets().length}건을 업로드합니다. 시작할까요?`)) return; bulkStart(false); };
   $('#bretry').onclick = () => bulkStart(true);
+  { const sbn = $('#bstop'); sbn.style.display = BULK.phase === 'run' ? '' : 'none';
+    sbn.onclick = () => stopFlow('bstop', '일괄 업로드', () => { const nmOf = (it) => (BULK.students.find((x) => x.id === it.sid) || {}).name || it.file.name; return { run: BULK.items.filter((i) => ['upl', 'par'].includes(i.state)).map(nmOf), wait: BULK.items.filter((i) => ['wait', 'upd'].includes(i.state)).length, done: BULK.items.filter((i) => i.state === 'done').length }; }, () => (BULK.stop = true), bulkLog); }
 }
 
 // ── 생기부 일괄 진단 ──
-const DIAG = { items: [], logs: [], phase: 'idle', showDone: false, sel: new Set(), st: {}, stage: '' };
+const DIAG = { items: [], logs: [], phase: 'idle', showDone: false, sel: new Set(), st: {}, stage: '', stop: false };
+let DIAG_TICK = null;
 function diagLog(msg, kind = '') {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false });
   DIAG.logs.push({ t, msg, kind });
   const el = document.getElementById('dlog');
-  if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">[${t}] ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
+  if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">${t} ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
 }
 function diagRows() { return DIAG.items.filter((i) => (!i.diagnosed || DIAG.st[i.recordFileId]) && (!DIAG.stage || i.stage === DIAG.stage)); }
 function diagRender() {
   const tb = document.getElementById('dt'); if (!tb) return;
   const rows = diagRows(), run = DIAG.phase === 'run';
-  const SST = { wait: '대기', ext: '채점 중…', adv: '조언 생성 중…', done: '진단 완료', fail: '실패' };
+  const SST = { wait: ['wait', '대기'], ext: ['run', '진행 중', '채점'], adv: ['run', '진행 중', '조언 생성'], done: ['done', '완료'], fail: ['fail', '실패'], skip: ['skip', '건너뜀'] };
   tb.innerHTML = rows.length ? rows.map((i) => {
     const s = DIAG.st[i.recordFileId] || {};
-    const color = s.state === 'done' ? '#059669' : s.state === 'fail' ? '#dc2626' : '#475569';
-    const ds = s.state ? SST[s.state] : (i.diagnosed ? '진단됨' : '대기');
+    const m = s.state ? SST[s.state] : null;
+    const ds = m ? sb(m[0], m[1], m[2]) : (i.diagnosed ? sb('done', '완료', '진단됨') : sb('wait', '대기'));
     return `<tr data-id="${i.recordFileId}"><td style="width:34px"><input type="checkbox" class="dck" style="width:auto"${DIAG.sel.has(i.recordFileId) ? ' checked' : ''}${run ? ' disabled' : ''}></td>
     <td style="white-space:nowrap">${esc(i.name)}</td><td style="white-space:nowrap">${esc(sch(i.school) || '-')}</td><td style="white-space:nowrap">${esc(TERM_UP[i.stage] || '')}</td>
-    <td style="word-break:break-all">${esc(i.fileName || '')}</td><td style="white-space:nowrap;font-size:13px;color:#64748b">${esc((i.uploadedAt || '').slice(0, 10))}</td>
-    <td style="color:${color};font-weight:600;white-space:nowrap">${ds}</td><td style="font-size:13px;white-space:nowrap">${s.aid ? `<a href="#/result/${s.aid}">결과 열기</a>` : esc(s.msg || '')}</td></tr>`;
-  }).join('') : '<tr><td colspan="8" class="muted" style="padding:16px">진단 대기 중인 생기부가 없습니다. 위 ①에서 일괄 업로드하면 여기에 나타납니다. (이미 진단된 학생의 재진단은 학생 상세의 "다시 진단")</td></tr>';
+    <td class="fn" title="${esc(i.fileName || '')}">${esc(i.fileName || '')}</td><td class="cd" style="font-size:13px;color:#64748b">${esc((i.uploadedAt || '').slice(0, 10))}</td>
+    <td class="cs">${ds}</td><td class="ce">${fmtDur(elapsed(s))}</td><td style="font-size:13px;white-space:nowrap">${s.aid ? `<a href="#/result/${s.aid}">결과 열기</a>` : esc(s.msg || '')}</td></tr>`;
+  }).join('') : '<tr><td colspan="9" class="muted" style="padding:16px">진단 대기 중인 생기부가 없습니다. 위 ①에서 일괄 업로드하면 여기에 나타납니다. (이미 진단된 학생의 재진단은 학생 상세의 "다시 진단")</td></tr>';
   tb.querySelectorAll('.dck').forEach((c) => (c.onchange = () => { const id = c.closest('tr').dataset.id; c.checked ? DIAG.sel.add(id) : DIAG.sel.delete(id); diagSummary(); }));
   diagSummary();
 }
@@ -789,28 +839,34 @@ function diagSummary() {
 async function diagOne(i) {
   const S = (o) => { DIAG.st[i.recordFileId] = Object.assign(DIAG.st[i.recordFileId] || {}, o); diagRender(); };
   try {
-    S({ state: 'ext', msg: '' }); diagLog(`${i.name} 채점 시작`);
+    S({ state: 'ext', msg: '', t0: Date.now(), dur: 0, stopped: false }); diagLog(`${i.name} 채점 시작`);
     const r = await bulkRetry(() => apiJob('extract', { recordFileId: i.recordFileId, stage: i.stage }), i.name + ' 채점');
     S({ state: 'adv' });
     try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { diagLog(`${i.name} 조언 생성 실패(점수는 저장됨): ${e.message}`, 'w'); }
     i.diagnosed = true; DIAG.sel.delete(i.recordFileId);
-    S({ state: 'done', aid: r.analysis.id }); diagLog(`${i.name} 완료 (${r.analysis.scores_json?.currentTotal ?? ''}점)`, 'o');
-  } catch (e) { S({ state: 'fail', msg: e.message }); diagLog(`${i.name} 실패: ${e.message}`, 'x'); }
+    S({ state: 'done', aid: r.analysis.id, dur: Math.max(1, Math.round((Date.now() - DIAG.st[i.recordFileId].t0) / 1000)) }); diagLog(`${i.name} 완료 (${r.analysis.scores_json?.currentTotal ?? ''}점)`, 'o');
+  } catch (e) { S({ state: 'fail', msg: e.message, dur: Math.max(1, Math.round((Date.now() - ((DIAG.st[i.recordFileId] || {}).t0 || Date.now())) / 1000)) }); diagLog(`${i.name} 실패: ${e.message}`, 'x'); }
 }
+function diagSkip(i) { DIAG.st[i.recordFileId] = { state: 'skip', stopped: true, msg: '중지됨 — 시작하지 않음' }; diagLog(`${i.name} 건너뜀(중지됨)`, 'w'); diagRender(); }
 async function diagStart() {
   const list = diagRows().filter((i) => DIAG.sel.has(i.recordFileId));
   if (!list.length) return;
-  DIAG.phase = 'run'; workBegin('diag');
+  DIAG.phase = 'run'; workBegin('diag'); DIAG.stop = false;
+  { const sbn = document.getElementById('dstop'); if (sbn) { sbn.style.display = ''; sbn.disabled = false; sbn.textContent = '중지'; } }
+  clearInterval(DIAG_TICK); DIAG_TICK = setInterval(() => { if (DIAG.phase === 'run') diagRender(); }, 5000);
   list.forEach((i) => (DIAG.st[i.recordFileId] = { state: 'wait' })); diagRender();
   diagLog(`진단 시작 (2명씩, ${list.length}명)`);
-  await bulkPool(list, 2, diagOne);
-  DIAG.phase = 'end'; workEnd('diag');
+  await bulkPool(list, 2, diagOne, () => DIAG.stop, diagSkip);
+  DIAG.phase = 'end'; workEnd('diag'); clearInterval(DIAG_TICK);
+  { const sbn = document.getElementById('dstop'); if (sbn) sbn.style.display = 'none'; }
   const c = (s) => Object.values(DIAG.st).filter((x) => x.state === s).length;
   diagLog(`전체 종료 — 완료 ${c('done')} · 실패 ${c('fail')}`, c('fail') ? 'w' : 'o');
-  const f = $('#dretry'); if (f) f.disabled = !c('fail');
+  const skN = c('skip');
+  const f = $('#dretry'); if (f) f.disabled = !(c('fail') || skN);
   diagRender();
-  if (!c('fail')) { alert(`진단이 모두 끝났습니다. (${c('done')}명 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n결과는 학생 상세 또는 학생 목록에서 볼 수 있습니다.`); DIAG.st = {}; DIAG.logs = []; DIAG.phase = 'idle'; DIAG.sel.clear(); if (document.getElementById('subv2')) viewDiag(); }
-  else alert(`진단이 끝났습니다. 완료 ${c('done')}명 · 실패 ${c('fail')}명\n실패한 건이 목록에 남아 있습니다. "실패만 다시 진단"을 눌러 주세요.`);
+  if (DIAG.stop) await uiAlert(`진단을 중지했습니다. 완료 ${c('done')}명 · ${skN}명 중지됨 · 실패 ${c('fail')}명\n목록은 그대로 남아 있습니다. 중지된 건은 다시 선택하거나 "실패·중지된 것 다시 진단"으로 이어서 진행할 수 있습니다.`);
+  else if (!c('fail')) { await uiAlert(`진단이 모두 끝났습니다. (${c('done')}명 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n결과는 학생 상세 또는 학생 목록에서 볼 수 있습니다.`); DIAG.st = {}; DIAG.logs = []; DIAG.phase = 'idle'; DIAG.sel.clear(); if (document.getElementById('subv2')) viewDiag(); }
+  else await uiAlert(`진단이 끝났습니다. 완료 ${c('done')}명 · 실패 ${c('fail')}명\n실패한 건이 목록에 남아 있습니다. "실패·중지된 것 다시 진단"을 눌러 주세요.`);
 }
 async function viewDiag() {
   const app = $('#subv2');
@@ -821,29 +877,33 @@ async function viewDiag() {
       <button class="line" id="dall">전체 선택</button><button class="line" id="dnone">전체 해제</button>
       <select id="dstage" style="width:auto"><option value="">모든 학기</option>${['A', 'B', 'C'].map((k) => `<option value="${k}"${DIAG.stage === k ? ' selected' : ''}>${TERM_UP[k]}</option>`).join('')}</select>
     </div>
-    <div style="overflow:auto;margin-top:12px"><table style="font-size:14px"><thead><tr><th></th><th style="text-align:left">학생</th><th style="text-align:left">학교</th><th style="text-align:left">학기</th><th style="text-align:left">파일명</th><th style="text-align:left">올린 날</th><th>상태</th><th></th></tr></thead><tbody id="dt"></tbody></table></div>
-    <div class="row" style="margin-top:12px;align-items:center"><button id="dgo" disabled>선택한 0명 진단</button><button class="line" id="dretry" disabled>실패만 다시 진단</button><span id="dsum" class="muted"></span></div>
+    <div class="tsc" style="margin-top:12px"><table style="font-size:14px"><thead><tr><th></th><th style="text-align:left">학생</th><th style="text-align:left">학교</th><th style="text-align:left">학기</th><th style="text-align:left">파일명</th><th class="cd" style="text-align:left">올린 날</th><th class="cs">상태</th><th class="ce">경과</th><th></th></tr></thead><tbody id="dt"></tbody></table></div>
+    <div class="row" style="margin-top:12px;align-items:center"><button id="dgo" disabled>선택한 0명 진단</button><button class="line" id="dretry" disabled>실패·중지된 것 다시 진단</button><button class="line" id="dstop" style="display:none">중지</button><span id="dsum" class="muted"></span></div>
     <h3 style="margin:18px 0 6px;font-size:15px">진행 로그</h3><div id="dlog" style="background:#f8fafc;border:1px solid #e5e7eb;color:#334155;border-radius:10px;padding:10px 14px;height:160px;overflow:auto;font-size:13px;line-height:1.8"></div>
   </div><style>#dlog:empty:before{content:'아직 진행 내용이 없습니다.';color:#94a3b8}#dlog .o{color:#047857}#dlog .x{color:#dc2626;font-weight:600}#dlog .w{color:#b45309}</style>`;
-  document.getElementById('dlog').innerHTML = DIAG.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
+  document.getElementById('dlog').innerHTML = DIAG.logs.map((l) => `<div class="${l.kind}">${l.t} ${esc(l.msg)}</div>`).join('');
   diagRender();
   $('#dall').onclick = () => { diagRows().forEach((i) => DIAG.sel.add(i.recordFileId)); diagRender(); };
   $('#dnone').onclick = () => { DIAG.sel.clear(); diagRender(); };
   $('#dstage').onchange = () => { DIAG.stage = $('#dstage').value; diagRender(); };
-  $('#dgo').onclick = () => { const n = diagRows().filter((i) => DIAG.sel.has(i.recordFileId)).length; if (confirm(`선택한 ${n}명을 진단합니다. 시작할까요?`)) diagStart(); };
-  $('#dretry').onclick = () => { Object.entries(DIAG.st).forEach(([id, x]) => { if (x.state === 'fail') DIAG.sel.add(id); }); diagStart(); };
+  $('#dgo').onclick = async () => { const n = diagRows().filter((i) => DIAG.sel.has(i.recordFileId)).length; if (await uiConfirm(`선택한 ${n}명을 진단합니다. 시작할까요?`)) diagStart(); };
+  $('#dretry').onclick = () => { Object.entries(DIAG.st).forEach(([id, x]) => { if (x.state === 'fail' || x.stopped) DIAG.sel.add(id); }); diagStart(); };
+  { const sbn = $('#dstop'); sbn.style.display = DIAG.phase === 'run' ? '' : 'none';
+    sbn.onclick = () => stopFlow('dstop', '일괄 진단', () => { const nmOf = (id) => (DIAG.items.find((x) => x.recordFileId === id) || {}).name || id; const e = Object.entries(DIAG.st); return { run: e.filter(([, x]) => ['ext', 'adv'].includes(x.state)).map(([id]) => nmOf(id)), wait: e.filter(([, x]) => x.state === 'wait').length, done: e.filter(([, x]) => x.state === 'done').length }; }, () => (DIAG.stop = true), diagLog); }
 }
 
 // ── 합격 사례 관리 ──
 const OUT_KO = { sci_doc: '과학고 서류 합격', sci_final: '과학고 최종 합격', gifted_doc: '영재학교 서류 합격', gifted_final: '영재학교 최종 합격' };
 const CAT_KO = { sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '협업·토론', leadership_roles: '리더십·임원', teacher_top_rec: '교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망', help_share: '나눔·배려', rule_comply: '규칙 준수·성실', peer_good: '교우관계 우수', study_proactive: '주도적 탐구태도', arts_sports: '예체능 활동', all_awards: '수상 이름(전체)' };
 const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_deep', 'behavior_gifted', 'interest_activity', 'group_debate', 'leadership_roles', 'teacher_top_rec', 'help_share', 'rule_comply', 'peer_good', 'study_proactive'];
-const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career', 'arts_sports', 'all_awards'];
-const EX = { loaded: false, saved: [], files: [], cands: [], logs: [], busy: false, stop: false, f: { cat: 'sci_research', out: '', q: '' }, seq: 0 };
+const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career', 'all_awards'];
+const EX = { loaded: false, saved: [], files: [], cands: [], logsU: [], logsX: [], busy: false, stop: false, stopX: false, runCx: '', xt: {}, xd: {}, f: { cat: 'sci_research', out: '', q: '' }, seq: 0 };
 const exN = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-function exLog(msg, kind = '') {
-  const t = new Date().toLocaleTimeString('ko-KR', { hour12: false }); EX.logs.push({ t, msg, kind });
-  const el = document.getElementById('xlog'); if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">[${t}] ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
+function exLog(msg, kind = '') { exLogCx(msg, kind, 'x'); }
+const exStopped = (cx) => (cx === 'u' ? EX.stop : EX.stopX);
+function exLogCx(msg, kind = '', cx = 'x') {
+  const t = new Date().toLocaleTimeString('ko-KR', { hour12: false }); (cx === 'u' ? EX.logsU : EX.logsX).push({ t, msg, kind });
+  const el = document.getElementById(cx === 'u' ? 'xlog' : 'xxlog'); if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">${t} ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
 }
 const exCatOpts = (sel, kind) => (kind === 'name' ? CAT_NAME : kind === 'text' ? CAT_TEXT : [...CAT_TEXT, ...CAT_NAME]).map((c) => `<option value="${c}"${c === sel ? ' selected' : ''}>${CAT_KO[c]}</option>`).join('');
 const exHave = () => new Set(EX.saved.map((x) => x.category + '|' + exN(x.content)));
@@ -867,7 +927,7 @@ function exSavedRender() {
   const rows = EX.saved.filter((x) => (!cat || x.category === cat) && (!out || (out === 'none' ? !x.outcome : x.outcome === out)) && (!qq || x.content.includes(qq)));
   const t = EX.saved.filter((x) => x.kind === 'text').length;
   document.getElementById('xcnt').textContent = `저장된 사례 ${EX.saved.length}건 (문장 ${t} · 명칭 ${EX.saved.length - t}) · 조건에 맞는 ${rows.length}건` + (rows.length > 150 ? ' (150건까지 표시)' : '');
-  tb.innerHTML = rows.slice(0, 150).map((x) => `<tr data-id="${x.id}"><td style="width:140px;font-size:13px">${esc(CAT_KO[x.category] || x.category)}</td><td style="width:120px;font-size:12.5px;color:#64748b">${esc(OUT_KO[x.outcome] || '기존 요약')}</td><td class="xcell" style="font-size:13.5px">${EX.newIds.has(x.id) ? '<b style="color:#059669;font-size:12px">신규</b> ' : ''}${esc(x.content)}</td><td style="width:130px;text-align:right;white-space:nowrap"><button class="line xed" style="padding:4px 10px">수정</button> <button class="line xdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="4">없음</td></tr>';
+  tb.innerHTML = rows.slice(0, 150).map((x) => `<tr data-id="${x.id}"><td style="width:140px;font-size:13px">${esc(CAT_KO[x.category] || x.category)}</td><td class="cg" style="font-size:12.5px;color:#64748b">${esc(OUT_KO[x.outcome] || '기존 요약')}</td><td class="xcell" style="font-size:13.5px">${EX.newIds.has(x.id) ? '<b style="color:#059669;font-size:12px">신규</b> ' : ''}${esc(x.content)}</td><td style="width:130px;text-align:right;white-space:nowrap"><button class="line xed" style="padding:4px 10px">수정</button> <button class="line xdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="4">없음</td></tr>';
 }
 const fmtMB = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(n / 1024)) + 'KB');
 async function exFilesReload() { try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { /* 목록 실패는 무시 */ } exFilesRender(); if (typeof exPendRender === 'function') exPendRender(); }
@@ -876,21 +936,21 @@ function exFilesRender() {
   const n = EX.files.length, mb = EX.files.reduce((a, f) => a + (f.size || 0), 0);
   /* 0개일 땐 합계 표시 안 함 */
   document.getElementById('xfn').textContent = `보관 중 ${n}개${n ? ' · 합계 ' + fmtMB(mb) : ''}`;
-  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:330px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">생기부 보기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
+  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td class="fn" style="font-size:13px" title="${esc(f.name)}">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td class="cg" style="font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td class="cd" style="font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:330px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">생기부 보기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
 }
 EX.xst = {}; EX.newIds = new Set();
-async function exRetry(fn, tag) {
+async function exRetry(fn, tag, cx = 'x') {
   for (let k = 0; ; k++) {
     try { return await fn(); } catch (e) {
-      if (EX.stop || k >= 2) throw e;
-      exLog(`${tag} 재시도 ${k + 1}/2: ${e.message}`, 'w'); await sleep(8000);
+      if (exStopped(cx) || k >= 2) throw e;
+      exLogCx(`${tag} 재시도 ${k + 1}/2: ${e.message}`, 'w', cx); await sleep(8000);
     }
   }
 }
 async function exReextractCore(f) {
-  const tag = f.name, S = (v) => { EX.xst[f.id] = v; exPendRender(); };
+  const tag = f.name, S = (v) => { EX.xst[f.id] = v; if (v === 'ext') { EX.xt[f.id] = Date.now(); EX.xd[f.id] = 0; } else if ((v === 'done' || v === 'fail') && EX.xt[f.id]) EX.xd[f.id] = Math.max(1, Math.round((Date.now() - EX.xt[f.id]) / 1000)); exPendRender(); };
   try {
-    if (EX.stop) { S('skip'); exLog(`${tag} 건너뜀(중지됨)`, 'w'); return; }
+    if (EX.stopX) { S('skip'); exLog(`${tag} 건너뜀(중지됨)`, 'w'); return; }
     S('ext');
     let st = await api('exemplarParseStatus', { fileId: f.id });
     if (st.status === 'done') exLog(`${tag} 저장된 변환 글자로 바로 진행`);
@@ -906,15 +966,20 @@ async function exReextractCore(f) {
   } catch (e) { S('fail'); exLog(`${tag} 실패: ${e.message}`, 'x'); }
 }
 async function exReextract(f) {
-  if (EX.busy) return; EX.busy = true; EX.stop = false; exStopShow(true); workBegin('ex');
+  if (EX.busy) return; EX.busy = true; EX.stopX = false; EX.runCx = 'x'; exStopShow(true, 'x'); workBegin('ex');
   await exReextractCore(f);
-  workEnd('ex'); EX.busy = false; exStopShow(false); exCandRender(); await exFilesReload(); exPendRender();
+  workEnd('ex'); EX.busy = false; exStopShow(false, 'x'); exCandRender(); await exFilesReload(); exPendRender();
 }
 EX.sel = new Set(); EX.showAll = false;
 function exPendRender() {
   const tb = document.getElementById('xpt'); if (!tb) return;
   const rows = EX.files.filter((f) => EX.showAll || !(f.cases > 0));
-  tb.innerHTML = rows.length ? rows.map((f) => `<tr data-id="${f.id}"><td style="width:34px"><input type="checkbox" class="pck" style="width:auto"${EX.sel.has(f.id) ? ' checked' : ''}${EX.busy ? ' disabled' : ''}></td><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:90px;font-size:12.5px">${{ wait: '대기 중', ext: '추출 중…', done: '추출 완료', fail: '<span style="color:#dc2626">실패</span>', skip: '건너뜀' }[EX.xst[f.id]] || (f.cases > 0 ? '사례 ' + f.cases + '건' : '추출 대기')}</td></tr>`).join('') : '<tr><td colspan="5" class="muted" style="padding:14px">추출 대기 중인 파일이 없습니다. 먼저 ①에서 올려 주세요.</td></tr>';
+  const PS = { wait: ['wait', '대기'], ext: ['run', '진행 중', '추출'], done: ['done', '완료'], fail: ['fail', '실패'], skip: ['skip', '건너뜀'] };
+  tb.innerHTML = rows.length ? rows.map((f) => {
+    const m = PS[EX.xst[f.id]], stc = m ? sb(m[0], m[1], m[2]) : f.cases > 0 ? sb('done', '완료', '사례 ' + f.cases + '건') : sb('wait', '대기');
+    const sec = EX.xt[f.id] ? (EX.xd[f.id] || Math.round((Date.now() - EX.xt[f.id]) / 1000)) : 0;
+    return `<tr data-id="${f.id}"><td style="width:34px"><input type="checkbox" class="pck" style="width:auto"${EX.sel.has(f.id) ? ' checked' : ''}${EX.busy ? ' disabled' : ''}></td><td class="fn" style="font-size:13px" title="${esc(f.name)}">${esc(f.name)}${f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : ''}</td><td class="cg" style="font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td class="cd" style="font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td class="cs">${stc}</td><td class="ce" style="font-size:12.5px">${fmtDur(sec)}</td></tr>`;
+  }).join('') : '<tr><td colspan="6" class="muted" style="padding:14px">추출 대기 중인 파일이 없습니다. 먼저 ①에서 올려 주세요.</td></tr>';
   tb.querySelectorAll('.pck').forEach((c) => (c.onchange = () => { const id = c.closest('tr').dataset.id; c.checked ? EX.sel.add(id) : EX.sel.delete(id); exPendSum(); }));
   exPendSum();
 }
@@ -922,59 +987,60 @@ function exPendSum() { const n = EX.files.filter((f) => (EX.showAll || !(f.cases
 async function exExtractSel() {
   const list = EX.files.filter((f) => (EX.showAll || !(f.cases > 0)) && EX.sel.has(f.id));
   if (!list.length || EX.busy) return;
-  EX.busy = true; EX.stop = false; exStopShow(true); workBegin('ex'); list.forEach((f) => (EX.xst[f.id] = 'wait')); exPendRender();
+  EX.busy = true; EX.stopX = false; EX.runCx = 'x'; exStopShow(true, 'x'); workBegin('ex'); list.forEach((f) => (EX.xst[f.id] = 'wait')); exPendRender();
+  clearInterval(EX_TICKX); EX_TICKX = setInterval(exPendRender, 5000);
   exLog(`추출 시작 (2개씩, ${list.length}건)`);
-  await bulkPool(list, 2, async (f) => { await exReextractCore(f); EX.sel.delete(f.id); });
-  workEnd('ex'); EX.busy = false; exStopShow(false); await exFilesReload(); exPendRender();
+  await bulkPool(list, 2, async (f) => { await exReextractCore(f); if (EX.xst[f.id] !== 'skip') EX.sel.delete(f.id); }, () => EX.stopX, (f) => { EX.xst[f.id] = 'skip'; exLog(`${f.name} 건너뜀(중지됨)`, 'w'); exPendRender(); });
+  clearInterval(EX_TICKX); workEnd('ex'); EX.busy = false; exStopShow(false, 'x'); await exFilesReload(); exPendRender();
   exLog('추출 단계 종료', 'o');
-  const st = list.map((f) => EX.xst[f.id]), okN = st.filter((x) => x === 'done').length, bad = st.filter((x) => x === 'fail').length;
-  if (!bad) { alert(`추출이 모두 끝났습니다. (${okN}건 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n저장된 사례는 아래 ③ 저장된 합격 사례에서 확인하세요.`); EX.xst = {}; EX.logs = []; EX.sel.clear(); const lg = document.getElementById('xlog'); if (lg) lg.innerHTML = ''; exPendRender(); }
-  else alert(`추출이 끝났습니다. 완료 ${okN}건 · 실패 ${bad}건\n실패한 파일은 ②에 "실패"로 남아 있습니다. 다시 체크해서 추출해 주세요.`);
+  const st = list.map((f) => EX.xst[f.id]), okN = st.filter((x) => x === 'done').length, bad = st.filter((x) => x === 'fail').length, skN = st.filter((x) => x === 'skip').length;
+  if (EX.stopX) await uiAlert(`추출을 중지했습니다. 완료 ${okN}건 · ${skN}건 중지됨 · 실패 ${bad}건\n목록은 그대로 남아 있습니다. 중지된 건은 선택된 채로 남아 있으니 다시 "추출"을 누르면 이어서 진행합니다.`);
+  else if (!bad) { await uiAlert(`추출이 모두 끝났습니다. (${okN}건 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n저장된 사례는 아래 ③ 저장된 합격 사례에서 확인하세요.`); EX.xst = {}; EX.xt = {}; EX.xd = {}; EX.logsX = []; EX.sel.clear(); const lg = document.getElementById('xxlog'); if (lg) lg.innerHTML = ''; exPendRender(); }
+  else await uiAlert(`추출이 끝났습니다. 완료 ${okN}건 · 실패 ${bad}건\n실패한 파일은 ②에 "실패"로 남아 있습니다. 다시 체크해서 추출해 주세요.`);
 }
-function exStopShow(on) { const b = document.getElementById('xstop'); if (b) { b.style.display = on ? '' : 'none'; b.disabled = false; b.textContent = '중지'; } }
-async function exWaitParse(fileId, tag) {
+let EX_TICKX = null;
+function exStopShow(on, cx = 'u') { const b = document.getElementById(cx === 'x' ? 'xpstop' : 'xstop'); if (b) { b.style.display = on ? '' : 'none'; b.disabled = false; b.textContent = '중지'; } }
+async function exWaitParse(fileId, tag, cx = 'x') {
   const t0 = Date.now(); let lastLog = 0, bad = 0;
   for (;;) {
     await new Promise((r) => setTimeout(r, 5000));
-    if (EX.stop) throw new Error('사용자가 중지했습니다');
     let s;
     try { s = await api('exemplarParseStatus', { fileId }); bad = 0; } catch (e) { if (++bad >= 4) throw e; continue; }
-    if (s.status === 'done') { exLog(`${tag} 글자 변환 완료 (${Math.round((Date.now() - t0) / 1000)}초)`); return s.text; }
+    if (s.status === 'done') { exLogCx(`${tag} 글자 변환 완료 (${Math.round((Date.now() - t0) / 1000)}초)`, '', cx); return s.text; }
     if (s.status === 'error') throw new Error(s.error || '글자 변환 실패');
     if (s.status === 'none') throw new Error('변환이 시작되지 않았습니다.');
     const sec = Math.round((Date.now() - t0) / 1000);
-    if (sec - lastLog >= 30) { lastLog = sec; exLog(`${tag} 글자 변환 중… ${sec}초 경과`); }
+    if (sec - lastLog >= 30) { lastLog = sec; exLogCx(`${tag} 글자 변환 중… ${sec}초 경과`, '', cx); }
   }
 }
 // 파일명 "[생기부] 서동우(✖️ 3차 탈락).pdf" → "서동우"
 const exPerson = (fn) => { const raw = String(fn || '').replace(/\.pdf$/i, ''); const n = raw.replace(/^(\s*\[[^\]]*\])+\s*/, '').replace(/[（(].*$/, '').trim(); return n || raw.trim(); };
-async function exWaitExtract(fileId, tag) {
+async function exWaitExtract(fileId, tag, cx = 'x') {
   const t0 = Date.now(); let lastLog = 0, bad = 0;
   for (;;) {
     await new Promise((r) => setTimeout(r, 5000));
-    if (EX.stop) throw new Error('사용자가 중지했습니다');
     let s;
     try { s = await api('exemplarExtractStatus', { fileId }); bad = 0; } catch (e) { if (++bad >= 4) throw e; continue; }
-    if (s.status === 'done') { exLog(`${tag} 추출 완료 (${Math.round((Date.now() - t0) / 1000)}초)`); return { items: s.items }; }
+    if (s.status === 'done') { exLogCx(`${tag} 추출 완료 (${Math.round((Date.now() - t0) / 1000)}초)`, '', cx); return { items: s.items }; }
     if (s.status === 'error') throw new Error(s.error || '추출 실패');
     if (s.status === 'none') throw new Error('추출이 시작되지 않았습니다.');
     const sec = Math.round((Date.now() - t0) / 1000);
-    if (sec - lastLog >= 30) { lastLog = sec; exLog(`${tag} 추출 중… ${sec}초 경과`); }
+    if (sec - lastLog >= 30) { lastLog = sec; exLogCx(`${tag} 추출 중… ${sec}초 경과`, '', cx); }
   }
 }
 EX.up = []; let EX_TICK = null;
 function exUpRender() {
   const el = document.getElementById('xut'); if (!el) return;
   if (!EX.up.length) { el.innerHTML = ''; return; }
-  const L = { wait: '대기', upl: '업로드 중…', par: '글자 변환 중…', sch: '학교명 확인 중…', done: '완료(② 추출 목록으로)', fail: '실패', skip: '건너뜀' };
-  el.innerHTML = '<div style="overflow:auto;margin-top:12px"><table style="font-size:13.5px"><thead><tr><th style="text-align:left">파일</th><th style="text-align:left">상태</th><th style="text-align:left">경과</th></tr></thead><tbody>' + EX.up.map((u) => {
-    const sec = u.t0 && ['upl', 'par', 'sch'].includes(u.state) ? Math.round((Date.now() - u.t0) / 1000) : u.dur || 0;
-    const c = u.state === 'done' ? '#059669' : u.state === 'fail' ? '#dc2626' : '#475569';
-    return `<tr><td style="word-break:break-all">${esc(u.name)}</td><td style="color:${c};font-weight:600;white-space:nowrap">${L[u.state] || ''}${u.msg ? `<div style="font-weight:400;font-size:12px;color:#dc2626">${esc(u.msg)}</div>` : ''}</td><td style="white-space:nowrap;color:#64748b">${sec ? Math.floor(sec / 60) + '분 ' + (sec % 60) + '초' : ''}</td></tr>`;
+  const L = { wait: ['wait', '대기'], upl: ['run', '진행 중', '업로드'], par: ['run', '진행 중', '글자 변환'], sch: ['run', '진행 중', '학교명 확인'], done: ['done', '완료'], fail: ['fail', '실패'], skip: ['skip', '건너뜀'] };
+  el.innerHTML = '<div class="tsc" style="margin-top:12px"><table style="font-size:13.5px"><thead><tr><th style="text-align:left">파일명</th><th class="cs" style="text-align:left">상태</th><th class="ce" style="text-align:left">경과</th></tr></thead><tbody>' + EX.up.map((u) => {
+    const sec = u.t0 && ['upl', 'par', 'sch'].includes(u.state) ? Math.round((Date.now() - u.t0) / 1000) : u.dur || 0, m = L[u.state];
+    return `<tr><td class="fn" title="${esc(u.name)}">${esc(u.name)}</td><td class="cs">${m ? sb(m[0], m[1], m[2]) : ''}${u.msg ? `<div style="font-weight:400;font-size:12px;color:#dc2626;white-space:normal">${esc(u.msg)}</div>` : ''}</td><td class="ce">${fmtDur(sec)}</td></tr>`;
   }).join('') + '</tbody></table></div>';
 }
 async function exProcess(files, outcome, keep) {
-  EX.busy = true; EX.stop = false; exStopShow(true); workBegin('ex'); const go = document.getElementById('xgo'); if (go) go.disabled = true;
+  const exLog = (m, k = '') => exLogCx(m, k, 'u');
+  EX.busy = true; EX.stop = false; EX.runCx = 'u'; exStopShow(true, 'u'); workBegin('ex'); const go = document.getElementById('xgo'); if (go) go.disabled = true;
   EX.up = files.map((f) => ({ name: f.name, state: 'wait', t0: 0, dur: 0, msg: '' })); exUpRender();
   clearInterval(EX_TICK); EX_TICK = setInterval(exUpRender, 5000);
   let ok = 0, fail = 0;
@@ -993,11 +1059,11 @@ async function exProcess(files, outcome, keep) {
         const up = await fetch(up0.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
         if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
         return up0.path;
-      }, tag + ' 업로드');
+      }, tag + ' 업로드', 'u');
       const pr = await api('exemplarParse', { path, name: `${exPerson(f.name)} ${OUT_KO[outcome]}`, outcome });
       fid = pr.fileId; u.state = 'par'; exUpRender(); exLog(`${tag} 원본 PDF 저장 완료 · 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); exFilesReload();
       let first = true;
-      await exRetry(async () => { if (!first) await api('exemplarParse', { fileId: fid }); first = false; await exWaitParse(fid, tag); }, tag + ' 변환');
+      await exRetry(async () => { if (!first) await api('exemplarParse', { fileId: fid }); first = false; await exWaitParse(fid, tag, 'u'); }, tag + ' 변환', 'u');
       u.state = 'sch'; exUpRender(); exLog(`${tag} 학교명 확인 중`);
       let school = ''; try { school = sch((await api('exemplarSchool', { fileId: fid })).school); } catch (_) { /* 못 읽으면 직접 입력 */ }
       if (!school) { const t = prompt(`"${f.name}" 에서 학교명을 찾지 못했습니다.\n학교명을 입력하세요. (비워 두면 학교명 없이 저장)`, ''); school = sch(t || ''); }
@@ -1011,11 +1077,13 @@ async function exProcess(files, outcome, keep) {
     exUpRender();
   };
   let k = 0; await Promise.all(Array.from({ length: Math.min(2, files.length) }, async () => { while (k < files.length) { await one(k++); } }));
-  clearInterval(EX_TICK); workEnd('ex'); EX.busy = false; exStopShow(false); if (go) go.disabled = false;
+  clearInterval(EX_TICK); workEnd('ex'); EX.busy = false; exStopShow(false, 'u'); if (go) go.disabled = false;
   await exFilesReload(); exUpRender();
   exLog(`전체 종료 — 업로드 완료 ${ok} · 실패 ${fail}`, fail ? 'w' : 'o');
-  if (!fail) { alert(`업로드가 모두 끝났습니다. (${ok}건 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n아래 ② 추출할 파일 선택에서 추출하세요.`); EX.up = []; EX.logs = []; const lg = document.getElementById('xlog'); if (lg) lg.innerHTML = ''; const fi = document.getElementById('xf'); if (fi) fi.value = ''; exUpRender(); }
-  else alert(`업로드가 끝났습니다. 완료 ${ok}건 · 실패 ${fail}건\n실패한 파일은 위 상태 표에 남아 있습니다. 해당 파일만 다시 올려 주세요.`);
+  const skN = EX.up.filter((u) => u.state === 'skip').length;
+  if (EX.stop) await uiAlert(`업로드를 중지했습니다. 완료 ${ok}건 · ${skN}건 중지됨 · 실패 ${fail}건\n표는 그대로 남아 있습니다. 같은 파일들을 선택한 채 다시 "업로드"를 누르면 이미 끝난 파일은 제외하고 나머지만 이어서 올립니다.`);
+  else if (!fail) { await uiAlert(`업로드가 모두 끝났습니다. (${ok}건 완료)\n확인을 누르면 목록을 비우고 처음 상태로 돌아갑니다.\n아래 ② 추출할 파일 선택에서 추출하세요.`); EX.up = []; EX.logsU = []; const lg = document.getElementById('xlog'); if (lg) lg.innerHTML = ''; const fi = document.getElementById('xf'); if (fi) fi.value = ''; exUpRender(); }
+  else await uiAlert(`업로드가 끝났습니다. 완료 ${ok}건 · 실패 ${fail}건\n실패한 파일은 위 상태 표에 남아 있습니다. 해당 파일만 다시 올려 주세요.`);
 }
 async function viewEx() {
   const app = $('#main');
@@ -1030,47 +1098,55 @@ async function viewEx() {
     <div class="err" id="xe"></div>
     <div class="row" style="margin-top:10px;align-items:center"><button id="xgo">업로드</button><button id="xstop" class="line" style="display:none">중지</button><span class="muted" style="font-size:13px">PDF 하나에 몇 분 걸릴 수 있습니다(경과 시간이 아래 로그에 표시됩니다). 진행 중에는 이 창을 닫지 마세요.</span></div>
     <div id="xut"></div>
-    <div id="xlog" style="margin-top:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
+    <h4 style="margin:14px 0 4px;font-size:13.5px;color:#475569">업로드 로그</h4>
+    <div id="xlog" style="margin-top:4px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
     <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF는 비공개 저장소에 보관됩니다(관리자만 열람). 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
   </div>
   <div class="card">
     <h3 style="margin:0 0 10px;font-size:15px">② 추출할 파일 선택</h3>
     <div class="row" style="align-items:center;gap:12px;flex-wrap:wrap"><button class="line" id="pall">전체 선택</button><button class="line" id="pnone">전체 해제</button><label style="display:flex;gap:6px;align-items:center;font-weight:400;margin:0"><input type="checkbox" id="pshow" style="width:auto"> 이미 사례가 저장된 파일도 보기(다시 추출)</label></div>
-    <div style="overflow:auto;max-height:320px;margin-top:10px"><table style="font-size:14px"><thead><tr><th></th><th style="text-align:left">파일명</th><th style="text-align:left">구분</th><th style="text-align:left">올린 날</th><th style="text-align:left">상태</th></tr></thead><tbody id="xpt"></tbody></table></div>
-    <div class="row" style="margin-top:12px;align-items:center"><button id="xpgo" disabled>선택한 0건 추출</button><span class="muted" style="font-size:13px">한 건에 몇 분 걸리며 2개씩 진행됩니다. 추출이 끝나면 바로 ③ 저장된 합격 사례에 저장됩니다.</span></div>
+    <div class="tsc" style="margin-top:10px"><table style="font-size:14px"><thead><tr><th></th><th style="text-align:left">파일명</th><th class="cg" style="text-align:left">구분</th><th class="cd" style="text-align:left">올린 날</th><th class="cs" style="text-align:left">상태</th><th class="ce" style="text-align:left">경과</th></tr></thead><tbody id="xpt"></tbody></table></div>
+    <div class="row" style="margin-top:12px;align-items:center"><button id="xpgo" disabled>선택한 0건 추출</button><button id="xpstop" class="line" style="display:none">중지</button><span class="muted" style="font-size:13px">한 건에 몇 분 걸리며 2개씩 진행됩니다. 추출이 끝나면 바로 ③ 저장된 합격 사례에 저장됩니다.</span></div>
+    <h4 style="margin:14px 0 4px;font-size:13.5px;color:#475569">추출 로그</h4>
+    <div id="xxlog" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:140px;overflow:auto;font-size:13px;line-height:1.8"></div>
   </div>
   <div class="card">
     <h3 style="margin:0 0 10px;font-size:15px">③ 저장된 합격 사례</h3>
     <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:230px"></select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"></div><div id="xcnt" class="muted" style="font-size:13px;margin-top:8px"></div>
-    <div style="overflow:auto;max-height:520px;margin-top:10px"><table style="font-size:14px"><thead><tr><th>분류</th><th>구분</th><th>내용</th><th></th></tr></thead><tbody id="xst"></tbody></table></div>
+    <div class="tsc" style="margin-top:10px"><table style="font-size:14px"><thead><tr><th>분류</th><th class="cg">구분</th><th>내용</th><th></th></tr></thead><tbody id="xst"></tbody></table></div>
   </div>
   <div class="card">
     <h3 style="margin:0 0 4px;font-size:15px">④ 보관된 원본 PDF</h3><div class="muted" id="xfn" style="font-size:13px;margin-bottom:8px"></div>
-    <div style="overflow:auto;max-height:360px"><table style="font-size:14px"><thead><tr><th>파일명</th><th>구분</th><th>크기</th><th style="white-space:nowrap">올린 날</th><th>사례</th><th></th></tr></thead><tbody id="xft"></tbody></table></div>
+    <div class="tsc"><table style="font-size:14px"><thead><tr><th>파일명</th><th class="cg">구분</th><th>크기</th><th class="cd">올린 날</th><th>사례</th><th></th></tr></thead><tbody id="xft"></tbody></table></div>
   </div>`;
-  document.getElementById('xlog').innerHTML = EX.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
-  const sty = document.createElement('style'); sty.textContent = '#xlog .o{color:#047857}#xlog .x{color:#dc2626;font-weight:600}#xlog .w{color:#b45309}#xlog:empty:before{content:"아직 진행 내용이 없습니다.";color:#94a3b8}'; app.appendChild(sty);
+  document.getElementById('xlog').innerHTML = EX.logsU.map((l) => `<div class="${l.kind}">${l.t} ${esc(l.msg)}</div>`).join('');
+  document.getElementById('xxlog').innerHTML = EX.logsX.map((l) => `<div class="${l.kind}">${l.t} ${esc(l.msg)}</div>`).join('');
+  const sty = document.createElement('style'); sty.textContent = '#xlog .o,#xxlog .o{color:#047857}#xlog .x,#xxlog .x{color:#dc2626;font-weight:600}#xlog .w,#xxlog .w{color:#b45309}#xlog:empty:before,#xxlog:empty:before{content:"아직 진행 내용이 없습니다.";color:#94a3b8}'; app.appendChild(sty);
   exSavedRender(); exFilesRender(); exPendRender(); exUpRender();
   $('#pall').onclick = () => { EX.files.filter((f) => EX.showAll || !(f.cases > 0)).forEach((f) => EX.sel.add(f.id)); exPendRender(); };
   $('#pnone').onclick = () => { EX.sel.clear(); exPendRender(); };
   $('#pshow').checked = EX.showAll; $('#pshow').onchange = () => { EX.showAll = $('#pshow').checked; exPendRender(); };
-  $('#xpgo').onclick = () => { const n = EX.files.filter((f) => (EX.showAll || !(f.cases > 0)) && EX.sel.has(f.id)).length; if (!EX.busy && confirm(`선택한 ${n}건을 추출합니다. 시작할까요?`)) exExtractSel(); };
+  $('#xpgo').onclick = async () => { const n = EX.files.filter((f) => (EX.showAll || !(f.cases > 0)) && EX.sel.has(f.id)).length; if (!EX.busy && await uiConfirm(`선택한 ${n}건을 추출합니다. 시작할까요?`)) exExtractSel(); };
   $('#xft').addEventListener('click', async (ev) => {
     const b = ev.target.closest('button'); if (!b) return; const id = b.closest('tr').dataset.id; const f = EX.files.find((x) => x.id === id); if (!f) return;
     if (b.classList.contains('fop')) openRecordViewer(f.name, () => api('exemplarFileUrl', { id }), safeFn('[생기부] ' + f.name) + '.pdf');
     else if (b.classList.contains('fre')) exReextract(f);
     else if (b.classList.contains('fdl')) {
-      if (!confirm(`원본 PDF를 삭제할까요?\n${f.name}\n원본 PDF와 변환된 글자가 함께 지워지고, 되돌릴 수 없습니다.\n(이 파일에서 저장한 사례 ${f.cases}건은 그대로 남습니다.)`)) return;
-      try { await api('deleteExemplarFile', { id }); await exFilesReload(); } catch (er) { alert(er.message); }
+      if (!await uiConfirm(`원본 PDF를 삭제할까요?\n${f.name}\n원본 PDF와 변환된 글자가 함께 지워지고, 되돌릴 수 없습니다.\n(이 파일에서 저장한 사례 ${f.cases}건은 그대로 남습니다.)`)) return;
+      try { await api('deleteExemplarFile', { id }); await exFilesReload(); } catch (er) { uiAlert(er.message); }
     }
   });
-  exStopShow(EX.busy);
-  $('#xstop').onclick = () => { EX.stop = true; $('#xstop').disabled = true; $('#xstop').textContent = '중지 중…'; exLog('중지 요청 — 현재 단계가 끝나는 대로 멈춥니다', 'w'); };
-  $('#xgo').onclick = () => {
-    const e = $('#xe'); e.textContent = ''; const o = $('#xo').value, fs = [...$('#xf').files];
+  exStopShow(EX.busy && EX.runCx === 'u', 'u'); exStopShow(EX.busy && EX.runCx === 'x', 'x');
+  $('#xstop').onclick = () => stopFlow('xstop', '합격 사례 업로드', () => ({ run: EX.up.filter((u) => ['upl', 'par', 'sch'].includes(u.state)).map((u) => u.name), wait: EX.up.filter((u) => u.state === 'wait').length, done: EX.up.filter((u) => u.state === 'done').length }), () => (EX.stop = true), (m) => exLogCx(m, 'w', 'u'));
+  $('#xpstop').onclick = () => stopFlow('xpstop', '합격 사례 추출', () => { const e = EX.files.map((f) => [f.name, EX.xst[f.id]]); return { run: e.filter(([, x]) => x === 'ext').map(([n]) => n), wait: e.filter(([, x]) => x === 'wait').length, done: e.filter(([, x]) => x === 'done').length }; }, () => (EX.stopX = true), (m) => exLogCx(m, 'w', 'x'));
+  $('#xgo').onclick = async () => {
+    const e = $('#xe'); e.textContent = ''; const o = $('#xo').value, fs0 = [...$('#xf').files];
     if (!o) return (e.textContent = '합격 구분을 먼저 선택하세요.');
-    if (!fs.length) return (e.textContent = 'PDF 파일을 선택하세요.');
+    if (!fs0.length) return (e.textContent = 'PDF 파일을 선택하세요.');
     if (EX.busy) return;
+    const doneN = new Set(EX.up.filter((u) => u.state === 'done').map((u) => u.name)), fs = fs0.filter((f) => !doneN.has(f.name));
+    if (!fs.length) return (e.textContent = '선택한 파일은 모두 이미 업로드되었습니다.');
+    if (!await uiConfirm(`선택한 ${fs.length}개 파일을 "${OUT_KO[o]}"로 업로드합니다.${fs0.length !== fs.length ? `\n(이미 업로드된 ${fs0.length - fs.length}개는 제외)` : ''}\n시작할까요?`)) return;
     exProcess(fs, o, true);
   };
   const fl = () => { EX.f = { cat: $('#xfc').value, out: $('#xfo').value, q: $('#xfq').value }; exSavedRender(); };
@@ -1078,7 +1154,7 @@ async function viewEx() {
   ['xfc', 'xfo', 'xfq'].forEach((i) => ($('#' + i).oninput = fl));
   $('#xst').addEventListener('click', async (ev) => {
     const b = ev.target.closest('button'); if (!b) return; const tr = b.closest('tr'); const id = tr.dataset.id; const x = EX.saved.find((s) => s.id === id); if (!x) return;
-    if (b.classList.contains('xdl')) { if (!confirm('이 사례를 삭제할까요?')) return; try { await api('deleteExemplar', { id }); EX.saved = EX.saved.filter((s) => s.id !== id); exSavedRender(); exFilesReload(); } catch (er) { alert(er.message); } }
+    if (b.classList.contains('xdl')) { if (!await uiConfirm('이 사례를 삭제할까요?')) return; try { await api('deleteExemplar', { id }); EX.saved = EX.saved.filter((s) => s.id !== id); exSavedRender(); exFilesReload(); } catch (er) { uiAlert(er.message); } }
     else if (b.classList.contains('xed')) {
       tr.querySelector('.xcell').innerHTML = `<select class="xec" style="margin-bottom:6px;max-width:200px">${exCatOpts(x.category, '')}</select><textarea class="xev" rows="3" style="width:100%;font:inherit">${esc(x.content)}</textarea><div style="margin-top:6px"><button class="xsv" style="padding:4px 12px">저장</button> <button class="line xcx" style="padding:4px 12px">취소</button> <span class="xer" style="color:#dc2626;font-size:13px"></span></div>`;
     } else if (b.classList.contains('xcx')) exSavedRender();
@@ -1141,7 +1217,7 @@ async function viewSettings() {
   const loadP = () => { $('#pc').value = pr.prompts.find((p) => p.key === $('#pk').value).content; };
   $('#pk').onchange = loadP; loadP();
   $('#p1').onclick = async () => {
-    if (!confirm('이 지시문을 저장합니다. 이후 진단부터 적용됩니다.')) return;
+    if (!await uiConfirm('이 지시문을 저장합니다. 이후 진단부터 적용됩니다.')) return;
     try { await api('setPrompt', { key: $('#pk').value, content: $('#pc').value }); show('#e5', '저장했습니다.', 1); const k = $('#pk').value; const f = await api('listPrompts'); pr.prompts = f.prompts; } catch (e) { show('#e5', e.message); }
   };
   $('#p2').onclick = async () => {
@@ -1200,7 +1276,7 @@ async function downloadPdf(btn, name) {
       }
     }
     const a = document.createElement('a'); a.href = URL.createObjectURL(pdf.output('blob')); a.download = (name || '학생') + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  } catch (e) { alert(e.message || 'PDF를 만들지 못했습니다. 인쇄 버튼으로 PDF 저장을 이용해 주세요.'); }
+  } catch (e) { uiAlert(e.message || 'PDF를 만들지 못했습니다. 인쇄 버튼으로 PDF 저장을 이용해 주세요.'); }
   finally { if (wrap) wrap.remove(); if (st) st.remove(); btn.disabled = false; btn.textContent = label; }
 }
 
@@ -1304,7 +1380,7 @@ async function viewResult(aid, mode = 'teacher') {
   const adviceItems = adv ? `
     <div class="sum">${T(adv.summary)}</div>
     <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
-    ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
+    ${(adv.itemAdvice || []).filter((x) => x.no !== 27).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
       ${exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><ul>${exList(x.examples).map((e) => `<li>${esc(e)}</li>`).join('')}</ul></div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
@@ -1312,6 +1388,8 @@ async function viewResult(aid, mode = 'teacher') {
     : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b>${!par && t.why && T(t.why).trim() ? `<span class="w">${T(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}</div></div>`;
   const chk = (r) => (r.checks || []).length ? `<div class="sub"><b>학기 말 점검</b></div><ul class="wn">${r.checks.map((c) => `<li>${T(c)}</li>`).join('')}</ul>` : '';
   const terms = adv ? (adv.roadmap || []) : [];
+  const newRm = terms.length > 0 && terms[0] && terms[0].actions === undefined && terms[0].what !== undefined; // 새 형식: 학기 구분 없는 우선순위 목록
+  const task = (t, i) => `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b><span class="w">${t.term === '매 학기' ? '매 학기' : '권장 학기 ' + esc(t.term)}</span></div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}${!par && t.why ? `<div class="h" style="color:var(--sub);font-size:12.5px">${esc(t.why)}</div>` : ''}</div></div>`;
   const termCard = (r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${T(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>${chk(r)}`;
   const head3 = () => `<div class="rh"><div class="rh-c">생활기록부 진단 리포트</div><img class="rlogo" src="${LOGO_WIDE}" alt="와이즈만 송도센터"></div>`;
   const foot = (n, m) => `<div class="pf"><span>${m || '생활기록부 진단 · ' + esc(stu.name)}</span><span></span></div>`;
@@ -1319,8 +1397,12 @@ async function viewResult(aid, mode = 'teacher') {
   const rmNote = '<p class="muted" style="margin:2px 0 8px;font-size:13px">대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.</p>';
   const gateNote = g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류 탈락 가능성이 매우 높습니다.</div>` : '';
   const penalty = adv?.penaltyWarnings?.length ? `<div class="sub"><b>감점 주의</b><small>지켜야 할 점수</small></div><ul class="wn">${adv.penaltyWarnings.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : '';
-  const rmHead = `<div class="sec" style="margin-top:4px">${par ? '⑤' : '⑥'} 남은 학기별 실행 계획 추천</div>${rmNote}${gateNote}`;
-  const rmPages = terms.length
+  const rmHead = `<div class="sec" style="margin-top:4px">${par ? '⑤' : '⑥'} ${newRm ? '남은 학기 실행 계획 (우선순위 순)' : '남은 학기별 실행 계획 추천'}</div>${rmNote}${newRm ? '<p class="muted" style="margin:0 0 8px;font-size:13px">권장 학기는 점수가 반영되는 학기 안에서 앞 학기부터 배정했습니다. 순서대로 실행하되, 학교 일정에 맞춰 같은 학기 안에서 조정해도 됩니다.</p>' : ''}${gateNote}`;
+  const finalChk = newRm && (adv.finalChecks || []).length ? `<div class="sub"><b>전체 점검</b><small>실행 계획을 마친 뒤 확인</small></div><ul class="wn">${adv.finalChecks.map((c) => `<li>${T(c)}</li>`).join('')}</ul>` : '';
+  const PER_PAGE = 6, chunks = newRm ? Array.from({ length: Math.ceil(terms.length / PER_PAGE) }, (_, k) => terms.slice(k * PER_PAGE, (k + 1) * PER_PAGE)) : [];
+  const rmPages = newRm
+    ? chunks.map((c, k) => `<section class="page">${head3()}${k === 0 ? rmHead : ''}<div class="rt">${c.map((t, j) => task(t, k * PER_PAGE + j)).join('')}</div>${k === chunks.length - 1 ? finalChk + penalty : ''}${foot(4 + k)}</section>`).join('\n  ')
+    : terms.length
     ? terms.map((r, i) => `<section class="page">${head3()}${i === 0 ? rmHead : ''}${termCard(r)}${i === terms.length - 1 ? penalty : ''}${foot(4 + i)}</section>`).join('\n  ')
     : `<section class="page">${head3()}${rmHead}<p class="muted">실행 계획이 아직 없습니다.</p>${penalty}${foot(4)}</section>`;
 
@@ -1355,18 +1437,19 @@ async function viewResult(aid, mode = 'teacher') {
     ${head3()}
     <div class="sec" style="margin-top:4px">${par ? '④' : '⑤'} 종합 의견</div>
     ${adviceItems}
+    ${adm && adv && (adv.exampleShortage || []).length ? `<p class="muted" style="font-size:12.5px;margin-top:8px"><b>사례 부족 분류(관리자 전용):</b> ${adv.exampleShortage.map((x) => `${esc(x.label)} ${x.have}/${x.need}건`).join(' · ')} — 합격 사례를 더 추출하면 채워집니다.</p>` : ''}
     ${foot(3)}
   </section>
 
   ${rmPages}`;
-  app.querySelectorAll('.tabs a').forEach((t) => t.onclick = () => { if (t.dataset.m === 'admin' && role !== 'director') return alert('관리자에게 문의하세요.'); location.hash = '#/result/' + aid + '/' + t.dataset.m; });
-  const ask = (act) => confirm(`${par ? '학부모용' : '교사용'} 진단지입니다. ${act}하시겠습니까?` + (par ? '' : '\n(교사용은 학부모에게 제공하지 마세요.)'));
+  app.querySelectorAll('.tabs a').forEach((t) => t.onclick = () => { if (t.dataset.m === 'admin' && role !== 'director') return uiAlert('관리자에게 문의하세요.'); location.hash = '#/result/' + aid + '/' + t.dataset.m; });
+  const ask = async (act) => await uiConfirm(`${par ? '학부모용' : '교사용'} 진단지입니다. ${act}하시겠습니까?` + (par ? '' : '\n(교사용은 학부모에게 제공하지 마세요.)'));
   if ($('#pdf')) $('#pdf').onclick = () => { if (!ask('인쇄')) return; const ot = document.title; document.title = fname; window.onafterprint = () => { document.title = ot; window.onafterprint = null; }; print(); };
   if ($('#pdfdl')) $('#pdfdl').onclick = (ev) => { if (ask('PDF 다운로드')) downloadPdf(ev.target, fname); };
-  $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { alert(e.message); } };
-  const reAdv = async (btn) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (몇 분 걸릴 수 있습니다)'; try { await apiJob('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
+  $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { uiAlert(e.message); } };
+  const reAdv = async (btn) => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (몇 분 걸릴 수 있습니다)'; try { await apiJob('advise', { analysisId: aid }); viewResult(aid); } catch (e) { uiAlert(e.message); viewResult(aid); } };
   if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
-  if ($('#reAdv2')) $('#reAdv2').onclick = (ev) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); if (confirm('조언(보완 방법·실행 계획)만 새로 만듭니다. 점수는 바뀌지 않습니다.')) reAdv(ev.target); };
+  if ($('#reAdv2')) $('#reAdv2').onclick = async (ev) => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); if (await uiConfirm('조언(보완 방법·실행 계획)만 새로 만듭니다. 점수는 바뀌지 않습니다.')) reAdv(ev.target); };
 }
 
 route().catch((e) => { $('#main').innerHTML = `<div class="card err">${esc(e.message)}</div>`; });
