@@ -231,6 +231,47 @@ async function apiJob(action, body = {}) {
     if (Date.now() - t0 > 9 * 60 * 1000) throw new Error('작업이 시간 안에 끝나지 않았습니다.');
   }
 }
+// ── 생기부 뷰어 (참고 사이트와 같은 방식: 창 안에서 PDF.js 로 페이지를 그려 보여 주고, 다운로드 버튼 제공) ──
+let PDFJS_P = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve();
+  if (!PDFJS_P) PDFJS_P = new Promise((ok, no) => {
+    const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; ok(); };
+    sc.onerror = () => { PDFJS_P = null; no(new Error('PDF 뷰어 엔진을 불러오지 못했습니다.')); }; document.head.appendChild(sc);
+  });
+  return PDFJS_P;
+}
+const safeFn = (n) => String(n || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
+async function openRecordViewer(title, getUrl, fileName) {
+  let m = document.getElementById('pdfv');
+  if (!m) {
+    m = document.createElement('div'); m.id = 'pdfv';
+    m.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1000;display:flex;align-items:center;justify-content:center';
+    m.innerHTML = '<div style="background:#fff;border-radius:14px;width:min(1100px,95vw);height:96vh;display:flex;flex-direction:column;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid #e5e7eb;gap:10px"><h3 id="pdfvt" style="margin:0;font-size:16px"></h3><div style="display:flex;gap:8px"><button id="pdfvd">다운로드</button><button class="line" id="pdfvx">닫기</button></div></div><div id="pdfvc" style="flex:1;overflow:auto;background:#2a2a2a;padding:20px;box-sizing:border-box"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', (e) => { if (e.target === m) m.style.display = 'none'; });
+    m.querySelector('#pdfvx').onclick = () => { m.style.display = 'none'; document.getElementById('pdfvc').innerHTML = ''; };
+  }
+  const box = m.querySelector('#pdfvc'), dl = m.querySelector('#pdfvd'); m.style.display = 'flex';
+  m.querySelector('#pdfvt').textContent = '📄 ' + title;
+  box.innerHTML = '<div style="color:#fff;text-align:center;padding:60px 20px">생기부를 불러오는 중입니다…</div>';
+  dl.disabled = false;
+  dl.onclick = async () => {
+    dl.disabled = true;
+    try { const r = await fetch((await getUrl()).url); if (!r.ok) throw new Error('다운로드 실패 (' + r.status + ')'); const u = URL.createObjectURL(await r.blob()); const a = document.createElement('a'); a.href = u; a.download = fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); }
+    catch (e) { alert(e.message); } dl.disabled = false;
+  };
+  try {
+    const { url } = await getUrl(); await loadPdfJs();
+    const pdf = await window.pdfjsLib.getDocument(url).promise; box.innerHTML = '';
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const pg = await pdf.getPage(n), vp = pg.getViewport({ scale: 1.3 }), cv = document.createElement('canvas');
+      cv.width = vp.width; cv.height = vp.height; cv.style.cssText = 'display:block;margin:0 auto 20px;max-width:100%;box-shadow:0 4px 15px rgba(0,0,0,.5);border-radius:4px;background:#fff';
+      box.appendChild(cv); await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    }
+  } catch (e) { box.innerHTML = '<div style="color:#fff;text-align:center;padding:50px">미리보기를 불러오지 못했습니다: ' + esc(e.message) + '<br><br>오른쪽 위 "다운로드" 버튼으로 받아서 보실 수 있습니다.</div>'; }
+}
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
 const sch = (v) => String(v || '').trim().replace(/\s+/g, ' ').replace(/중학교$/, '중');
@@ -399,7 +440,7 @@ async function viewStudent(id) {
     <p class="muted">진단에는 2~5분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div></div>
   <div class="card"><h2>업로드한 생기부</h2><table><tbody>
     ${files.map((f) => `<tr><td>${new Date(f.uploaded_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[f.stage]}</span></td><td>${esc(f.file_name)}</td>
-      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line pv" data-id="${f.id}">파싱 보기</button> <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button></td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
+      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> <button class="line pv" data-id="${f.id}">파싱 보기</button> <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button></td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table class="ct"><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th>학부모용</th><th>교사용</th><th>관리자용</th><th>삭제</th></tr></thead><tbody>
     ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="parent">학부모용 열기</span></td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span></td><td style="white-space:nowrap"><span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 열기</span></td><td style="white-space:nowrap"><span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
@@ -425,6 +466,11 @@ async function viewStudent(id) {
       busy('학기별 조언을 만드는 중…'); try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
       location.hash = '#/result/' + r.analysis.id;
     } catch (e) { busy(''); $('#e2').textContent = e.message; b.disabled = false; }
+  });
+  app.querySelectorAll('.vw').forEach((b) => b.onclick = () => {
+    if (role !== 'director') return alert('관리자에게 문의하세요.');
+    const stg = STAGE[b.dataset.stage].replace(/\s*완료$/, '');
+    openRecordViewer(s.name + ' 학생 생기부 (' + stg + ')', () => api('recordFileUrl', { recordFileId: b.dataset.id }), safeFn('[생기부] ' + [s.name, sch(s.school), stg].filter(Boolean).join(' ')) + '.pdf');
   });
   app.querySelectorAll('.pv').forEach((b) => b.onclick = async () => {
     if (role !== 'director') return alert('관리자에게 문의하세요.');
@@ -660,7 +706,7 @@ function exFilesRender() {
   const n = EX.files.length, mb = EX.files.reduce((a, f) => a + (f.size || 0), 0);
   /* 0개일 땐 합계 표시 안 함 */
   document.getElementById('xfn').textContent = `보관 중 ${n}개${n ? ' · 합계 ' + fmtMB(mb) : ''}`;
-  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:200px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">열기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
+  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:250px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">생기부 보기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
 }
 async function exReextract(f) {
   if (EX.busy) return; EX.busy = true; EX.stop = false; exStopShow(true); const tag = f.name;
@@ -757,7 +803,7 @@ async function viewEx() {
   </div>
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">③ 저장된 합격 사례</h3>
-    <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:190px"><option value="">분류 전체</option>${exCatOpts('', '')}</select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"><span id="xcnt" class="muted" style="font-size:13px"></span></div>
+    <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:190px"><option value="">분류 전체</option>${exCatOpts('', '')}</select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"></div><div id="xcnt" class="muted" style="font-size:13px;margin-top:8px"></div>
     <div style="overflow:auto;max-height:520px;margin-top:10px"><table style="font-size:14px"><thead><tr><th>분류</th><th>구분</th><th>내용</th><th></th></tr></thead><tbody id="xst"></tbody></table></div>
   </div>
   <div class="card" style="max-width:1060px">
@@ -769,7 +815,7 @@ async function viewEx() {
   exCandRender(); exSavedRender(); exFilesRender();
   $('#xft').addEventListener('click', async (ev) => {
     const b = ev.target.closest('button'); if (!b) return; const id = b.closest('tr').dataset.id; const f = EX.files.find((x) => x.id === id); if (!f) return;
-    if (b.classList.contains('fop')) { const w = window.open('', '_blank'); try { const r = await api('exemplarFileUrl', { id }); if (w) w.location.href = r.url; else location.href = r.url; } catch (er) { if (w) w.close(); alert(er.message); } }
+    if (b.classList.contains('fop')) openRecordViewer(f.name, () => api('exemplarFileUrl', { id }), safeFn('[생기부] ' + f.name) + '.pdf');
     else if (b.classList.contains('fre')) exReextract(f);
     else if (b.classList.contains('fdl')) {
       if (!confirm(`원본 PDF를 삭제할까요?\n${f.name}\n원본 PDF와 변환된 글자가 함께 지워지고, 되돌릴 수 없습니다.\n(이 파일에서 저장한 사례 ${f.cases}건은 그대로 남습니다.)`)) return;
