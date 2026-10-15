@@ -148,7 +148,7 @@ a{color:var(--pri-t)}
 .sum{background:linear-gradient(135deg,#ecfeff,#ecfdf5);border:1px solid #a7f3d0;border-radius:14px;padding:14px 18px;font-size:15px;line-height:1.65}
 .adv{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:14px 0;background:#fcfffe;font-size:14.5px;line-height:1.6}
 .adv b{font-size:15.5px;margin-bottom:3px}.adv .w{display:inline-block;font-size:12.5px;color:var(--pri-t);background:var(--pri2);border-radius:8px;padding:2px 10px;white-space:nowrap;flex-shrink:0}.adv .ex{margin-top:8px;font-size:inherit;color:var(--sub)}.adv .ex b{display:inline;margin:0;font-size:inherit;color:var(--pri-t);font-weight:800}.adv .ex ul{margin:3px 0 0 18px;padding:0}.adv .ex li{margin:2px 0}.adv .ex .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}.adv .ex .chips span{display:inline-block;border:1px solid var(--line);background:#f8fafc;border-radius:999px;padding:2px 10px;font-size:13px;line-height:1.6;color:#334155}
-.rt{border:1px solid var(--line);border-radius:16px;padding:14px 18px 8px;margin:18px 0;background:#fff;break-inside:avoid}
+.rt2{margin:12px 0}.rt{border:1px solid var(--line);border-radius:16px;padding:14px 18px 8px;margin:18px 0;background:#fff;break-inside:avoid}
 .rt-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}.rt-h .pill{font-size:15px;padding:5px 14px;background:var(--pri);color:#fff}
 .rt-h span.f{font-size:15px;font-weight:700;color:var(--ink)}
 .ac{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:11px 0;border-top:1px dashed var(--line);break-inside:avoid}
@@ -1371,7 +1371,7 @@ async function viewResult(aid, mode = 'teacher') {
     <line x1="${tx1}" y1="${ty1}" x2="${tx2}" y2="${ty2}" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/></svg>
     <div class="c"><span>현재 점수</span><b>${s.currentTotal}</b><span>/ 400점</span></div></div>`;
   const hero = `<div class="hero">${ring}<div class="hs">
-    <div><span>목표 ${s.targetScore}점까지</span><b>${s.gapToTarget > 0 ? s.gapToTarget + '점 부족' : '달성'}</b></div>
+    <div><span>목표 ${s.targetScore}점까지 <small style="font-size:11.5px">(3-1학기 생기부 기준)</small></span><b>${s.gapToTarget > 0 ? s.gapToTarget + '점 부족' : '달성'}</b></div>
     <div><span>남은 학기 최대 도달</span><b>${s.bestCaseTotal}점</b></div>
     <div><span>반영 학기</span><b class="sm">${TERM_KO[a.stage]}까지 반영</b></div>
     <div><span>최대 도달 시 지원 구간</span><b class="sm">${esc(s.bestCaseBand)}</b></div></div></div>
@@ -1389,19 +1389,21 @@ async function viewResult(aid, mode = 'teacher') {
   const chk = (r) => (r.checks || []).length ? `<div class="sub"><b>학기 말 점검</b></div><ul class="wn">${r.checks.map((c) => `<li>${T(c)}</li>`).join('')}</ul>` : '';
   const terms = adv ? (adv.roadmap || []) : [];
   const newRm = terms.length > 0 && terms[0] && terms[0].actions === undefined && terms[0].what !== undefined; // 새 형식: 학기 구분 없는 우선순위 목록
-  const task = (t, i) => `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b><span class="w">${t.term === '매 학기' ? '매 학기' : '권장 학기 ' + esc(t.term)}</span></div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}${!par && t.why ? `<div class="h" style="color:var(--sub);font-size:12.5px">${esc(t.why)}</div>` : ''}</div></div>`;
+  const task = (t, i) => `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b><span style="display:flex;gap:6px;flex-shrink:0">${t.term === '매 학기' ? '<span class="w">매 학기</span>' : String(t.term).split(' · ').map((x) => `<span class="w">권장 ${esc(x)}</span>`).join('')}</span></div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}${!par && t.why ? `<div class="h" style="color:var(--sub);font-size:12.5px">${esc(t.why)}</div>` : ''}</div></div>`;
   const termCard = (r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${T(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>${chk(r)}`;
   const head3 = () => `<div class="rh"><div class="rh-c">생활기록부 진단 리포트</div><img class="rlogo" src="${LOGO_WIDE}" alt="와이즈만 송도센터"></div>`;
   const foot = (n, m) => `<div class="pf"><span>${m || '생활기록부 진단 · ' + esc(stu.name)}</span><span></span></div>`;
 
   const rmNote = '<p class="muted" style="margin:2px 0 8px;font-size:13px">대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.</p>';
   const gateNote = g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류 탈락 가능성이 매우 높습니다.</div>` : '';
-  const penalty = adv?.penaltyWarnings?.length ? `<div class="sub"><b>감점 주의</b><small>지켜야 할 점수</small></div><ul class="wn">${adv.penaltyWarnings.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : '';
+  // 감점 주의는 AI 문장 대신 점수표(감점형 항목)에 근거한 고정 문구만 쓴다.
+  const penaltyLines = [[[1, 2], '수학·과학 성취도는 남은 학기에 B 이하가 나오지 않도록 관리하십시오. (성취도 B 이하는 감점됩니다.)'], [[3], '국어·영어, 사회·역사·정보, 도덕·기술 과목의 성취 등급이 이전 학기보다 떨어지지 않도록 유지하십시오.'], [[24], '무단(미인정) 결석·지각·조퇴가 생기지 않도록 출결을 관리하십시오.'], [[30], '학교폭력·징계 관련 기록이나 인성 결함을 지적하는 표현(예: 이기적, 산만함, \'~하려는 노력이 필요함\')이 생기부에 기재되지 않도록 학교생활을 관리하십시오.']].filter(([nos]) => nos.some((n) => itm(n))).map(([, t]) => t);
+  const blk = (title, small, lines) => (lines.length ? `<div class="sub"><b>${title}</b><small>${small}</small></div><ul class="wn">${lines.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : '');
+  const penalty = blk('감점 주의', '지켜야 할 점수', penaltyLines);
   const rmHead = `<div class="sec" style="margin-top:4px">${par ? '⑤' : '⑥'} ${newRm ? '남은 학기 실행 계획 (우선순위 순)' : '남은 학기별 실행 계획 추천'}</div>${rmNote}${newRm ? '<p class="muted" style="margin:0 0 8px;font-size:13px">권장 학기는 점수가 반영되는 학기 안에서 앞 학기부터 배정했습니다. 순서대로 실행하되, 학교 일정에 맞춰 같은 학기 안에서 조정해도 됩니다.</p>' : ''}${gateNote}`;
-  const finalChk = newRm && (adv.finalChecks || []).length ? `<div class="sub"><b>전체 점검</b><small>실행 계획을 마친 뒤 확인</small></div><ul class="wn">${adv.finalChecks.map((c) => `<li>${T(c)}</li>`).join('')}</ul>` : '';
-  const PER_PAGE = 6, chunks = newRm ? Array.from({ length: Math.ceil(terms.length / PER_PAGE) }, (_, k) => terms.slice(k * PER_PAGE, (k + 1) * PER_PAGE)) : [];
+  const finalChk = newRm ? blk('전체 점검 및 감점 주의', '실행 계획을 마친 뒤 확인 · 지켜야 할 점수', [...(adv.finalChecks || []), ...penaltyLines]) : '';
   const rmPages = newRm
-    ? chunks.map((c, k) => `<section class="page">${head3()}${k === 0 ? rmHead : ''}<div class="rt">${c.map((t, j) => task(t, k * PER_PAGE + j)).join('')}</div>${k === chunks.length - 1 ? finalChk + penalty : ''}${foot(4 + k)}</section>`).join('\n  ')
+    ? `<section class="page">${head3()}${rmHead}<div class="rt2">${terms.map((t, j) => task(t, j)).join('')}</div>${finalChk}${foot(4)}</section>`
     : terms.length
     ? terms.map((r, i) => `<section class="page">${head3()}${i === 0 ? rmHead : ''}${termCard(r)}${i === terms.length - 1 ? penalty : ''}${foot(4 + i)}</section>`).join('\n  ')
     : `<section class="page">${head3()}${rmHead}<p class="muted">실행 계획이 아직 없습니다.</p>${penalty}${foot(4)}</section>`;
