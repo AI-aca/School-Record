@@ -415,7 +415,7 @@ async function route() {
   if (h === '#/exemplars') return role === 'director' ? viewEx() : viewList();
   if (h === '#/settings') return role === 'director' ? viewSettings() : viewList();
   if (h.startsWith('#/student/')) return viewStudent(h.split('/')[2]);
-  if (h.startsWith('#/result/')) { const m = h.split('/')[3]; return viewResult(h.split('/')[2], m === 'admin' && role === 'director' ? 'admin' : m === 'parent' ? 'parent' : 'teacher'); }
+  if (h.startsWith('#/result/')) { const m = h.split('/')[3]; return viewResult(h.split('/')[2], m === 'admin' && role === 'director' ? 'admin' : m === 'teacher' ? 'teacher' : 'parent'); }
   return viewList();
 }
 $('#regbtn').onclick = () => (location.hash = '#/new');
@@ -1338,7 +1338,7 @@ function viewGuide() {
 }
 
 // ── 결과 리포트 (4쪽): 1 진단 / 2 30개 항목 / 3 보완 항목 / 4 남은 학기 실행 계획 ──
-async function viewResult(aid, mode = 'teacher') {
+async function viewResult(aid, mode = 'parent') {
   const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const { analysis: a, student: stu } = await api('getAnalysis', { analysisId: aid });
   const s = a.scores_json, adv = a.advice_json, g = s.gate;
@@ -1409,9 +1409,10 @@ async function viewResult(aid, mode = 'teacher') {
     : `<section class="page">${head3()}${rmHead}<p class="muted">실행 계획이 아직 없습니다.</p>${penalty}${foot(4)}</section>`;
 
   app.innerHTML = `\n  <div class=\"row noprint\" style="margin-bottom:12px"><a href="#/student/${a.student_id}">← ${esc(stu.name)} 학생</a><span style="flex:1"></span>
-    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2" style="background:#64748b;border-color:#64748b;color:#fff">조언 다시 만들기</button>' : ''}${adm ? '' : '<button id="pdfdl">PDF 다운로드</button><button class="line" id="pdf" style="background:#0891b2;border-color:#0891b2;color:#fff">인쇄</button>'}</div>
+    <button class="line" id="orig">원본 생기부 PDF 열기</button>${adv ? '<button class="line" id="reAdv2" style="background:#64748b;border-color:#64748b;color:#fff">조언 다시 만들기</button>' : ''}${par ? '<button id="pdfdl">PDF 다운로드</button><button class="line" id="pdf" style="background:#0891b2;border-color:#0891b2;color:#fff">인쇄</button>' : ''}</div>
   <div class="tabs noprint"><a data-m="parent" class="${par ? 'on' : ''}">학부모용</a><a data-m="teacher" class="${mode === 'teacher' ? 'on' : ''}">교사용</a><a data-m="admin" class="${adm ? 'on' : ''}">관리자용</a></div>
-  ${adm ? '<div class="admwarn">관리자 전용 보기 · 항목별 점수·배점 포함 · 학부모에게 제공하지 마세요</div>' : ''}
+  ${adm ? '<div class="admwarn">관리자 전용 보기 · 항목별 점수·배점 포함 · 학부모에게 제공하지 마세요</div>' : mode === 'teacher' ? '<div class="admwarn">교사용 보기 · 인쇄·PDF 불가 · 학부모에게 제공하지 마세요</div>' : ''}
+  ${par ? '' : '<style>@media print{.page,.admwarn{display:none!important}.pnote{display:block!important}}</style><div class="pnote" style="display:none;font-size:18px;padding:40px">교사용·관리자용 화면은 인쇄할 수 없습니다. 학부모용 탭에서 인쇄해 주세요.</div>'}
 
   <section class="page">
     ${head3()}
