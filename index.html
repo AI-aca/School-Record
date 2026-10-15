@@ -295,7 +295,7 @@ async function viewList() {
       <td>${x.last ? `<span class="pill">${TERM_UP[x.last.stage]}</span>` : '<span class="muted">-</span>'}</td>
       <td>${x.last ? `<span class="sc" style="color:${x.last.total >= target ? '#059669' : '#0f172a'}">${x.last.total ?? ''}</span>` : '<span class="muted">-</span>'}</td>
       <td>${x.last?.gate ? `<span class="pill ${x.last.gate}">${GATE_LABEL[x.last.gate]}</span>` : '<span class="pill none">진단 전</span>'}</td>
-      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : ''}</td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}" data-m="parent">학부모용</span> <span class="btn-s rep" data-aid="${x.last.id}" data-m="teacher" style="background:#2563eb">교사용</span>` : '<span class="muted">-</span>'}</td><td style="text-align:center"><span class="btn-s">열기</span></td></tr>`).join('') || '<tr><td colspan=9 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
+      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : ''}</td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}" data-m="parent">학부모용 열기</span> <span class="btn-s rep" data-aid="${x.last.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span>` : '<span class="muted">-</span>'}</td><td style="text-align:center"><span class="btn-s">열기</span></td></tr>`).join('') || '<tr><td colspan=9 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
     app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
     app.querySelectorAll('.rep').forEach((b) => b.onclick = (e) => { e.stopPropagation(); location.hash = '#/result/' + b.dataset.aid + '/' + b.dataset.m; });
   };
@@ -343,7 +343,7 @@ async function viewStudent(id) {
       <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line pv" data-id="${f.id}">파싱 보기</button> <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button></td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table class="ct"><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th>학부모용</th><th>교사용</th><th>관리자용</th><th>삭제</th></tr></thead><tbody>
-    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="parent">학부모용</span></td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="teacher" style="background:#2563eb">교사용</span></td><td style="white-space:nowrap"><span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용</span></td><td style="white-space:nowrap"><span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
+    ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="parent">학부모용 열기</span></td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span></td><td style="white-space:nowrap"><span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 열기</span></td><td style="white-space:nowrap"><span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
   </tbody></table>
   ${role === 'director' ? '<div style="margin-top:12px"><button class="line" id="arch">이 학생 목록에서 숨기기</button></div>' : ''}</div>`;
   app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/result/' + tr.dataset.id));
@@ -528,7 +528,7 @@ function viewGuide() {
       '<b>초기 화면 상단:</b> 전체 학생, 진단 완료, 목표 점수 이상, 내신 주의·탈락 요건 학생 수를 한눈에 보여 줍니다.',
       '<b>찾기:</b> 학생명·학교 검색, 센터·내신 관문(통과/주의/탈락 요건/진단 전)·반영 학기 선택으로 목록을 좁힐 수 있습니다.',
       '<b>이력보기 열(맨 오른쪽):</b> <code>열기</code>를 누르면 학생 상세(진단 이력, 업로드한 생기부)로 이동합니다.',
-      '<b>진단지 보기 열:</b> <code>학부모용</code> 또는 <code>교사용</code>을 누르면 그 학생의 가장 최근 진단지가 해당 종류로 바로 열립니다.']) +
+      '<b>진단지 보기 열:</b> <code>학부모용 열기</code> 또는 <code>교사용 열기</code>를 누르면 그 학생의 가장 최근 진단지가 해당 종류로 바로 열립니다.']) +
     sec('2. 진단지(보고서) 읽기', [
       '<b>1쪽:</b> ① 내신(성취도) 관문 → ② 생기부 총점(목표까지 부족한 점수, 남은 학기 최대 도달 점수, 지원 구간) → ③ 영역별 현황.',
       '<b>2쪽(교사용만):</b> ④ 30개 항목 한눈에 보기. 항목별로는 점수가 아니라 달성 비율(%)로 표시됩니다. 학부모용에는 이 쪽이 없고 뒤 번호가 한 칸씩 당겨집니다.',
@@ -553,7 +553,7 @@ function viewGuide() {
       'PDF를 선택하고 <code>업로드하고 진단하기</code>를 누르면 ① PDF 텍스트 변환 → ② 영역별 근거 추출·채점 → ③ 학기별 조언 생성 순서로 진행되며 2~5분 걸립니다. 진행 중에는 창을 닫지 마세요.',
       '진단이 끝나면 진단 이력에 쌓이고, 이전 진단은 지워지지 않아 점수 변화를 비교할 수 있습니다.']) +
     sec('2. 관리자용 점수 보기', [
-      '학생 상세의 진단 이력에서 <code>관리자용</code>(또는 진단지 위쪽 관리자용 탭)를 누르면 항목별 점수·배점·"최대 +N점"이 모두 보이는 보고서가 열립니다.',
+      '학생 상세의 진단 이력에서 <code>관리자용 열기</code>(또는 진단지 위쪽 관리자용 탭)를 누르면 항목별 점수·배점·"최대 +N점"이 모두 보이는 보고서가 열립니다.',
       '학부모용 진단지(<code>열기</code>)와 달리 이 화면에는 인쇄 버튼이 없습니다. 배점이 노출되므로 학부모에게 보여 주거나 전달하지 마세요.']) +
     sec('3. 다시 진단과 조언 다시 만들기', [
       '<b>다시 진단:</b> 학생 상세의 업로드한 생기부 목록에서 누르면 저장된 텍스트로 다시 추출·채점하고 조언까지 새로 만듭니다. AI 지시문이나 점수 기준을 바꾼 뒤 적용할 때 사용합니다.',
