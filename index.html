@@ -143,7 +143,7 @@ a{color:var(--pri-t)}
 .pf{display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;border-top:1px solid var(--line);margin-top:22px;padding-top:8px}
 .sum{background:linear-gradient(135deg,#ecfeff,#ecfdf5);border:1px solid #a7f3d0;border-radius:14px;padding:14px 18px;font-size:15px;line-height:1.65}
 .adv{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:14px 0;background:#fcfffe;font-size:14.5px;line-height:1.6}
-.adv b{font-size:15.5px;margin-bottom:3px}.adv .w{display:inline-block;font-size:12.5px;color:var(--pri-t);background:var(--pri2);border-radius:8px;padding:2px 10px;white-space:nowrap;flex-shrink:0}.adv .ex{margin-top:6px;font-size:13.5px;color:var(--sub)}
+.adv b{font-size:15.5px;margin-bottom:3px}.adv .w{display:inline-block;font-size:12.5px;color:var(--pri-t);background:var(--pri2);border-radius:8px;padding:2px 10px;white-space:nowrap;flex-shrink:0}.adv .ex{margin-top:8px;font-size:inherit;color:var(--sub)}.adv .ex b{display:inline;margin:0;font-size:inherit;color:var(--pri-t);font-weight:800}.adv .ex ul{margin:3px 0 0 18px;padding:0}.adv .ex li{margin:2px 0}
 .rt{border:1px solid var(--line);border-radius:16px;padding:14px 18px 8px;margin:18px 0;background:#fff;break-inside:avoid}
 .rt-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}.rt-h .pill{font-size:15px;padding:5px 14px;background:var(--pri);color:#fff}
 .rt-h span.f{font-size:15px;font-weight:700;color:var(--ink)}
@@ -272,6 +272,7 @@ async function openRecordViewer(title, getUrl, fileName) {
     }
   } catch (e) { box.innerHTML = '<div style="color:#fff;text-align:center;padding:50px">미리보기를 불러오지 못했습니다: ' + esc(e.message) + '<br><br>오른쪽 위 "다운로드" 버튼으로 받아서 보실 수 있습니다.</div>'; }
 }
+const exList = (a) => (Array.isArray(a) ? a : []).map((t) => String(t ?? '').replace(/\s*[(（]\s*합격자\s*기록\s*사례\s*[)）]/g, '').replace(/\s*[(（]\s*학교에\s*개설된\s*것\s*중에서\s*[)）]/g, '').trim()).filter(Boolean);
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
 const sch = (v) => String(v || '').trim().replace(/\s+/g, ' ').replace(/중학교$/, '중');
@@ -1085,7 +1086,7 @@ async function viewResult(aid, mode = 'teacher') {
     <div class="sum">${T(adv.summary)}</div>
     <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
     ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
-      ${x.examples?.length ? `<div class="ex">합격자 기록 사례: ${x.examples.map(esc).join(' / ')}</div>` : ''}</div>`; }).join('')}`
+      ${exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><ul>${exList(x.examples).map((e) => `<li>${esc(e)}</li>`).join('')}</ul></div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
     ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${T(t)}</b></div></div>`
