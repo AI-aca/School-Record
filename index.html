@@ -568,8 +568,8 @@ async function viewBulk() {
     <div class="err" id="be"></div>
     <div id="bwrap" style="margin-top:14px;${BULK.items.length ? '' : 'display:none'}"><div style="overflow:auto"><table style="font-size:14px"><thead><tr><th style="text-align:left">파일명</th><th style="text-align:left;min-width:220px">연결된 학생</th><th>상태</th><th style="text-align:left">메모</th></tr></thead><tbody id="bt"></tbody></table></div>
     <div class="row" style="margin-top:12px;align-items:center"><button id="bgo"${BULK.phase === 'ready' ? '' : ' disabled'}>업로드하고 진단 시작</button><button class="line" id="bretry" disabled>실패만 다시 진단</button><span id="bsum" class="muted"></span></div></div>
-    <h3 style="margin:18px 0 6px;font-size:15px">진행 로그</h3><div id="blog" style="background:#0f172a;color:#cbd5e1;border-radius:10px;padding:10px 14px;height:180px;overflow:auto;font:12.5px/1.7 ui-monospace,Consolas,monospace"></div>
-  </div><style>#blog .o{color:#6ee7b7}#blog .x{color:#fca5a5}#blog .w{color:#fcd34d}</style>`;
+    <h3 style="margin:18px 0 6px;font-size:15px">진행 로그</h3><div id="blog" style="background:#f8fafc;border:1px solid #e5e7eb;color:#334155;border-radius:10px;padding:10px 14px;height:180px;overflow:auto;font-size:13px;line-height:1.8"></div>
+  </div><style>#blog:empty:before{content:'아직 진행 내용이 없습니다.';color:#94a3b8}#blog .o{color:#047857}#blog .x{color:#dc2626;font-weight:600}#blog .w{color:#b45309}</style>`;
   document.getElementById('blog').innerHTML = BULK.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
   bulkRender();
   const build = () => {
