@@ -219,6 +219,18 @@ async function api(action, body = {}) {
   if (!r.ok) throw new Error(j.error || '오류 ' + r.status);
   return j;
 }
+// 오래 걸리는 작업: 서버가 뒤에서 일하고, 여기서는 5초마다 확인(150초 제한 회피)
+async function apiJob(action, body = {}) {
+  const j = await api(action, body); if (!j.jobId) return j;
+  const t0 = Date.now(); let bad = 0;
+  for (;;) {
+    await new Promise((r) => setTimeout(r, 5000));
+    let s; try { s = await api('jobStatus', { jobId: j.jobId }); bad = 0; } catch (e) { if (++bad >= 4) throw e; continue; }
+    if (s.status === 'done') return s.result;
+    if (s.status === 'error') throw new Error(s.error || '작업 실패');
+    if (Date.now() - t0 > 9 * 60 * 1000) throw new Error('작업이 시간 안에 끝나지 않았습니다.');
+  }
+}
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
 const sch = (v) => String(v || '').trim().replace(/\s+/g, ' ').replace(/중학교$/, '중');
@@ -408,9 +420,9 @@ async function viewStudent(id) {
     if (role !== 'director') return alert('관리자에게 문의하세요.');
     b.disabled = true; $('#e2').textContent = '';
     try {
-      busy('저장된 생기부 텍스트로 다시 추출·채점 중… (1~2분)');
-      const r = await api('extract', { recordFileId: b.dataset.id, stage: b.dataset.stage });
-      busy('학기별 조언을 만드는 중…'); try { await api('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
+      busy('저장된 생기부 텍스트로 다시 추출·채점 중… (몇 분 걸릴 수 있습니다)');
+      const r = await apiJob('extract', { recordFileId: b.dataset.id, stage: b.dataset.stage });
+      busy('학기별 조언을 만드는 중…'); try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
       location.hash = '#/result/' + r.analysis.id;
     } catch (e) { busy(''); $('#e2').textContent = e.message; b.disabled = false; }
   });
@@ -445,12 +457,12 @@ async function viewStudent(id) {
       const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
       const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
       if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
-      busy('① PDF를 텍스트로 변환하는 중… (1~2분)');
-      const pr = await api('parse', { studentId: id, stage, path: u.path, fileName: f.name });
-      busy('② 영역별 근거를 추출하고 채점하는 중… (1~2분)');
-      const r = await api('extract', { recordFileId: pr.recordFileId, stage });
+      busy('① PDF를 텍스트로 변환하는 중… (몇 분 걸릴 수 있습니다)');
+      const pr = await apiJob('parse', { studentId: id, stage, path: u.path, fileName: f.name });
+      busy('② 영역별 근거를 추출하고 채점하는 중… (몇 분 걸릴 수 있습니다)');
+      const r = await apiJob('extract', { recordFileId: pr.recordFileId, stage });
       busy('③ 학기별 조언을 만드는 중…');
-      try { await api('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
+      try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
       location.hash = '#/result/' + r.analysis.id;
     } catch (e) { $('#e').textContent = e.message; prog.textContent = ''; $('#run').disabled = false; }
   };
@@ -530,7 +542,7 @@ async function bulkOne(it, force) {
   try {
     if (!it.rfId) {
       it.state = 'par'; it.msg = ''; bulkRender(); bulkLog(`${st.name} PDF 변환 시작`);
-      const pr = await bulkRetry(() => api('parse', { studentId: it.sid, stage: BULK.stage, path: it.path, fileName: it.file.name }), st.name + ' 변환');
+      const pr = await bulkRetry(() => apiJob('parse', { studentId: it.sid, stage: BULK.stage, path: it.path, fileName: it.file.name }), st.name + ' 변환');
       it.rfId = pr.recordFileId;
       if (!force) {
         const g = await api('getParsed', { recordFileId: it.rfId });
@@ -541,9 +553,9 @@ async function bulkOne(it, force) {
       }
     }
     it.state = 'ext'; it.msg = ''; bulkRender(); bulkLog(`${st.name} 채점 시작`);
-    const r = await bulkRetry(() => api('extract', { recordFileId: it.rfId, stage: BULK.stage }), st.name + ' 채점');
+    const r = await bulkRetry(() => apiJob('extract', { recordFileId: it.rfId, stage: BULK.stage }), st.name + ' 채점');
     it.state = 'adv'; bulkRender();
-    try { await api('advise', { analysisId: r.analysis.id }); } catch (e) { bulkLog(`${st.name} 조언 생성 실패(점수는 저장됨): ${e.message}`, 'w'); }
+    try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { bulkLog(`${st.name} 조언 생성 실패(점수는 저장됨): ${e.message}`, 'w'); }
     it.state = 'done'; it.aid = r.analysis.id; it.msg = (r.analysis.scores_json?.currentTotal ?? '') + '점';
     bulkLog(`${st.name} 완료 (${it.msg})`, 'o');
   } catch (e) { it.state = 'fail'; it.msg = e.message; bulkLog(`${st.name} 실패: ${e.message}`, 'x'); }
@@ -648,7 +660,7 @@ function exFilesRender() {
   const n = EX.files.length, mb = EX.files.reduce((a, f) => a + (f.size || 0), 0);
   /* 0개일 땐 합계 표시 안 함 */
   document.getElementById('xfn').textContent = `보관 중 ${n}개${n ? ' · 합계 ' + fmtMB(mb) : ''}`;
-  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:90px;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:200px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">열기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
+  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:200px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">열기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
 }
 async function exReextract(f) {
   if (EX.busy) return; EX.busy = true; EX.stop = false; exStopShow(true); const tag = f.name;
@@ -750,7 +762,7 @@ async function viewEx() {
   </div>
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 4px;font-size:15px">④ 보관된 원본 PDF</h3><div class="muted" id="xfn" style="font-size:13px;margin-bottom:8px"></div>
-    <div style="overflow:auto;max-height:360px"><table style="font-size:14px"><thead><tr><th>파일명</th><th>구분</th><th>크기</th><th>올린 날</th><th>사례</th><th></th></tr></thead><tbody id="xft"></tbody></table></div>
+    <div style="overflow:auto;max-height:360px"><table style="font-size:14px"><thead><tr><th>파일명</th><th>구분</th><th>크기</th><th style="white-space:nowrap">올린 날</th><th>사례</th><th></th></tr></thead><tbody id="xft"></tbody></table></div>
   </div>`;
   document.getElementById('xlog').innerHTML = EX.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
   const sty = document.createElement('style'); sty.textContent = '#xlog .o{color:#047857}#xlog .x{color:#dc2626;font-weight:600}#xlog .w{color:#b45309}#xlog:empty:before{content:"아직 진행 내용이 없습니다.";color:#94a3b8}'; app.appendChild(sty);
@@ -1077,7 +1089,7 @@ async function viewResult(aid, mode = 'teacher') {
   if ($('#pdf')) $('#pdf').onclick = () => { if (!ask('인쇄')) return; const ot = document.title; document.title = fname; window.onafterprint = () => { document.title = ot; window.onafterprint = null; }; print(); };
   if ($('#pdfdl')) $('#pdfdl').onclick = (ev) => { if (ask('PDF 다운로드')) downloadPdf(ev.target, fname); };
   $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { alert(e.message); } };
-  const reAdv = async (btn) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (1~2분)'; try { await api('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
+  const reAdv = async (btn) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (몇 분 걸릴 수 있습니다)'; try { await apiJob('advise', { analysisId: aid }); viewResult(aid); } catch (e) { alert(e.message); viewResult(aid); } };
   if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
   if ($('#reAdv2')) $('#reAdv2').onclick = (ev) => { if (role !== 'director') return alert('관리자에게 문의하세요.'); if (confirm('조언(보완 방법·실행 계획)만 새로 만듭니다. 점수는 바뀌지 않습니다.')) reAdv(ev.target); };
 }
