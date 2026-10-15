@@ -387,7 +387,7 @@ async function openRecordViewer(title, getUrl, fileName) {
     }
   } catch (e) { box.innerHTML = '<div style="color:#fff;text-align:center;padding:50px">미리보기를 불러오지 못했습니다: ' + esc(e.message) + '<br><br>오른쪽 위 "다운로드" 버튼으로 받아서 보실 수 있습니다.</div>'; }
 }
-const exList = (a) => (Array.isArray(a) ? a : []).map((t) => String(t ?? '').replace(/\s*[(（]\s*합격자\s*기록\s*사례\s*[)）]/g, '').replace(/\s*[(（]\s*학교에\s*개설된\s*것\s*중에서\s*[)）]/g, '').trim()).filter(Boolean);
+const exList = (a) => (Array.isArray(a) ? a : []).map((t) => String(t ?? '').replace(/\s*[(（]\s*합격자\s*기록\s*사례\s*[)）]/g, '').replace(/\s*[(（]\s*학교에\s*개설된\s*것\s*중에서\s*[)）]/g, '').replace(/\s*[(（][^()（）]*(?:\d{4}\s*[.\-\/년]|\d{1,2}\s*월|\d{1,2}\s*일|\d+\s*시간)[^()（）]*[)）]/g, '').replace(/\s{2,}/g, ' ').trim()).filter((t) => t && !/\d{4}\s*[.\-\/]\s*\d{1,2}|(?:19|20)\d\d\s*(?:년|학년도)|\d{1,2}\s*월\s*\d{1,2}\s*일/.test(t) && !/[가-힣]{2,}(?:초등학교|중학교|고등학교|대학교)/.test(t));
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
 const sch = (v) => String(v || '').trim().replace(/\s+/g, ' ').replace(/중학교$/, '중');
