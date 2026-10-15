@@ -1049,7 +1049,7 @@ async function viewResult(aid, mode = 'teacher') {
   const adm = mode === 'admin', par = mode === 'parent';
   const fname = `[리포트] ${stu.name} ${sch(stu.school)} ${TERM_KO[a.stage]}까지${mode === 'teacher' ? ' 교사용' : ''}`.replace(/\s+/g, ' ');
   const areaNames = ['학업역량', '진로적합성', '인성'];
-  const pub = (t) => adm ? String(t ?? '') : String(t ?? '').replace(/\s*[(（\[]?\s*(?:최대\s*)?[+＋]\s*\d+(?:\.\d+)?\s*점\s*[)）\]]?/g, '').trim();
+  const pub = (t) => { const x = adm ? String(t ?? '') : String(t ?? '').replace(/\s*[(（\[]?\s*(?:최대\s*)?[+＋]\s*\d+(?:\.\d+)?\s*점\s*[)）\]]?/g, '').trim(); return par ? x.replace(/\s*[(（\[]?\s*(?:연결\s*)?항목\s*\d+(?:\s*[·,~、및과와]\s*\d+)*\s*번?\s*[)）\]]?/g, '').trim() : x; };
   const T = (t) => esc(pub(t));
   const pc1 = (c, m) => (Math.max(0, c) / m * 100).toFixed(1) + '%';
   const remOf = (i) => s.items.filter((x) => x.area === i + 1).reduce((t, x) => t + x.remaining, 0);
@@ -1084,12 +1084,12 @@ async function viewResult(aid, mode = 'teacher') {
   const adviceItems = adv ? `
     <div class="sum">${T(adv.summary)}</div>
     <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
-    ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${x.no}. ${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
+    ${(adv.itemAdvice || []).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
       ${x.examples?.length ? `<div class="ex">합격자 기록 사례: ${x.examples.map(esc).join(' / ')}</div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
     ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${T(t)}</b></div></div>`
-    : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b>${t.why && T(t.why).trim() ? `<span class="w">${T(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}</div></div>`;
+    : `<div class="ac"><div class="n">${i + 1}</div><div><div class="ar2"><b>${T(t.what)}</b>${!par && t.why && T(t.why).trim() ? `<span class="w">${T(t.why)}</span>` : ''}</div>${t.how ? `<div class="h">${T(t.how)}</div>` : ''}</div></div>`;
   const chk = (r) => (r.checks || []).length ? `<div class="sub"><b>학기 말 점검</b></div><ul class="wn">${r.checks.map((c) => `<li>${T(c)}</li>`).join('')}</ul>` : '';
   const terms = adv ? (adv.roadmap || []) : [];
   const termCard = (r) => `<div class="rt"><div class="rt-h"><span class="pill">${esc(r.term)}학기</span>${r.focus ? `<span class="f">${T(r.focus)}</span>` : ''}</div>${(r.actions || []).map(act).join('')}</div>${chk(r)}`;
