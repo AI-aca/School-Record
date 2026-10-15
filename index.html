@@ -679,6 +679,8 @@ async function exWaitParse(fileId, tag) {
     if (sec - lastLog >= 30) { lastLog = sec; exLog(`${tag} 글자 변환 중… ${sec}초 경과`); }
   }
 }
+// 파일명 "[생기부] 서동우(✖️ 3차 탈락).pdf" → "서동우"
+const exPerson = (fn) => { const raw = String(fn || '').replace(/\.pdf$/i, ''); const n = raw.replace(/^(\s*\[[^\]]*\])+\s*/, '').replace(/[（(].*$/, '').trim(); return n || raw.trim(); };
 async function exWaitExtract(fileId, tag) {
   const t0 = Date.now(); let lastLog = 0, bad = 0;
   for (;;) {
@@ -706,7 +708,7 @@ async function exProcess(files, outcome, keep) {
       const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
       const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
       if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
-      const pr = await api('exemplarParse', { path: u.path, name: `[${OUT_KO[outcome]}] ${f.name}`, outcome });
+      const pr = await api('exemplarParse', { path: u.path, name: `${OUT_KO[outcome]} ${exPerson(f.name)}`, outcome });
       exLog(`${tag} 원본 PDF 저장 완료 · 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); exFilesReload();
       await exWaitParse(pr.fileId, tag);
       exLog(`${tag} 예시 문장·이름 추출 시작 (몇 분 걸릴 수 있습니다)`);
@@ -757,7 +759,7 @@ async function viewEx() {
     if (b.classList.contains('fop')) { const w = window.open('', '_blank'); try { const r = await api('exemplarFileUrl', { id }); if (w) w.location.href = r.url; else location.href = r.url; } catch (er) { if (w) w.close(); alert(er.message); } }
     else if (b.classList.contains('fre')) exReextract(f);
     else if (b.classList.contains('fdl')) {
-      if (!confirm(`원본 PDF를 삭제할까요?\n${f.name}\n(이 파일에서 저장한 사례 ${f.cases}건은 그대로 남습니다. 삭제하면 되돌릴 수 없습니다.)`)) return;
+      if (!confirm(`원본 PDF를 삭제할까요?\n${f.name}\n원본 PDF와 변환된 글자가 함께 지워지고, 되돌릴 수 없습니다.\n(이 파일에서 저장한 사례 ${f.cases}건은 그대로 남습니다.)`)) return;
       try { await api('deleteExemplarFile', { id }); await exFilesReload(); } catch (er) { alert(er.message); }
     }
   });
