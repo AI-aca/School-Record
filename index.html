@@ -366,8 +366,10 @@ async function viewStudent(id) {
   const app = $('#main'); app.innerHTML = '<div class="card">불러오는 중…</div>';
   const [{ students }, { analyses }, { files }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id }), api('listRecordFiles', { studentId: id })]);
   const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
+  let CENTERS_ = []; if (role === 'director') { try { CENTERS_ = (await api('getSettings')).centers || []; } catch (_) {} if (s.center_name && !CENTERS_.includes(s.center_name)) CENTERS_.push(s.center_name); }
   app.innerHTML = `
-  <div class="ph" style="align-items:center"><div class="sn"><h2>${esc(s.name)}</h2>${s.school ? `<span class="chip">${esc(sch(s.school))}</span>` : ''}${s.center_name ? `<span class="chip">${esc(s.center_name)}</span>` : ''}</div><div><a href="#/">← 학생 목록</a></div></div>
+  <div class="ph" style="align-items:center"><div class="sn"><h2>${esc(s.name)}</h2>${s.school ? `<span class="chip">${esc(sch(s.school))}</span>` : ''}${s.center_name ? `<span class="chip">${esc(s.center_name)}</span>` : ''}</div><div style="display:flex;gap:14px;align-items:center"><button class="line" id="editSt" style="padding:6px 14px">정보 수정</button><a href="#/">← 학생 목록</a></div></div>
+  <div class="card" id="stEdit" style="display:none"><div class="upg" style="grid-template-columns:1fr 1fr 1fr"><div><label>이름 *</label><input id="en" value="${esc(s.name)}"></div><div><label>학교</label><input id="es" value="${esc(sch(s.school))}"></div><div><label>센터 *</label><select id="ec"><option value="">선택</option>${CENTERS_.map((c) => `<option${c === s.center_name ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div></div><div class="err" id="ee"></div><div class="row" style="margin-top:12px"><button id="esave">저장</button><button class="line" id="ecx">취소</button></div></div>
   <div class="card"><div class="row" style="justify-content:space-between;align-items:center">
     <div><h2 class="t" style="margin:0">${analyses[0] ? '현재 반영 학기 <span class="hl">' + TERM_UP[analyses[0].stage] + '</span> · <span class="hl">' + (analyses[0].total ?? '') + '점</span>' : '아직 진단 기록이 없습니다'}</h2>
     <div class="muted" style="margin-top:4px">${analyses[0] ? '새 학기가 끝나면 최신 생기부로 업데이트하세요. 이전 진단은 이력에 남습니다.' : '생기부 PDF를 올려 첫 진단을 시작하세요.'}</div></div>
@@ -418,6 +420,13 @@ async function viewStudent(id) {
     if (!confirm('원본 PDF 파일을 완전히 삭제합니다. (파싱 텍스트와 진단 결과는 남습니다. 되돌릴 수 없습니다.)')) return;
     try { await api('deleteOriginal', { recordFileId: b.dataset.id }); viewStudent(id); } catch (e) { $('#e2').textContent = e.message; }
   });
+  $('#editSt').onclick = () => { if (role !== 'director') return alert('관리자에게 문의하세요.'); $('#stEdit').style.display = $('#stEdit').style.display === 'none' ? 'block' : 'none'; };
+  $('#ecx').onclick = () => ($('#stEdit').style.display = 'none');
+  $('#esave').onclick = async () => {
+    const e = $('#ee'); e.textContent = ''; const b = $('#esave'); b.disabled = true;
+    try { await api('updateStudent', { studentId: id, name: $('#en').value.trim(), school: $('#es').value, center_name: $('#ec').value }); viewStudent(id); }
+    catch (er) { e.textContent = er.message; b.disabled = false; }
+  };
   if ($('#openUp')) $('#openUp').onclick = () => { if (role !== 'director') return alert('관리자에게 문의하세요.'); $('#upBox').style.display = 'block'; $('#openUp').style.display = 'none'; };
   if ($('#closeUp')) $('#closeUp').onclick = () => { $('#upBox').style.display = 'none'; $('#openUp').style.display = ''; };
   if ($('#run')) $('#run').onclick = async () => {
