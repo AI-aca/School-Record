@@ -442,7 +442,7 @@ async function viewStudent(id) {
     <p class="muted">진단에는 2~5분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div></div>
   <div class="card"><h2>업로드한 생기부</h2><table><tbody>
     ${files.map((f) => `<tr><td>${new Date(f.uploaded_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[f.stage]}</span></td><td>${esc(f.file_name)}</td>
-      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> ${f.storage_path ? `<button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> ` : ''}<button class="line pv" data-id="${f.id}">파싱 보기</button>${f.storage_path ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ' <span class="muted" style="font-size:13px">원본 PDF 삭제됨</span>'}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
+      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> ${f.storage_path ? `<button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> ` : ''}<button class="line pv" data-id="${f.id}">파싱 보기</button>${f.storage_path ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ' <span class="muted" style="font-size:13px">원본 PDF 삭제됨</span> <button class="line dx" data-id="${f.id}">목록에서 삭제</button>'}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table class="ct"><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th>학부모용</th><th>교사용</th><th>관리자용</th><th>삭제</th></tr></thead><tbody>
     ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="parent">학부모용 열기</span></td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span></td><td style="white-space:nowrap"><span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 열기</span></td><td style="white-space:nowrap"><span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
@@ -481,7 +481,7 @@ async function viewStudent(id) {
   });
   app.querySelectorAll('.dx').forEach((b) => b.onclick = async () => {
     if (role !== 'director') return alert('관리자에게 문의하세요.');
-    if (!confirm('원본 PDF 파일을 삭제합니다.\n· 진단 기록이 없는 파일은 목록에서도 완전히 사라집니다.\n· 진단 기록이 있으면 파싱 텍스트와 진단 결과는 남습니다.\n되돌릴 수 없습니다.')) return;
+    if (!confirm(b.textContent.includes('목록에서') ? '이 파일을 목록에서 삭제합니다.\n(진단 기록이 있으면 줄은 남습니다.)' : '원본 PDF 파일을 삭제합니다.\n· 진단 기록이 없는 파일은 목록에서도 완전히 사라집니다.\n· 진단 기록이 있으면 파싱 텍스트와 진단 결과는 남습니다.\n되돌릴 수 없습니다.')) return;
     try { await api('deleteOriginal', { recordFileId: b.dataset.id }); viewStudent(id); } catch (e) { $('#e2').textContent = e.message; }
   });
   $('#editSt').onclick = () => { if (role !== 'director') return alert('관리자에게 문의하세요.'); $('#stEdit').style.display = $('#stEdit').style.display === 'none' ? 'block' : 'none'; };
@@ -623,7 +623,7 @@ async function bulkStart(onlyFailed) {
   document.getElementById('bgo')?.setAttribute('disabled', ''); document.getElementById('bretry')?.setAttribute('disabled', '');
   bulkRender();
   bulkLog(onlyFailed ? `실패 ${targets.length}건 다시 시작` : `업로드 시작 (${targets.length}건)`);
-  await bulkPool(targets.filter((i) => !i.path), 3, bulkUpload);
+  await bulkPool(targets.filter((i) => !i.path), 2, bulkUpload);
   const ready = targets.filter((i) => i.path && i.state !== 'fail');
   bulkLog(`업로드 끝 → PDF 변환 시작 (2건씩, ${ready.length}건)`);
   await bulkPool(ready, 2, (it) => bulkOne(it, false));
@@ -639,7 +639,7 @@ async function viewBulk() {
   if (BULK.phase === 'run') { /* 진행 중 상태 유지 */ }
   else if (BULK.phase !== 'end') { app.innerHTML = '<div class="card">불러오는 중…</div>'; BULK.students = (await api('listStudents')).students.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')); }
   app.innerHTML = `
-  <div class="card" style="max-width:980px">
+  <div class="card" style="max-width:1100px">
     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px"><b>학기가 같은 파일끼리만 한 번에 올려 주세요.</b> 학기가 다르면 나눠서 여러 번 올립니다. 진행 중에는 이 창을 닫지 마세요.</div>
     <div class="upg"><div><label>어느 학기까지 작성된 생기부인가요? *</label><select id="bstage"${BULK.phase === 'run' ? ' disabled' : ''}><option value="">선택하세요</option>${['A', 'B', 'C'].map((k) => `<option value="${k}"${BULK.stage === k ? ' selected' : ''}>${STAGE[k]} (${TERM_UP[k]})</option>`).join('')}</select></div>
     <div><label>생기부 PDF (여러 개 선택)</label><input id="bfiles" type="file" accept="application/pdf" multiple${BULK.phase === 'run' ? ' disabled' : ''}></div></div>
@@ -795,33 +795,52 @@ function exFilesRender() {
   document.getElementById('xfn').textContent = `보관 중 ${n}개${n ? ' · 합계 ' + fmtMB(mb) : ''}`;
   tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:330px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">생기부 보기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line frn" style="padding:4px 10px">이름 수정</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
 }
-async function exReextract(f) {
-  if (EX.busy) return; EX.busy = true; EX.stop = false; exStopShow(true); const tag = f.name;
+EX.xst = {};
+async function exRetry(fn, tag) {
+  for (let k = 0; ; k++) {
+    try { return await fn(); } catch (e) {
+      if (EX.stop || k >= 2) throw e;
+      exLog(`${tag} 재시도 ${k + 1}/2: ${e.message}`, 'w'); await sleep(8000);
+    }
+  }
+}
+async function exReextractCore(f) {
+  const tag = f.name, S = (v) => { EX.xst[f.id] = v; exPendRender(); };
   try {
-    let st = await api('exemplarParseStatus', { fileId: f.id }), text = st.text;
+    if (EX.stop) { S('skip'); exLog(`${tag} 건너뜀(중지됨)`, 'w'); return; }
+    S('ext');
+    let st = await api('exemplarParseStatus', { fileId: f.id });
     if (st.status === 'done') exLog(`${tag} 저장된 변환 글자로 바로 진행`);
-    else { if (st.status !== 'parsing') { exLog(`${tag} 보관된 원본에서 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); await api('exemplarParse', { fileId: f.id }); } else exLog(`${tag} 변환 진행 중인 작업에 이어서 대기`); text = await exWaitParse(f.id, tag); }
+    else { if (st.status !== 'parsing') { exLog(`${tag} 보관된 원본에서 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); await api('exemplarParse', { fileId: f.id }); } else exLog(`${tag} 변환 진행 중인 작업에 이어서 대기`); await exWaitParse(f.id, tag); }
     exLog(`${tag} 예시 문장·명칭 추출 시작 (몇 분 걸릴 수 있습니다)`);
-    await api('exemplarExtract', { fileId: f.id });
-    const r = await exWaitExtract(f.id, tag);
+    let first = true;
+    const r = await exRetry(async () => { if (!first) exLog(`${tag} 추출 다시 시작`); first = false; await api('exemplarExtract', { fileId: f.id }); return await exWaitExtract(f.id, tag); }, tag + ' 추출');
     r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome: f.outcome, file: f.name, fileId: f.id, checked: true }));
-    exLog(`${tag} 완료: 후보 ${r.items.length}개 (이미 저장된 것은 '이미 있음'으로 표시)`, 'o');
-  } catch (e) { exLog(`${tag} 실패: ${e.message}`, 'x'); }
+    exLog(`${tag} 완료: 후보 ${r.items.length}개 (이미 저장된 것은 '이미 있음'으로 표시)`, 'o'); S('done'); exCandRender();
+  } catch (e) { S('fail'); exLog(`${tag} 실패: ${e.message}`, 'x'); }
+}
+async function exReextract(f) {
+  if (EX.busy) return; EX.busy = true; EX.stop = false; exStopShow(true);
+  await exReextractCore(f);
   EX.busy = false; exStopShow(false); exCandRender(); await exFilesReload(); exPendRender();
 }
 EX.sel = new Set(); EX.showAll = false;
 function exPendRender() {
   const tb = document.getElementById('xpt'); if (!tb) return;
   const rows = EX.files.filter((f) => EX.showAll || !(f.cases > 0));
-  tb.innerHTML = rows.length ? rows.map((f) => `<tr data-id="${f.id}"><td style="width:34px"><input type="checkbox" class="pck" style="width:auto"${EX.sel.has(f.id) ? ' checked' : ''}${EX.busy ? ' disabled' : ''}></td><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:90px;font-size:12.5px">${f.cases > 0 ? '사례 ' + f.cases + '건' : '추출 대기'}</td></tr>`).join('') : '<tr><td colspan="5" class="muted" style="padding:14px">추출 대기 중인 파일이 없습니다. 먼저 ①에서 올려 주세요.</td></tr>';
+  tb.innerHTML = rows.length ? rows.map((f) => `<tr data-id="${f.id}"><td style="width:34px"><input type="checkbox" class="pck" style="width:auto"${EX.sel.has(f.id) ? ' checked' : ''}${EX.busy ? ' disabled' : ''}></td><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:110px;white-space:nowrap;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:90px;font-size:12.5px">${{ wait: '대기 중', ext: '추출 중…', done: '추출 완료', fail: '<span style="color:#dc2626">실패</span>', skip: '건너뜀' }[EX.xst[f.id]] || (f.cases > 0 ? '사례 ' + f.cases + '건' : '추출 대기')}</td></tr>`).join('') : '<tr><td colspan="5" class="muted" style="padding:14px">추출 대기 중인 파일이 없습니다. 먼저 ①에서 올려 주세요.</td></tr>';
   tb.querySelectorAll('.pck').forEach((c) => (c.onchange = () => { const id = c.closest('tr').dataset.id; c.checked ? EX.sel.add(id) : EX.sel.delete(id); exPendSum(); }));
   exPendSum();
 }
 function exPendSum() { const n = EX.files.filter((f) => (EX.showAll || !(f.cases > 0)) && EX.sel.has(f.id)).length; const b = document.getElementById('xpgo'); if (b) { b.textContent = `선택한 ${n}건 추출`; b.disabled = !n || EX.busy; } }
 async function exExtractSel() {
   const list = EX.files.filter((f) => (EX.showAll || !(f.cases > 0)) && EX.sel.has(f.id));
-  for (const f of list) { if (EX.stop) break; await exReextract(f); EX.sel.delete(f.id); }
-  exPendRender();
+  if (!list.length || EX.busy) return;
+  EX.busy = true; EX.stop = false; exStopShow(true); list.forEach((f) => (EX.xst[f.id] = 'wait')); exPendRender();
+  exLog(`추출 시작 (2개씩, ${list.length}건)`);
+  await bulkPool(list, 2, async (f) => { await exReextractCore(f); EX.sel.delete(f.id); });
+  EX.busy = false; exStopShow(false); exCandRender(); await exFilesReload(); exPendRender();
+  exLog('추출 단계 종료', 'o');
 }
 function exStopShow(on) { const b = document.getElementById('xstop'); if (b) { b.style.display = on ? '' : 'none'; b.disabled = false; b.textContent = '중지'; } }
 async function exWaitParse(fileId, tag) {
@@ -854,35 +873,58 @@ async function exWaitExtract(fileId, tag) {
     if (sec - lastLog >= 30) { lastLog = sec; exLog(`${tag} 추출 중… ${sec}초 경과`); }
   }
 }
+EX.up = []; let EX_TICK = null;
+function exUpRender() {
+  const el = document.getElementById('xut'); if (!el) return;
+  if (!EX.up.length) { el.innerHTML = ''; return; }
+  const L = { wait: '대기', upl: '업로드 중…', par: '글자 변환 중…', sch: '학교명 확인 중…', done: '완료(② 추출 목록으로)', fail: '실패', skip: '건너뜀' };
+  el.innerHTML = '<div style="overflow:auto;margin-top:12px"><table style="font-size:13.5px"><thead><tr><th style="text-align:left">파일</th><th style="text-align:left">상태</th><th style="text-align:left">경과</th></tr></thead><tbody>' + EX.up.map((u) => {
+    const sec = u.t0 && ['upl', 'par', 'sch'].includes(u.state) ? Math.round((Date.now() - u.t0) / 1000) : u.dur || 0;
+    const c = u.state === 'done' ? '#059669' : u.state === 'fail' ? '#dc2626' : '#475569';
+    return `<tr><td style="word-break:break-all">${esc(u.name)}</td><td style="color:${c};font-weight:600;white-space:nowrap">${L[u.state] || ''}${u.msg ? `<div style="font-weight:400;font-size:12px;color:#dc2626">${esc(u.msg)}</div>` : ''}</td><td style="white-space:nowrap;color:#64748b">${sec ? Math.floor(sec / 60) + '분 ' + (sec % 60) + '초' : ''}</td></tr>`;
+  }).join('') + '</tbody></table></div>';
+}
 async function exProcess(files, outcome, keep) {
   EX.busy = true; EX.stop = false; exStopShow(true); const go = document.getElementById('xgo'); if (go) go.disabled = true;
-  let ok = 0, fail = 0, total = 0;
-  for (let i = 0; i < files.length; i++) {
-    const f = files[i], tag = `(${i + 1}/${files.length}) ${f.name}`;
-    if (EX.stop) { exLog(`${tag} 건너뜀(중지됨)`, 'w'); continue; }
+  EX.up = files.map((f) => ({ name: f.name, state: 'wait', t0: 0, dur: 0, msg: '' })); exUpRender();
+  clearInterval(EX_TICK); EX_TICK = setInterval(exUpRender, 5000);
+  let ok = 0, fail = 0;
+  exLog(`업로드 시작 (2개씩, ${files.length}건)`);
+  const one = async (i) => {
+    const f = files[i], u = EX.up[i], tag = `(${i + 1}/${files.length}) ${f.name}`;
+    if (EX.stop) { u.state = 'skip'; exLog(`${tag} 건너뜀(중지됨)`, 'w'); exUpRender(); return; }
     let named = false, fid = null;
+    u.state = 'upl'; u.t0 = Date.now(); exUpRender();
     try {
       if (f.size > 18 * 1024 * 1024) throw new Error('18MB 초과');
       exLog(`${tag} 업로드 중`);
-      const u = await api('exemplarUploadUrl');
-      const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
-      const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
-      if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
-      const pr = await api('exemplarParse', { path: u.path, name: `${exPerson(f.name)} ${OUT_KO[outcome]}`, outcome });
-      fid = pr.fileId; exLog(`${tag} 원본 PDF 저장 완료 · 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); exFilesReload();
-      await exWaitParse(pr.fileId, tag);
-      exLog(`${tag} 학교명 확인 중`);
-      let school = ''; try { school = sch((await api('exemplarSchool', { fileId: pr.fileId })).school); } catch (_) { /* 못 읽으면 직접 입력 */ }
+      const path = await exRetry(async () => {
+        const up0 = await api('exemplarUploadUrl');
+        const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
+        const up = await fetch(up0.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
+        if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
+        return up0.path;
+      }, tag + ' 업로드');
+      const pr = await api('exemplarParse', { path, name: `${exPerson(f.name)} ${OUT_KO[outcome]}`, outcome });
+      fid = pr.fileId; u.state = 'par'; exUpRender(); exLog(`${tag} 원본 PDF 저장 완료 · 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); exFilesReload();
+      let first = true;
+      await exRetry(async () => { if (!first) await api('exemplarParse', { fileId: fid }); first = false; await exWaitParse(fid, tag); }, tag + ' 변환');
+      u.state = 'sch'; exUpRender(); exLog(`${tag} 학교명 확인 중`);
+      let school = ''; try { school = sch((await api('exemplarSchool', { fileId: fid })).school); } catch (_) { /* 못 읽으면 직접 입력 */ }
       if (!school) { const t = prompt(`"${f.name}" 에서 학교명을 찾지 못했습니다.\n학교명을 입력하세요. (비워 두면 학교명 없이 저장)`, ''); school = sch(t || ''); }
       const fin = [exPerson(f.name), school, OUT_KO[outcome]].filter(Boolean).join(' ');
-      await api('exemplarRename', { fileId: pr.fileId, name: fin }); named = true; exLog(`${tag} 이름 확정: [생기부] ${fin}`); exFilesReload();
-      ok++; exLog(`${tag} 업로드·변환 완료 → ② 추출 목록에서 선택해 추출하세요`, 'o');
-    } catch (e) { fail++; exLog(`${tag} 실패: ${e.message}`, 'x'); if (fid && !named) { try { await api('exemplarRename', { fileId: fid, name: [exPerson(f.name), OUT_KO[outcome]].filter(Boolean).join(' ') }); exFilesReload(); } catch (_) { /* 이름 정리 실패 */ } } }
-    exCandRender();
-  }
-  EX.busy = false; exStopShow(false); if (go) go.disabled = false;
-  await exFilesReload();
-  exLog(`전체 종료 — 업로드 완료 ${ok} · 실패 ${fail}`, fail ? 'w' : 'o'); exCandRender();
+      await api('exemplarRename', { fileId: fid, name: fin }); named = true; exLog(`${tag} 이름 확정: [생기부] ${fin}`); exFilesReload();
+      u.state = 'done'; u.dur = Math.round((Date.now() - u.t0) / 1000); ok++; exLog(`${tag} 업로드·변환 완료 → ② 추출 목록에서 선택해 추출하세요`, 'o');
+    } catch (e) {
+      fail++; u.state = 'fail'; u.msg = e.message; u.dur = Math.round((Date.now() - u.t0) / 1000); exLog(`${tag} 실패: ${e.message}`, 'x');
+      if (fid && !named) { try { await api('exemplarRename', { fileId: fid, name: [exPerson(f.name), OUT_KO[outcome]].filter(Boolean).join(' ') }); exFilesReload(); } catch (_) { /* 이름 정리 실패 */ } }
+    }
+    exUpRender();
+  };
+  let k = 0; await Promise.all(Array.from({ length: Math.min(2, files.length) }, async () => { while (k < files.length) { await one(k++); } }));
+  clearInterval(EX_TICK); EX.busy = false; exStopShow(false); if (go) go.disabled = false;
+  await exFilesReload(); exUpRender();
+  exLog(`전체 종료 — 업로드 완료 ${ok} · 실패 ${fail}`, fail ? 'w' : 'o');
 }
 async function viewEx() {
   const app = $('#main');
@@ -891,10 +933,12 @@ async function viewEx() {
   app.innerHTML = head('합격 사례 업로드', '합격자 생기부에서 예시 문장·명칭을 뽑아 저장하면, 학생 조언을 만들 때 예시로 쓰입니다.') + `
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">① 합격자 생기부 올리기 (업로드·PDF 변환·학교명 확인까지만)</h3>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px"><b>합격 구분이 같은 파일끼리만 한 번에 올려 주세요.</b> 구분이 다르면(예: 과학고 서류 합격 / 최종 합격) 나눠서 여러 번 올립니다. 진행 중에는 이 창을 닫지 마세요.</div>
     <div class="upg"><div><label>합격 구분 *</label><select id="xo"><option value="">선택하세요</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>
     <div><label>합격자 생기부 PDF (여러 개 선택)</label><input id="xf" type="file" accept="application/pdf" multiple></div></div>
     <div class="err" id="xe"></div>
     <div class="row" style="margin-top:10px;align-items:center"><button id="xgo">업로드</button><button id="xstop" class="line" style="display:none">중지</button><span class="muted" style="font-size:13px">PDF 하나에 몇 분 걸릴 수 있습니다(경과 시간이 아래 로그에 표시됩니다). 진행 중에는 이 창을 닫지 마세요.</span></div>
+    <div id="xut"></div>
     <div id="xlog" style="margin-top:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
     <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF는 비공개 저장소에 보관됩니다(관리자만 열람). 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
   </div>
@@ -921,7 +965,7 @@ async function viewEx() {
   </div>`;
   document.getElementById('xlog').innerHTML = EX.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
   const sty = document.createElement('style'); sty.textContent = '#xlog .o{color:#047857}#xlog .x{color:#dc2626;font-weight:600}#xlog .w{color:#b45309}#xlog:empty:before{content:"아직 진행 내용이 없습니다.";color:#94a3b8}'; app.appendChild(sty);
-  exCandRender(); exSavedRender(); exFilesRender(); exPendRender();
+  exCandRender(); exSavedRender(); exFilesRender(); exPendRender(); exUpRender();
   $('#pall').onclick = () => { EX.files.filter((f) => EX.showAll || !(f.cases > 0)).forEach((f) => EX.sel.add(f.id)); exPendRender(); };
   $('#pnone').onclick = () => { EX.sel.clear(); exPendRender(); };
   $('#pshow').checked = EX.showAll; $('#pshow').onchange = () => { EX.showAll = $('#pshow').checked; exPendRender(); };
