@@ -623,7 +623,7 @@ const exCatOpts = (sel, kind) => (kind === 'name' ? CAT_NAME : kind === 'text' ?
 const exHave = () => new Set(EX.saved.map((x) => x.category + '|' + exN(x.content)));
 function exCandRender() {
   const w = document.getElementById('xcw'); if (!w) return;
-  w.style.display = EX.cands.length ? '' : 'none';
+  document.getElementById('xcbody').style.display = EX.cands.length ? '' : 'none'; document.getElementById('xcempty').style.display = EX.cands.length ? 'none' : '';
   const have = exHave();
   EX.cands.forEach((c) => (c.dup = have.has(c.category + '|' + exN(c.content))));
   document.getElementById('xct').innerHTML = EX.cands.map((c) => `<tr data-id="${c.id}"><td style="width:34px"><input type="checkbox" class="xck"${c.checked && !c.dup ? ' checked' : ''}${c.dup ? ' disabled' : ''}></td>
@@ -737,10 +737,11 @@ async function viewEx() {
     <div id="xlog" style="margin-top:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
     <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF 보관을 체크하면 비공개 저장소에 보관되고(관리자만 열람), 끄면 글자만 뽑은 뒤 바로 삭제됩니다. 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
   </div>
-  <div class="card" id="xcw" style="max-width:1060px;display:none">
+  <div class="card" id="xcw" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">② 후보 확인 후 저장</h3>
-    <div style="overflow:auto;max-height:420px"><table style="font-size:14px"><thead><tr><th></th><th>분류</th><th>구분</th><th>내용 (고칠 수 있습니다)</th></tr></thead><tbody id="xct"></tbody></table></div>
-    <div class="row" style="margin-top:12px"><button id="xsave">저장</button><button class="line" id="xall">전체 선택</button><button class="line" id="xnone">전체 해제</button><button class="line" id="xclr">후보 비우기</button><span id="xmsg" class="muted"></span></div>
+    <div id="xcempty" class="muted" style="font-size:14px;padding:6px 0">아직 뽑은 후보가 없습니다. ①에서 PDF를 선택하고 "후보 뽑기"를 누르면 여기에 후보가 나타납니다. 내용을 확인·수정하고 저장하세요.</div>
+    <div id="xcbody" style="display:none"><div style="overflow:auto;max-height:420px"><table style="font-size:14px"><thead><tr><th></th><th>분류</th><th>구분</th><th>내용 (고칠 수 있습니다)</th></tr></thead><tbody id="xct"></tbody></table></div>
+    <div class="row" style="margin-top:12px"><button id="xsave">저장</button><button class="line" id="xall">전체 선택</button><button class="line" id="xnone">전체 해제</button><button class="line" id="xclr">후보 비우기</button><span id="xmsg" class="muted"></span></div></div>
   </div>
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">③ 저장된 합격 사례</h3>
