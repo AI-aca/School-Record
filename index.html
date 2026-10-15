@@ -91,6 +91,7 @@ tr.click{cursor:pointer}tr.click:hover{background:#f8fffd}
 ul.tight{margin:4px 0 0;padding-left:18px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;margin-bottom:16px}.g2 .card{margin-bottom:0;min-width:0}.g2 .card.fl{display:flex;flex-direction:column}.g2 .card.fl textarea{flex:1;min-height:110px}.g2 .card.fl button{align-self:flex-start}
 @media(max-width:900px){.g2{grid-template-columns:1fr}}
+.hl{color:#047857;font-weight:800}.upg{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:700px){.upg{grid-template-columns:1fr}}.flash{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;font-weight:700;border-radius:10px;padding:10px 14px;margin-bottom:14px}
 .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .tabs a{padding:8px 16px;border-radius:99px;background:#fff;border:1px solid var(--line);color:var(--sub);text-decoration:none;font-weight:600;cursor:pointer}
 .tabs a.on{background:var(--pri);border-color:var(--pri);color:#fff}
@@ -216,6 +217,7 @@ async function api(action, body = {}) {
 }
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
+const sch = (v) => String(v || '').trim().replace(/\s+/g, ' ').replace(/중학교$/, '중');
 const head = (t, sub, right = '') => `<div class="ph"><div><h2>${t}</h2><p>${sub || ''}</p></div><div>${right}</div></div>`;
 
 // ── 화면 전환 ──
@@ -276,7 +278,8 @@ async function viewList() {
   const [{ students }, st] = await Promise.all([api('listStudents'), api('getSettings')]);
   const target = st.scoring?.target ?? 310, centers = st.centers;
   const done = students.filter((x) => x.last), ok = done.filter((x) => x.last.total >= target), bad = done.filter((x) => x.last.gate === 'fail' || x.last.gate === 'warn');
-  app.innerHTML = head('초기 화면 (대시보드)', '과학고 지원 학생의 생기부 진단 현황', '') + `
+  let flash = ''; try { flash = sessionStorage.getItem('sr_flash') || ''; if (flash) sessionStorage.removeItem('sr_flash'); } catch (_) {}
+  app.innerHTML = head('초기 화면 (대시보드)', '과학고 지원 학생의 생기부 진단 현황', '') + (flash ? `<div class="flash">${esc(flash)}</div>` : '') + `
   <div class="stats">
     <div class="stat"><span>전체 학생</span><b>${students.length}</b></div>
     <div class="stat" style="--c:#06b6d4"><span>진단 완료</span><b>${done.length}</b></div>
@@ -289,36 +292,60 @@ async function viewList() {
     <select id="fg"><option value="">내신 관문 전체</option><option value="pass">통과</option><option value="warn">주의</option><option value="fail">탈락 요건</option><option value="none">진단 전</option></select>
     <select id="fs"><option value="">반영 학기 전체</option><option value="A">1-2까지</option><option value="B">2-1까지</option><option value="C">2-2까지</option><option value="none">진단 전</option></select>
   </div>
-  <div class="tw"><table class="ct"><thead><tr><th>센터</th><th>학생명</th><th>학교</th><th>반영 학기</th><th>점수</th><th>내신 관문</th><th>진단일</th><th style="text-align:center">학부모용</th><th style="text-align:center">교사용</th><th style="text-align:center">이력보기</th></tr></thead><tbody id="tb"></tbody></table></div>`;
+  <div class="tw"><table class="ct"><thead><tr><th>센터</th><th>학생명</th><th>학교</th><th>반영 학기</th><th>점수</th><th>내신 관문</th><th>진단일</th><th style="text-align:center">학부모용</th><th style="text-align:center">교사용</th><th style="text-align:center">업로드/이력</th></tr></thead><tbody id="tb"></tbody></table></div>`;
   const draw = () => {
     const q = $('#q').value.trim(), fc = $('#fc').value, fg = $('#fg').value, fs = $('#fs').value;
-    const rows = students.filter((x) => (!q || (x.name + (x.school || '')).includes(q)) && (!fc || x.center_name === fc) && (!fg || (fg === 'none' ? !x.last : x.last?.gate === fg)) && (!fs || (fs === 'none' ? !x.last : x.last?.stage === fs)));
-    $('#tb').innerHTML = rows.map((x) => `<tr class="click" data-id="${x.id}"><td>${esc(x.center_name)}</td><td><span class="chip">${esc(x.name)}</span></td><td>${esc(x.school)}</td>
+    const rows = students.filter((x) => (!q || (x.name + (x.school || '') + sch(x.school)).includes(q)) && (!fc || x.center_name === fc) && (!fg || (fg === 'none' ? !x.last : x.last?.gate === fg)) && (!fs || (fs === 'none' ? !x.last : x.last?.stage === fs)));
+    $('#tb').innerHTML = rows.map((x) => `<tr class="click" data-id="${x.id}"><td>${esc(x.center_name)}</td><td><span class="chip">${esc(x.name)}</span></td><td>${esc(sch(x.school))}</td>
       <td>${x.last ? `<span class="pill">${TERM_UP[x.last.stage]}</span>` : '<span class="muted">-</span>'}</td>
       <td>${x.last ? `<span class="sc" style="color:${x.last.total >= target ? '#059669' : '#0f172a'}">${x.last.total ?? ''}</span>` : '<span class="muted">-</span>'}</td>
       <td>${x.last?.gate ? `<span class="pill ${x.last.gate}">${GATE_LABEL[x.last.gate]}</span>` : '<span class="pill none">진단 전</span>'}</td>
-      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : ''}</td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}" data-m="parent">학부모용 열기</span>` : '<span class="muted">-</span>'}</td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span>` : '<span class="muted">-</span>'}</td><td style="text-align:center"><span class="btn-s" style="background:#64748b">열기</span></td></tr>`).join('') || '<tr><td colspan=10 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
+      <td class="muted">${x.last ? new Date(x.last.created_at).toLocaleDateString('ko-KR') : '미진단'}</td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}" data-m="parent">학부모용 열기</span>` : '<span class="muted">-</span>'}</td><td style="text-align:center">${x.last ? `<span class="btn-s rep" data-aid="${x.last.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span>` : '<span class="muted">-</span>'}</td><td style="text-align:center"><span class="btn-s" style="background:#64748b">열기</span></td></tr>`).join('') || '<tr><td colspan=10 class="muted" style="text-align:center;padding:28px">조건에 맞는 학생이 없습니다. 왼쪽 위 [학생 등록]으로 추가하세요.</td></tr>';
     app.querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => (location.hash = '#/student/' + tr.dataset.id));
     app.querySelectorAll('.rep').forEach((b) => b.onclick = (e) => { e.stopPropagation(); location.hash = '#/result/' + b.dataset.aid + '/' + b.dataset.m; });
   };
   ['q', 'fc', 'fg', 'fs'].forEach((i) => ($('#' + i).oninput = draw)); draw();
 }
 
-// ── 학생 등록 ──
+// ── 학생 등록(여러 명) ──
 async function viewNew() {
   const app = $('#main'); const { centers } = await api('getSettings');
-  app.innerHTML = head('학생 등록', '새 학생의 기본 정보를 입력하세요. 등록 후 생기부 PDF를 올립니다.') + `
-  <div class="card" style="max-width:640px"><div class="grid2">
-      <div><label>이름 *</label><input id="n"></div><div><label>학교</label><input id="sc"></div>
-      <div><label>센터 *</label><select id="ce"><option value="">선택</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}</select></div>
-    </div><label>메모</label><input id="me">
-    <div class="err" id="e"></div><div class="row" style="margin-top:14px"><button id="add">등록</button><button class="line" id="cx">취소</button></div></div>`;
+  const opts = (first) => `<option value="">${first}</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}`;
+  const rowHtml = () => `<tr class="nr"><td><input class="rn" placeholder="이름"></td><td><input class="rsc" placeholder="학교"></td><td><select class="rce">${opts('기본 센터')}</select></td><td class="re" style="color:#dc2626;font-size:13px;min-width:90px"></td><td><button class="line rx" title="이 줄 삭제" style="padding:6px 10px">✕</button></td></tr>`;
+  app.innerHTML = head('학생 등록', '한 명이든 여러 명이든 아래 표에 입력하고 한 번에 등록합니다. 등록 후 초기 화면으로 이동합니다.') + `
+  <div class="card" style="max-width:820px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><b>기본 센터 *</b><select id="dce" style="max-width:220px">${opts('선택')}</select><span class="muted" style="font-size:13px">줄마다 센터를 따로 고르지 않으면 이 센터로 등록됩니다.</span></div>
+    <table id="nt" style="font-size:14px"><thead><tr><th style="text-align:left;width:26%">이름 *</th><th style="text-align:left;width:34%">학교</th><th style="text-align:left;width:24%">센터</th><th></th><th></th></tr></thead><tbody id="ntb">${rowHtml().repeat(3)}</tbody></table>
+    <div class="row" style="margin-top:10px"><button class="line" id="addrow">+ 줄 추가</button><button class="line" id="addrow5">+ 5줄 추가</button></div>
+    <div class="err" id="e" style="margin-top:8px"></div>
+    <div class="row" style="margin-top:14px"><button id="add">등록</button><button class="line" id="cx">취소</button></div></div>`;
+  const tb = $('#ntb');
+  const bindRx = () => tb.querySelectorAll('.rx').forEach((b) => b.onclick = () => { if (tb.querySelectorAll('tr.nr').length > 1) b.closest('tr').remove(); else { b.closest('tr').querySelectorAll('input').forEach((i) => (i.value = '')); } });
+  const addRows = (n) => { tb.insertAdjacentHTML('beforeend', rowHtml().repeat(n)); bindRx(); };
+  bindRx();
+  $('#addrow').onclick = () => addRows(1); $('#addrow5').onclick = () => addRows(5);
   $('#cx').onclick = () => (location.hash = '#/');
   $('#add').onclick = async () => {
-    if (!$('#n').value.trim()) { $('#e').textContent = '이름을 입력하세요.'; return; }
-    if (!$('#ce').value) { $('#e').textContent = '센터를 선택하세요.'; return; }
-    try { const r = await api('addStudent', { name: $('#n').value.trim(), school: $('#sc').value, center_name: $('#ce').value, memo: $('#me').value }); location.hash = '#/student/' + r.student.id; }
-    catch (e) { $('#e').textContent = e.message; }
+    const e = $('#e'); e.textContent = ''; const btn = $('#add');
+    const rows = [...tb.querySelectorAll('tr.nr')].map((tr) => ({ tr, name: tr.querySelector('.rn').value.trim(), school: sch(tr.querySelector('.rsc').value), center: tr.querySelector('.rce').value || $('#dce').value })).filter((x) => x.name);
+    tb.querySelectorAll('.re').forEach((c) => (c.textContent = ''));
+    if (!rows.length) { e.textContent = '이름을 한 명 이상 입력하세요.'; return; }
+    let bad = false; rows.forEach((x) => { if (!x.center) { x.tr.querySelector('.re').textContent = '센터 선택'; bad = true; } });
+    if (bad) { e.textContent = '센터가 없는 줄이 있습니다. 위의 기본 센터를 고르거나 줄마다 센터를 선택하세요.'; return; }
+    btn.disabled = true; btn.textContent = '등록 중…';
+    let exist = new Set();
+    try { const { students } = await api('listStudents'); exist = new Set(students.map((s) => [s.name, sch(s.school), s.center_name || ''].join('|'))); } catch (_) {}
+    let ok = 0, fail = 0;
+    for (const x of rows) {
+      const key = [x.name, x.school, x.center].join('|'), cell = x.tr.querySelector('.re');
+      if (exist.has(key)) { cell.textContent = '이미 등록됨'; fail++; continue; }
+      try { await api('addStudent', { name: x.name, school: x.school, center_name: x.center }); exist.add(key); ok++; x.tr.remove(); }
+      catch (er) { cell.textContent = er.message || '실패'; fail++; }
+    }
+    btn.disabled = false; btn.textContent = '등록';
+    if (!fail) { try { sessionStorage.setItem('sr_flash', ok + '명을 등록했습니다.'); } catch (_) {} location.hash = '#/'; return; }
+    e.textContent = ok + '명을 등록했습니다. 표에 남은 ' + fail + '줄은 등록되지 않았습니다(오른쪽 사유 확인).';
+    if (!tb.querySelectorAll('tr.nr').length) addRows(1);
   };
 }
 
@@ -328,15 +355,15 @@ async function viewStudent(id) {
   const [{ students }, { analyses }, { files }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id }), api('listRecordFiles', { studentId: id })]);
   const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
   app.innerHTML = `
-  <div class="ph" style="align-items:center"><div class="sn"><h2>${esc(s.name)}</h2>${s.school ? `<span class="chip">${esc(s.school)}</span>` : ''}${s.center_name ? `<span class="chip">${esc(s.center_name)}</span>` : ''}</div><div><a href="#/">← 학생 목록</a></div></div>
+  <div class="ph" style="align-items:center"><div class="sn"><h2>${esc(s.name)}</h2>${s.school ? `<span class="chip">${esc(sch(s.school))}</span>` : ''}${s.center_name ? `<span class="chip">${esc(s.center_name)}</span>` : ''}</div><div><a href="#/">← 학생 목록</a></div></div>
   <div class="card"><div class="row" style="justify-content:space-between;align-items:center">
-    <div><h2 class="t" style="margin:0">${analyses[0] ? '현재 반영 학기 ' + TERM_UP[analyses[0].stage] + ' · ' + (analyses[0].total ?? '') + '점' : '아직 진단 기록이 없습니다'}</h2>
+    <div><h2 class="t" style="margin:0">${analyses[0] ? '현재 반영 학기 <span class="hl">' + TERM_UP[analyses[0].stage] + '</span> · <span class="hl">' + (analyses[0].total ?? '') + '점</span>' : '아직 진단 기록이 없습니다'}</h2>
     <div class="muted" style="margin-top:4px">${analyses[0] ? '새 학기가 끝나면 최신 생기부로 업데이트하세요. 이전 진단은 이력에 남습니다.' : '생기부 PDF를 올려 첫 진단을 시작하세요.'}</div></div>
     <button id="openUp">${analyses[0] ? '생기부 업데이트' : '첫 생기부 올리기'}</button></div>
     <div id="upBox" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid #e5e7eb">
-    <label>업데이트할 학기 (생기부가 어디까지 작성되어 있나요?)</label>
-    <select id="stage"><option value="">선택하세요</option>${['A', 'B', 'C'].map((k) => `<option value="${k}">${STAGE[k]} (${TERM_UP[k]})</option>`).join('')}</select>
-    <label>업데이트할 생기부 PDF</label><input id="file" type="file" accept="application/pdf">
+    <div class="upg"><div><label>업데이트할 학기 (생기부가 어디까지 작성되어 있나요?)</label>
+    <select id="stage"><option value="">선택하세요</option>${['A', 'B', 'C'].map((k) => `<option value="${k}">${STAGE[k]} (${TERM_UP[k]})</option>`).join('')}</select></div>
+    <div><label>업데이트할 생기부 PDF</label><input id="file" type="file" accept="application/pdf"></div></div>
     <div class="err" id="e"></div><div id="prog" class="muted" style="margin-top:10px"></div>
     <div class="row" style="margin-top:12px"><button id="run">업로드하고 진단하기</button><button class="line" id="closeUp">닫기</button></div>
     <p class="muted">진단에는 2~5분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div></div>
@@ -421,7 +448,7 @@ async function viewSettings() {
     <div class="err" id="e2"></div><button id="sc2" style="margin-top:8px">기준 저장</button></div></div>
 
   <div class="g2"><div class="card"><h2>숨긴 학생</h2><table><tbody>
-    ${ar.students.map((x) => `<tr><td><b>${esc(x.name)}</b> <span class="muted">${esc(x.school)} · ${esc(x.center_name)}</span></td><td style="text-align:right;white-space:nowrap"><button class="line rsb" data-id="${x.id}">복구</button> <button class="line dl" data-id="${x.id}" data-name="${esc(x.name)}">완전 삭제</button></td></tr>`).join('') || '<tr><td class="muted">숨긴 학생이 없습니다.</td></tr>'}
+    ${ar.students.map((x) => `<tr><td><b>${esc(x.name)}</b> <span class="muted">${esc(sch(x.school))} · ${esc(x.center_name)}</span></td><td style="text-align:right;white-space:nowrap"><button class="line rsb" data-id="${x.id}">복구</button> <button class="line dl" data-id="${x.id}" data-name="${esc(x.name)}">완전 삭제</button></td></tr>`).join('') || '<tr><td class="muted">숨긴 학생이 없습니다.</td></tr>'}
   </tbody></table><div class="err" id="e3"></div></div>
 
   <div class="card"><h2>비밀번호 변경</h2>
@@ -526,10 +553,10 @@ function viewGuide() {
   const part = (t, c) => `<div class="gh" style="--c:${c}">${t}</div>`;
   const teacher = part('강사 사용 안내', '#10b981') +
     sec('1. 학생 등록과 초기 화면', [
-      '<b>학생 등록:</b> 사이드바 <code>학생 등록</code> → 이름(필수) · 학교 · 센터(필수) · 메모를 입력합니다. 등록할 때 생기부를 올릴 필요는 없습니다.',
+      '<b>학생 등록:</b> 사이드바 <code>학생 등록</code> → 기본 센터를 고르고 표에 이름(필수)·학교를 입력합니다. 여러 명은 <code>+ 줄 추가</code>로 늘려 한 번에 등록하며, 줄마다 센터를 따로 고를 수도 있습니다. 같은 이름·학교·센터의 학생이 이미 있으면 건너뜁니다. 등록이 끝나면 초기 화면으로 이동하고, 생기부 업로드는 <code>업로드/이력</code> 열의 <code>열기</code>에서 합니다.',
       '<b>초기 화면 상단:</b> 전체 학생, 진단 완료, 목표 점수 이상, 내신 주의·탈락 요건 학생 수를 한눈에 보여 줍니다.',
       '<b>찾기:</b> 학생명·학교 검색, 센터·내신 관문(통과/주의/탈락 요건/진단 전)·반영 학기 선택으로 목록을 좁힐 수 있습니다.',
-      '<b>이력보기 열(맨 오른쪽):</b> <code>열기</code>를 누르면 학생 상세(진단 이력, 업로드한 생기부)로 이동합니다.',
+      '<b>업로드/이력 열(맨 오른쪽):</b> <code>열기</code>를 누르면 학생 상세(진단 이력, 업로드한 생기부)로 이동합니다.',
       '<b>학부모용·교사용 열:</b> <code>학부모용 열기</code> 또는 <code>교사용 열기</code>를 누르면 그 학생의 가장 최근 진단지가 해당 종류로 바로 열립니다.']) +
     sec('2. 진단지(보고서) 읽기', [
       '<b>1쪽:</b> ① 내신(성취도) 관문 → ② 생기부 총점(목표까지 부족한 점수, 남은 학기 최대 도달 점수, 지원 구간) → ③ 영역별 현황.',
@@ -581,7 +608,7 @@ async function viewResult(aid, mode = 'teacher') {
   const { analysis: a, student: stu } = await api('getAnalysis', { analysisId: aid });
   const s = a.scores_json, adv = a.advice_json, g = s.gate;
   const adm = mode === 'admin', par = mode === 'parent';
-  const fname = `${stu.name} ${stu.school || ''} ${TERM_KO[a.stage]}까지${mode === 'teacher' ? ' 교사용' : ''}`.replace(/\s+/g, ' ');
+  const fname = `${stu.name} ${sch(stu.school)} ${TERM_KO[a.stage]}까지${mode === 'teacher' ? ' 교사용' : ''}`.replace(/\s+/g, ' ');
   const areaNames = ['학업역량', '진로적합성', '인성'];
   const pub = (t) => adm ? String(t ?? '') : String(t ?? '').replace(/\s*[(（\[]?\s*(?:최대\s*)?[+＋]\s*\d+(?:\.\d+)?\s*점\s*[)）\]]?/g, '').trim();
   const T = (t) => esc(pub(t));
@@ -645,7 +672,7 @@ async function viewResult(aid, mode = 'teacher') {
 
   <section class="page">
     ${head3()}
-    <div class="rs"><h2>${esc(stu.name)}</h2><div class="meta"><span class="pill none">${esc(stu.school || '학교 미입력')}</span><span class="pill none">${esc(stu.center_name || '')}</span><span class="pill">반영 학기 ${TERM_UP[a.stage]}</span></div></div>
+    <div class="rs"><h2>${esc(stu.name)}</h2><div class="meta"><span class="pill none">${esc(sch(stu.school) || '학교 미입력')}</span><span class="pill none">${esc(stu.center_name || '')}</span><span class="pill">반영 학기 ${TERM_UP[a.stage]}</span></div></div>
     ${g ? '<div class="sec" style="margin-top:4px">① 내신(성취도) 관문</div>' : ''}
     ${gateHtml}
     <div class="sec">② 생기부 총점 <small>내신 관문 통과 후 평가</small></div>
