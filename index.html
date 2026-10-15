@@ -613,7 +613,7 @@ const OUT_KO = { sci_doc: '과학고 서류 합격', sci_final: '과학고 최�
 const CAT_KO = { sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '협업·토론', leadership_roles: '리더십·임원', teacher_top_rec: '교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망' };
 const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_deep', 'behavior_gifted', 'interest_activity', 'group_debate', 'leadership_roles', 'teacher_top_rec'];
 const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career'];
-const EX = { loaded: false, saved: [], files: [], cands: [], logs: [], busy: false, f: { cat: '', out: '', q: '' }, seq: 0 };
+const EX = { loaded: false, saved: [], files: [], cands: [], logs: [], busy: false, stop: false, f: { cat: '', out: '', q: '' }, seq: 0 };
 const exN = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 function exLog(msg, kind = '') {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false }); EX.logs.push({ t, msg, kind });
@@ -646,26 +646,44 @@ async function exFilesReload() { try { EX.files = (await api('listExemplarFiles'
 function exFilesRender() {
   const tb = document.getElementById('xft'); if (!tb) return;
   const n = EX.files.length, mb = EX.files.reduce((a, f) => a + (f.size || 0), 0);
-  document.getElementById('xfn').textContent = `보관 중 ${n}개 · 합계 ${fmtMB(mb)}`;
-  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:90px;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:200px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">열기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
+  /* 0개일 땐 합계 표시 안 함 */
+  document.getElementById('xfn').textContent = `보관 중 ${n}개${n ? ' · 합계 ' + fmtMB(mb) : ''}`;
+  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}${f.parse_status === 'parsing' ? '<br><span style="color:#b45309;font-size:12px">글자 변환 중…</span>' : f.parse_status === 'error' ? `<br><span style="color:#dc2626;font-size:12px">변환 실패: ${esc(f.parse_error || '')}</span>` : ''}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:90px;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:200px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">열기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
 }
 async function exReextract(f) {
-  if (EX.busy) return; EX.busy = true; const tag = f.name;
+  if (EX.busy) return; EX.busy = true; EX.stop = false; exStopShow(true); const tag = f.name;
   try {
-    exLog(`${tag} 보관된 원본에서 다시 변환 중 (1~2분)`);
-    const pr = await api('exemplarParse', { fileId: f.id });
+    let st = await api('exemplarParseStatus', { fileId: f.id }), text = st.text;
+    if (st.status === 'done') exLog(`${tag} 저장된 변환 글자로 바로 진행`);
+    else { if (st.status !== 'parsing') { exLog(`${tag} 보관된 원본에서 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); await api('exemplarParse', { fileId: f.id }); } else exLog(`${tag} 변환 진행 중인 작업에 이어서 대기`); text = await exWaitParse(f.id, tag); }
     exLog(`${tag} 예시 문장·이름 추출 중`);
-    const r = await api('exemplarExtract', { text: pr.text });
+    const r = await api('exemplarExtract', { text });
     r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome: f.outcome, file: f.name, fileId: f.id, checked: true }));
     exLog(`${tag} 완료: 후보 ${r.items.length}개 (이미 저장된 것은 '이미 있음'으로 표시)`, 'o');
   } catch (e) { exLog(`${tag} 실패: ${e.message}`, 'x'); }
-  EX.busy = false; exCandRender();
+  EX.busy = false; exStopShow(false); exCandRender(); exFilesReload();
+}
+function exStopShow(on) { const b = document.getElementById('xstop'); if (b) { b.style.display = on ? '' : 'none'; b.disabled = false; b.textContent = '중지'; } }
+async function exWaitParse(fileId, tag) {
+  const t0 = Date.now(); let lastLog = 0, bad = 0;
+  for (;;) {
+    await new Promise((r) => setTimeout(r, 5000));
+    if (EX.stop) throw new Error('사용자가 중지했습니다');
+    let s;
+    try { s = await api('exemplarParseStatus', { fileId }); bad = 0; } catch (e) { if (++bad >= 4) throw e; continue; }
+    if (s.status === 'done') { exLog(`${tag} 글자 변환 완료 (${Math.round((Date.now() - t0) / 1000)}초)`); return s.text; }
+    if (s.status === 'error') throw new Error(s.error || '글자 변환 실패');
+    if (s.status === 'none') throw new Error('변환이 시작되지 않았습니다.');
+    const sec = Math.round((Date.now() - t0) / 1000);
+    if (sec - lastLog >= 30) { lastLog = sec; exLog(`${tag} 글자 변환 중… ${sec}초 경과`); }
+  }
 }
 async function exProcess(files, outcome, keep) {
-  EX.busy = true; const go = document.getElementById('xgo'); if (go) go.disabled = true;
+  EX.busy = true; EX.stop = false; exStopShow(true); const go = document.getElementById('xgo'); if (go) go.disabled = true;
   let ok = 0, fail = 0, total = 0;
   for (let i = 0; i < files.length; i++) {
     const f = files[i], tag = `(${i + 1}/${files.length}) ${f.name}`;
+    if (EX.stop) { exLog(`${tag} 건너뜀(중지됨)`, 'w'); continue; }
     try {
       if (f.size > 18 * 1024 * 1024) throw new Error('18MB 초과');
       exLog(`${tag} 업로드 중`);
@@ -673,30 +691,32 @@ async function exProcess(files, outcome, keep) {
       const fd = new FormData(); fd.append('cacheControl', '3600'); fd.append('', f);
       const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
       if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
-      exLog(`${tag} PDF를 텍스트로 변환 중 (1~2분)`);
-      const pr = await api('exemplarParse', { path: u.path, keep: !!keep, name: f.name, outcome });
-      if (pr.fileId) exLog(`${tag} 원본 PDF 보관 완료`);
+      const pr = await api('exemplarParse', { path: u.path, name: `[${OUT_KO[outcome]}] ${f.name}`, outcome });
+      exLog(`${tag} 원본 PDF 저장 완료 · 글자 변환 시작 (몇 분 걸릴 수 있습니다)`); exFilesReload();
+      const text = await exWaitParse(pr.fileId, tag);
       exLog(`${tag} 예시 문장·이름 추출 중`);
-      const r = await api('exemplarExtract', { text: pr.text });
-      r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome, file: f.name, fileId: pr.fileId || null, checked: true }));
+      let r; try { r = await api('exemplarExtract', { text }); } catch (e) { throw new Error(e.message + ' (변환된 글자는 저장되어 있어, 보관된 원본 목록의 "다시 뽑기"로 이어서 할 수 있습니다)'); }
+      if (!keep) { try { await api('deleteExemplarFile', { id: pr.fileId }); } catch (_) { /* 정리 실패는 목록에서 삭제 */ } }
+      r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome, file: f.name, fileId: keep ? pr.fileId : null, checked: true }));
       total += r.items.length; ok++; exLog(`${tag} 완료: 후보 ${r.items.length}개`, 'o');
     } catch (e) { fail++; exLog(`${tag} 실패: ${e.message}`, 'x'); }
     exCandRender();
   }
-  EX.busy = false; if (go) go.disabled = false;
+  EX.busy = false; exStopShow(false); if (go) go.disabled = false;
   if (keep) await exFilesReload();
   exLog(`전체 종료 — 성공 ${ok} · 실패 ${fail} · 후보 ${total}개`, fail ? 'w' : 'o'); exCandRender();
 }
 async function viewEx() {
   const app = $('#main');
-  if (!EX.loaded) { app.innerHTML = '<div class="card">불러오는 중…</div>'; EX.saved = (await api('listExemplars')).items; try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { EX.files = []; } EX.loaded = true; }
+  if (!EX.loaded) { app.innerHTML = '<div class="card">불러오는 중…</div>'; EX.saved = (await api('listExemplars')).items; EX.loaded = true; }
+  try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { /* 원본 목록 실패는 무시 */ }
   app.innerHTML = head('합격 사례 관리', '합격자 생기부에서 예시 문장·이름을 뽑아 저장하면, 학생 조언을 만들 때 예시로 쓰입니다.') + `
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">① 합격자 생기부 올리기</h3>
     <div class="upg"><div><label>합격 구분 *</label><select id="xo"><option value="">선택하세요</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>
     <div><label>합격자 생기부 PDF (여러 개 선택)</label><input id="xf" type="file" accept="application/pdf" multiple></div></div>
     <div class="err" id="xe"></div>
-    <div class="row" style="margin-top:10px;align-items:center"><button id="xgo">후보 뽑기</button><label style="display:flex;align-items:center;gap:6px;font-size:13.5px;margin:0"><input type="checkbox" id="xkeep" checked style="width:auto"> 원본 PDF도 보관</label><span class="muted" style="font-size:13px">PDF 하나에 1~3분 걸립니다. 진행 중에는 이 창을 닫지 마세요.</span></div>
+    <div class="row" style="margin-top:10px;align-items:center"><button id="xgo">후보 뽑기</button><button id="xstop" class="line" style="display:none">중지</button><label style="display:flex;align-items:center;gap:6px;font-size:13.5px;margin:0"><input type="checkbox" id="xkeep" checked style="width:auto"> 원본 PDF도 보관</label><span class="muted" style="font-size:13px">PDF 하나에 몇 분 걸릴 수 있습니다(경과 시간이 아래 로그에 표시됩니다). 진행 중에는 이 창을 닫지 마세요.</span></div>
     <div id="xlog" style="margin-top:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
     <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF 보관을 체크하면 비공개 저장소에 보관되고(관리자만 열람), 끄면 글자만 뽑은 뒤 바로 삭제됩니다. 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
   </div>
@@ -726,6 +746,8 @@ async function viewEx() {
       try { await api('deleteExemplarFile', { id }); await exFilesReload(); } catch (er) { alert(er.message); }
     }
   });
+  exStopShow(EX.busy);
+  $('#xstop').onclick = () => { EX.stop = true; $('#xstop').disabled = true; $('#xstop').textContent = '중지 중…'; exLog('중지 요청 — 현재 단계가 끝나는 대로 멈춥니다', 'w'); };
   $('#xgo').onclick = () => {
     const e = $('#xe'); e.textContent = ''; const o = $('#xo').value, fs = [...$('#xf').files];
     if (!o) return (e.textContent = '합격 구분을 먼저 선택하세요.');
