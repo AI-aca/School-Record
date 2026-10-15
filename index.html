@@ -613,7 +613,7 @@ const OUT_KO = { sci_doc: '과학고 서류 합격', sci_final: '과학고 최�
 const CAT_KO = { sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '협업·토론', leadership_roles: '리더십·임원', teacher_top_rec: '교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망' };
 const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_deep', 'behavior_gifted', 'interest_activity', 'group_debate', 'leadership_roles', 'teacher_top_rec'];
 const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career'];
-const EX = { loaded: false, saved: [], cands: [], logs: [], busy: false, f: { cat: '', out: '', q: '' }, seq: 0 };
+const EX = { loaded: false, saved: [], files: [], cands: [], logs: [], busy: false, f: { cat: '', out: '', q: '' }, seq: 0 };
 const exN = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 function exLog(msg, kind = '') {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false }); EX.logs.push({ t, msg, kind });
@@ -641,7 +641,27 @@ function exSavedRender() {
   document.getElementById('xcnt').textContent = `저장된 사례 ${EX.saved.length}건 (문장 ${t} · 이름 ${EX.saved.length - t}) · 조건에 맞는 ${rows.length}건` + (rows.length > 150 ? ' (150건까지 표시)' : '');
   tb.innerHTML = rows.slice(0, 150).map((x) => `<tr data-id="${x.id}"><td style="width:140px;font-size:13px">${esc(CAT_KO[x.category] || x.category)}</td><td style="width:120px;font-size:12.5px;color:#64748b">${esc(OUT_KO[x.outcome] || '기존 요약')}</td><td class="xcell" style="font-size:13.5px">${esc(x.content)}</td><td style="width:130px;text-align:right;white-space:nowrap"><button class="line xed" style="padding:4px 10px">수정</button> <button class="line xdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="4">없음</td></tr>';
 }
-async function exProcess(files, outcome) {
+const fmtMB = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(n / 1024)) + 'KB');
+async function exFilesReload() { try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { /* 목록 실패는 무시 */ } exFilesRender(); }
+function exFilesRender() {
+  const tb = document.getElementById('xft'); if (!tb) return;
+  const n = EX.files.length, mb = EX.files.reduce((a, f) => a + (f.size || 0), 0);
+  document.getElementById('xfn').textContent = `보관 중 ${n}개 · 합계 ${fmtMB(mb)}`;
+  tb.innerHTML = EX.files.map((f) => `<tr data-id="${f.id}"><td style="font-size:13px;word-break:break-all">${esc(f.name)}</td><td style="width:130px;font-size:12.5px;color:#64748b">${esc(OUT_KO[f.outcome] || '-')}</td><td style="width:70px;font-size:12.5px">${fmtMB(f.size || 0)}</td><td style="width:90px;font-size:12.5px;color:#64748b">${new Date(f.created_at).toLocaleDateString('ko-KR')}</td><td style="width:70px;font-size:12.5px">${f.cases}건</td><td style="width:200px;text-align:right;white-space:nowrap"><button class="line fop" style="padding:4px 10px">열기</button> <button class="line fre" style="padding:4px 10px">다시 뽑기</button> <button class="line fdl" style="padding:4px 10px">삭제</button></td></tr>`).join('') || '<tr><td class="muted" colspan="6">보관된 원본이 없습니다.</td></tr>';
+}
+async function exReextract(f) {
+  if (EX.busy) return; EX.busy = true; const tag = f.name;
+  try {
+    exLog(`${tag} 보관된 원본에서 다시 변환 중 (1~2분)`);
+    const pr = await api('exemplarParse', { fileId: f.id });
+    exLog(`${tag} 예시 문장·이름 추출 중`);
+    const r = await api('exemplarExtract', { text: pr.text });
+    r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome: f.outcome, file: f.name, fileId: f.id, checked: true }));
+    exLog(`${tag} 완료: 후보 ${r.items.length}개 (이미 저장된 것은 '이미 있음'으로 표시)`, 'o');
+  } catch (e) { exLog(`${tag} 실패: ${e.message}`, 'x'); }
+  EX.busy = false; exCandRender();
+}
+async function exProcess(files, outcome, keep) {
   EX.busy = true; const go = document.getElementById('xgo'); if (go) go.disabled = true;
   let ok = 0, fail = 0, total = 0;
   for (let i = 0; i < files.length; i++) {
@@ -654,29 +674,31 @@ async function exProcess(files, outcome) {
       const up = await fetch(u.signedUrl, { method: 'PUT', body: fd, headers: { 'x-upsert': 'false' } });
       if (!up.ok) throw new Error('업로드 실패 (' + up.status + ')');
       exLog(`${tag} PDF를 텍스트로 변환 중 (1~2분)`);
-      const pr = await api('exemplarParse', { path: u.path });
+      const pr = await api('exemplarParse', { path: u.path, keep: !!keep, name: f.name, outcome });
+      if (pr.fileId) exLog(`${tag} 원본 PDF 보관 완료`);
       exLog(`${tag} 예시 문장·이름 추출 중`);
       const r = await api('exemplarExtract', { text: pr.text });
-      r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome, file: f.name, checked: true }));
+      r.items.forEach((it) => EX.cands.push({ id: ++EX.seq, kind: it.kind, category: it.category, content: it.content, outcome, file: f.name, fileId: pr.fileId || null, checked: true }));
       total += r.items.length; ok++; exLog(`${tag} 완료: 후보 ${r.items.length}개`, 'o');
     } catch (e) { fail++; exLog(`${tag} 실패: ${e.message}`, 'x'); }
     exCandRender();
   }
   EX.busy = false; if (go) go.disabled = false;
+  if (keep) await exFilesReload();
   exLog(`전체 종료 — 성공 ${ok} · 실패 ${fail} · 후보 ${total}개`, fail ? 'w' : 'o'); exCandRender();
 }
 async function viewEx() {
   const app = $('#main');
-  if (!EX.loaded) { app.innerHTML = '<div class="card">불러오는 중…</div>'; EX.saved = (await api('listExemplars')).items; EX.loaded = true; }
+  if (!EX.loaded) { app.innerHTML = '<div class="card">불러오는 중…</div>'; EX.saved = (await api('listExemplars')).items; try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { EX.files = []; } EX.loaded = true; }
   app.innerHTML = head('합격 사례 관리', '합격자 생기부에서 예시 문장·이름을 뽑아 저장하면, 학생 조언을 만들 때 예시로 쓰입니다.') + `
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">① 합격자 생기부 올리기</h3>
     <div class="upg"><div><label>합격 구분 *</label><select id="xo"><option value="">선택하세요</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>
     <div><label>합격자 생기부 PDF (여러 개 선택)</label><input id="xf" type="file" accept="application/pdf" multiple></div></div>
     <div class="err" id="xe"></div>
-    <div class="row" style="margin-top:10px;align-items:center"><button id="xgo">후보 뽑기</button><span class="muted" style="font-size:13px">PDF 하나에 1~3분 걸립니다. 진행 중에는 이 창을 닫지 마세요.</span></div>
+    <div class="row" style="margin-top:10px;align-items:center"><button id="xgo">후보 뽑기</button><label style="display:flex;align-items:center;gap:6px;font-size:13.5px;margin:0"><input type="checkbox" id="xkeep" checked style="width:auto"> 원본 PDF도 보관</label><span class="muted" style="font-size:13px">PDF 하나에 1~3분 걸립니다. 진행 중에는 이 창을 닫지 마세요.</span></div>
     <div id="xlog" style="margin-top:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
-    <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF는 글자만 뽑은 뒤 바로 삭제되고 보관하지 않습니다. 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF 보관을 체크하면 비공개 저장소에 보관되고(관리자만 열람), 끄면 글자만 뽑은 뒤 바로 삭제됩니다. 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
   </div>
   <div class="card" id="xcw" style="max-width:1060px;display:none">
     <h3 style="margin:0 0 10px;font-size:15px">② 후보 확인 후 저장</h3>
@@ -687,16 +709,29 @@ async function viewEx() {
     <h3 style="margin:0 0 10px;font-size:15px">③ 저장된 합격 사례</h3>
     <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:190px"><option value="">분류 전체</option>${exCatOpts('', '')}</select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"><span id="xcnt" class="muted" style="font-size:13px"></span></div>
     <div style="overflow:auto;max-height:520px;margin-top:10px"><table style="font-size:14px"><thead><tr><th>분류</th><th>구분</th><th>내용</th><th></th></tr></thead><tbody id="xst"></tbody></table></div>
+  </div>
+  <div class="card" style="max-width:1060px">
+    <h3 style="margin:0 0 4px;font-size:15px">④ 보관된 원본 PDF</h3><div class="muted" id="xfn" style="font-size:13px;margin-bottom:8px"></div>
+    <div style="overflow:auto;max-height:360px"><table style="font-size:14px"><thead><tr><th>파일명</th><th>구분</th><th>크기</th><th>올린 날</th><th>사례</th><th></th></tr></thead><tbody id="xft"></tbody></table></div>
   </div>`;
   document.getElementById('xlog').innerHTML = EX.logs.map((l) => `<div class="${l.kind}">[${l.t}] ${esc(l.msg)}</div>`).join('');
   const sty = document.createElement('style'); sty.textContent = '#xlog .o{color:#047857}#xlog .x{color:#dc2626;font-weight:600}#xlog .w{color:#b45309}#xlog:empty:before{content:"아직 진행 내용이 없습니다.";color:#94a3b8}'; app.appendChild(sty);
-  exCandRender(); exSavedRender();
+  exCandRender(); exSavedRender(); exFilesRender();
+  $('#xft').addEventListener('click', async (ev) => {
+    const b = ev.target.closest('button'); if (!b) return; const id = b.closest('tr').dataset.id; const f = EX.files.find((x) => x.id === id); if (!f) return;
+    if (b.classList.contains('fop')) { const w = window.open('', '_blank'); try { const r = await api('exemplarFileUrl', { id }); if (w) w.location.href = r.url; else location.href = r.url; } catch (er) { if (w) w.close(); alert(er.message); } }
+    else if (b.classList.contains('fre')) exReextract(f);
+    else if (b.classList.contains('fdl')) {
+      if (!confirm(`원본 PDF를 삭제할까요?\n${f.name}\n(이 파일에서 저장한 사례 ${f.cases}건은 그대로 남습니다. 삭제하면 되돌릴 수 없습니다.)`)) return;
+      try { await api('deleteExemplarFile', { id }); await exFilesReload(); } catch (er) { alert(er.message); }
+    }
+  });
   $('#xgo').onclick = () => {
     const e = $('#xe'); e.textContent = ''; const o = $('#xo').value, fs = [...$('#xf').files];
     if (!o) return (e.textContent = '합격 구분을 먼저 선택하세요.');
     if (!fs.length) return (e.textContent = 'PDF 파일을 선택하세요.');
     if (EX.busy) return;
-    exProcess(fs, o);
+    exProcess(fs, o, $('#xkeep').checked);
   };
   $('#xct').addEventListener('input', (ev) => { const tr = ev.target.closest('tr'); const c = EX.cands.find((x) => x.id === +tr.dataset.id); if (!c) return; if (ev.target.classList.contains('xtx')) { c.content = ev.target.value; } });
   $('#xct').addEventListener('change', (ev) => { const tr = ev.target.closest('tr'); const c = EX.cands.find((x) => x.id === +tr.dataset.id); if (!c) return; if (ev.target.classList.contains('xck')) c.checked = ev.target.checked; if (ev.target.classList.contains('xcat')) { c.category = ev.target.value; c.kind = CAT_TEXT.includes(c.category) ? 'text' : 'name'; } exCandRender(); });
@@ -707,8 +742,8 @@ async function viewEx() {
     const sel = EX.cands.filter((c) => c.checked && !c.dup && exN(c.content).length >= 2); if (!sel.length) return;
     $('#xsave').disabled = true; $('#xmsg').textContent = '저장 중…';
     try {
-      const r = await api('addExemplars', { items: sel.map((c) => ({ category: c.category, content: exN(c.content), outcome: c.outcome })) });
-      EX.saved = (await api('listExemplars')).items; EX.cands = EX.cands.filter((c) => !sel.includes(c));
+      const r = await api('addExemplars', { items: sel.map((c) => ({ category: c.category, content: exN(c.content), outcome: c.outcome, fileId: c.fileId || null })) });
+      EX.saved = (await api('listExemplars')).items; EX.cands = EX.cands.filter((c) => !sel.includes(c)); exFilesReload();
       $('#xmsg').textContent = `${r.added}건 저장${r.skipped ? ` · ${r.skipped}건은 건너뜀(중복 등)` : ''}`; exCandRender(); exSavedRender();
     } catch (er) { $('#xmsg').textContent = er.message; $('#xsave').disabled = false; }
   };
@@ -717,7 +752,7 @@ async function viewEx() {
   ['xfc', 'xfo', 'xfq'].forEach((i) => ($('#' + i).oninput = fl));
   $('#xst').addEventListener('click', async (ev) => {
     const b = ev.target.closest('button'); if (!b) return; const tr = b.closest('tr'); const id = tr.dataset.id; const x = EX.saved.find((s) => s.id === id); if (!x) return;
-    if (b.classList.contains('xdl')) { if (!confirm('이 사례를 삭제할까요?')) return; try { await api('deleteExemplar', { id }); EX.saved = EX.saved.filter((s) => s.id !== id); exSavedRender(); } catch (er) { alert(er.message); } }
+    if (b.classList.contains('xdl')) { if (!confirm('이 사례를 삭제할까요?')) return; try { await api('deleteExemplar', { id }); EX.saved = EX.saved.filter((s) => s.id !== id); exSavedRender(); exFilesReload(); } catch (er) { alert(er.message); } }
     else if (b.classList.contains('xed')) {
       tr.querySelector('.xcell').innerHTML = `<select class="xec" style="margin-bottom:6px;max-width:200px">${exCatOpts(x.category, '')}</select><textarea class="xev" rows="3" style="width:100%;font:inherit">${esc(x.content)}</textarea><div style="margin-top:6px"><button class="xsv" style="padding:4px 12px">저장</button> <button class="line xcx" style="padding:4px 12px">취소</button> <span class="xer" style="color:#dc2626;font-size:13px"></span></div>`;
     } else if (b.classList.contains('xcx')) exSavedRender();
