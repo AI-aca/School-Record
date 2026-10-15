@@ -185,7 +185,7 @@ a{color:var(--pri-t)}
   <nav class="menu">
     <a id="m-home" href="#/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> 초기 화면</a>
     <a id="m-bulk" href="#/bulk" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg> 생기부 일괄 업로드</a>
-    <a id="m-diag" href="#/diag" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg> 생기부 일괄 진단</a>
+    <a id="m-diag" href="#/diag" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9"/></svg> 생기부 일괄 진단</a>
     <a id="m-ex" href="#/exemplars" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 11h8M8 15h8"/></svg> 합격 사례 업로드</a>
     <a id="m-set" href="#/settings" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg> 설정</a>
     <a id="m-guide" href="#/guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".6"/></svg> 사용 안내</a>
@@ -883,7 +883,7 @@ async function viewEx() {
   const app = $('#main');
   if (!EX.loaded) { app.innerHTML = '<div class="card">불러오는 중…</div>'; EX.saved = (await api('listExemplars')).items; EX.loaded = true; }
   try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { /* 원본 목록 실패는 무시 */ }
-  app.innerHTML = head('합격 사례 관리', '합격자 생기부에서 예시 문장·명칭을 뽑아 저장하면, 학생 조언을 만들 때 예시로 쓰입니다.') + `
+  app.innerHTML = head('합격 사례 업로드', '합격자 생기부에서 예시 문장·명칭을 뽑아 저장하면, 학생 조언을 만들 때 예시로 쓰입니다.') + `
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">① 합격자 생기부 올리기 (업로드·PDF 변환·학교명 확인까지만)</h3>
     <div class="upg"><div><label>합격 구분 *</label><select id="xo"><option value="">선택하세요</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>
@@ -1131,7 +1131,8 @@ function viewGuide() {
       '<b>숨기기:</b> 학생 상세의 <code>이 학생 목록에서 숨기기</code>를 누르면 초기 화면에서 사라집니다. 설정의 "숨긴 학생"에서 복구하거나 완전 삭제할 수 있습니다.',
       '<b>진단 기록 삭제:</b> 진단 이력의 <code>삭제</code>로 기록 한 건만 지웁니다. 가장 최근 기록을 지우면 바로 이전 진단이 현재 기록이 되고, 하나뿐이면 진단 전 상태가 됩니다. 업로드한 생기부 파일은 남고, 삭제는 되돌릴 수 없습니다.',
       '<b>파싱 보기:</b> PDF에서 변환된 텍스트를 열어 AI가 읽은 내용을 확인합니다.',
-      '<b>원본 PDF 삭제:</b> 원본 파일만 지웁니다. 변환된 텍스트와 진단 결과는 남고, 되돌릴 수 없습니다.'],
+      '<b>원본 PDF 삭제:</b> 진단 기록이 없는 파일은 목록에서도 완전히 사라지고, 진단 기록이 있으면 "원본 PDF 삭제됨"으로 표시되며 변환된 텍스트와 진단 결과는 남습니다. 되돌릴 수 없습니다.',
+      '<b>일괄 업로드 → 일괄 진단(관리자):</b> <code>생기부 일괄 업로드</code>는 학기를 고르고 PDF를 올려 변환까지만 하며, 진단은 <code>생기부 일괄 진단</code>에서 대상을 체크해 진행합니다. 합격 사례도 <code>합격 사례 업로드</code>에서 ① 업로드 → ② 추출할 파일 선택 순서로 나뉩니다.'],
       '삭제와 완전 삭제는 되돌릴 수 없습니다. 확인 창의 문구를 읽고 진행하세요.') +
     sec('5. 설정 (사이드바 설정)', [
       '<b>센터 목록:</b> 한 줄에 센터 하나씩 입력하면 학생 등록의 선택 목록이 됩니다. 기존 학생의 센터 표기는 바뀌지 않습니다.',
