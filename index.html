@@ -599,7 +599,7 @@ async function bulkOne(it, force) {
   try {
     if (!it.rfId) {
       it.state = 'par'; it.msg = ''; bulkRender(); bulkLog(`${st.name} PDF 변환 시작`);
-      const pr = await bulkRetry(() => apiJob('parse', { studentId: it.sid, stage: BULK.stage, path: it.path, fileName: it.file.name }), st.name + ' 변환');
+      const pr = await bulkRetry(() => apiJob('parse', { studentId: it.sid, stage: BULK.stage, path: it.path, fileName: it.file.name, bulk: true }), st.name + ' 변환');
       it.rfId = pr.recordFileId;
       if (!force) {
         const g = await api('getParsed', { recordFileId: it.rfId });
@@ -681,7 +681,7 @@ function diagLog(msg, kind = '') {
   const el = document.getElementById('dlog');
   if (el) { el.insertAdjacentHTML('beforeend', `<div class="${kind}">[${t}] ${esc(msg)}</div>`); el.scrollTop = el.scrollHeight; }
 }
-function diagRows() { return DIAG.items.filter((i) => (DIAG.showDone || !i.diagnosed || DIAG.st[i.recordFileId]) && (!DIAG.stage || i.stage === DIAG.stage)); }
+function diagRows() { return DIAG.items.filter((i) => (!i.diagnosed || DIAG.st[i.recordFileId]) && (!DIAG.stage || i.stage === DIAG.stage)); }
 function diagRender() {
   const tb = document.getElementById('dt'); if (!tb) return;
   const rows = diagRows(), run = DIAG.phase === 'run';
@@ -694,7 +694,7 @@ function diagRender() {
     <td style="white-space:nowrap">${esc(i.name)}</td><td style="white-space:nowrap">${esc(sch(i.school) || '-')}</td><td style="white-space:nowrap">${esc(TERM_UP[i.stage] || '')}</td>
     <td style="word-break:break-all">${esc(i.fileName || '')}</td><td style="white-space:nowrap;font-size:13px;color:#64748b">${esc((i.uploadedAt || '').slice(0, 10))}</td>
     <td style="color:${color};font-weight:600;white-space:nowrap">${ds}</td><td style="font-size:13px;white-space:nowrap">${s.aid ? `<a href="#/result/${s.aid}">결과 열기</a>` : esc(s.msg || '')}</td></tr>`;
-  }).join('') : '<tr><td colspan="8" class="muted" style="padding:16px">진단 대기 중인 생기부가 없습니다. 먼저 위 ①에서 올려 주세요.</td></tr>';
+  }).join('') : '<tr><td colspan="8" class="muted" style="padding:16px">진단 대기 중인 생기부가 없습니다. 위 ①에서 일괄 업로드하면 여기에 나타납니다. (이미 진단된 학생의 재진단은 학생 상세의 "다시 진단")</td></tr>';
   tb.querySelectorAll('.dck').forEach((c) => (c.onchange = () => { const id = c.closest('tr').dataset.id; c.checked ? DIAG.sel.add(id) : DIAG.sel.delete(id); diagSummary(); }));
   diagSummary();
 }
@@ -737,7 +737,6 @@ async function viewDiag() {
     <div class="row" style="align-items:center;gap:12px;flex-wrap:wrap">
       <button class="line" id="dall">전체 선택</button><button class="line" id="dnone">전체 해제</button>
       <select id="dstage" style="width:auto"><option value="">모든 학기</option>${['A', 'B', 'C'].map((k) => `<option value="${k}"${DIAG.stage === k ? ' selected' : ''}>${TERM_UP[k]}</option>`).join('')}</select>
-      <label style="display:flex;gap:6px;align-items:center;font-weight:400;margin:0"><input type="checkbox" id="ddone" style="width:auto"${DIAG.showDone ? ' checked' : ''}> 이미 진단된 것도 보기(다시 진단)</label>
     </div>
     <div style="overflow:auto;margin-top:12px"><table style="font-size:14px"><thead><tr><th></th><th style="text-align:left">학생</th><th style="text-align:left">학교</th><th style="text-align:left">학기</th><th style="text-align:left">파일명</th><th style="text-align:left">올린 날</th><th>상태</th><th></th></tr></thead><tbody id="dt"></tbody></table></div>
     <div class="row" style="margin-top:12px;align-items:center"><button id="dgo" disabled>선택한 0명 진단</button><button class="line" id="dretry" disabled>실패만 다시 진단</button><span id="dsum" class="muted"></span></div>
@@ -748,7 +747,6 @@ async function viewDiag() {
   $('#dall').onclick = () => { diagRows().forEach((i) => DIAG.sel.add(i.recordFileId)); diagRender(); };
   $('#dnone').onclick = () => { DIAG.sel.clear(); diagRender(); };
   $('#dstage').onchange = () => { DIAG.stage = $('#dstage').value; diagRender(); };
-  $('#ddone').onchange = () => { DIAG.showDone = $('#ddone').checked; diagRender(); };
   $('#dgo').onclick = () => { const n = diagRows().filter((i) => DIAG.sel.has(i.recordFileId)).length; if (confirm(`선택한 ${n}명을 진단합니다. 시작할까요?`)) diagStart(); };
   $('#dretry').onclick = () => { Object.entries(DIAG.st).forEach(([id, x]) => { if (x.state === 'fail') DIAG.sel.add(id); }); diagStart(); };
 }
