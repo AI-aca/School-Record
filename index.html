@@ -668,10 +668,10 @@ async function viewBulk() {
 
 // ── 합격 사례 관리 ──
 const OUT_KO = { sci_doc: '과학고 서류 합격', sci_final: '과학고 최종 합격', gifted_doc: '영재학교 서류 합격', gifted_final: '영재학교 최종 합격' };
-const CAT_KO = { sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '협업·토론', leadership_roles: '리더십·임원', teacher_top_rec: '교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망' };
-const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_deep', 'behavior_gifted', 'interest_activity', 'group_debate', 'leadership_roles', 'teacher_top_rec'];
-const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career'];
-const EX = { loaded: false, saved: [], files: [], cands: [], logs: [], busy: false, stop: false, f: { cat: '', out: '', q: '' }, seq: 0 };
+const CAT_KO = { sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '협업·토론', leadership_roles: '리더십·임원', teacher_top_rec: '교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망', help_share: '나눔·배려', rule_comply: '규칙 준수·성실', peer_good: '교우관계 우수', study_proactive: '주도적 탐구태도', arts_sports: '예체능 활동', all_awards: '수상 이름(전체)' };
+const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_deep', 'behavior_gifted', 'interest_activity', 'group_debate', 'leadership_roles', 'teacher_top_rec', 'help_share', 'rule_comply', 'peer_good', 'study_proactive'];
+const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career', 'arts_sports', 'all_awards'];
+const EX = { loaded: false, saved: [], files: [], cands: [], logs: [], busy: false, stop: false, f: { cat: 'sci_research', out: '', q: '' }, seq: 0 };
 const exN = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 function exLog(msg, kind = '') {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false }); EX.logs.push({ t, msg, kind });
@@ -694,6 +694,8 @@ function exCandRender() {
 function exSavedRender() {
   const tb = document.getElementById('xst'); if (!tb) return;
   const { cat, out, q } = EX.f, qq = exN(q);
+  const fc = document.getElementById('xfc');
+  if (fc) { const cn = {}; EX.saved.forEach((x) => { cn[x.category] = (cn[x.category] || 0) + 1; }); fc.innerHTML = [...CAT_TEXT, ...CAT_NAME].map((c) => `<option value="${c}">${CAT_KO[c]} (${cn[c] || 0})</option>`).join('') + `<option value="">전체 보기 (${EX.saved.length})</option>`; fc.value = cat; }
   const rows = EX.saved.filter((x) => (!cat || x.category === cat) && (!out || (out === 'none' ? !x.outcome : x.outcome === out)) && (!qq || x.content.includes(qq)));
   const t = EX.saved.filter((x) => x.kind === 'text').length;
   document.getElementById('xcnt').textContent = `저장된 사례 ${EX.saved.length}건 (문장 ${t} · 명칭 ${EX.saved.length - t}) · 조건에 맞는 ${rows.length}건` + (rows.length > 150 ? ' (150건까지 표시)' : '');
@@ -809,7 +811,7 @@ async function viewEx() {
   </div>
   <div class="card" style="max-width:1060px">
     <h3 style="margin:0 0 10px;font-size:15px">③ 저장된 합격 사례</h3>
-    <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:190px"><option value="">분류 전체</option>${exCatOpts('', '')}</select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"></div><div id="xcnt" class="muted" style="font-size:13px;margin-top:8px"></div>
+    <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:230px"></select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"></div><div id="xcnt" class="muted" style="font-size:13px;margin-top:8px"></div>
     <div style="overflow:auto;max-height:520px;margin-top:10px"><table style="font-size:14px"><thead><tr><th>분류</th><th>구분</th><th>내용</th><th></th></tr></thead><tbody id="xst"></tbody></table></div>
   </div>
   <div class="card" style="max-width:1060px">
