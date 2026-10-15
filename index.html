@@ -151,7 +151,7 @@ a{color:var(--pri-t)}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:900px){body{display:block}#side{position:static;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px}.logo{padding:0}.menu{flex-direction:row}.prof{margin:0;border:0;padding:0;flex-direction:row;align-items:center;margin-left:auto}.reg{width:auto;margin:0;padding:9px 14px}#main{padding:18px 14px}.stats,.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 @media print{
-  @page{size:A4;margin:9mm}
+  @page{size:A4;margin:14mm 13mm 12mm}
   body{background:#fff;display:block}
   #side,.noprint{display:none!important}
   #main{padding:0}
@@ -486,7 +486,7 @@ async function downloadPdf(btn, name) {
     wrap.querySelectorAll('.sec').forEach((e) => { const t = e.firstChild; if (t && t.nodeType === 3) t.textContent = t.textContent.replace(/^([①-⑥])\s*/, '$1\u2003'); });
     document.body.appendChild(wrap);
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    const PW = 726, H = Math.floor(PW * 279 / 192);
+    const PW = 726, H = Math.floor(PW * 271 / 184);
     const ATOM = '.adv,.rt,.ac,.cell,.gate,.sum,.hero,.ar,.lg2,.sub,.pf,.sec,.rh,.rs,li,h2,h3,p';
     const collect = (el, out) => { for (const c of el.children) { if (c.matches(ATOM) || !c.children.length) out.push(c); else collect(c, out); } };
     const { jsPDF } = window.jspdf; const pdf = new jsPDF({ unit: 'mm', format: 'a4' }); let n = 0;
@@ -509,7 +509,7 @@ async function downloadPdf(btn, name) {
         const c2 = document.createElement('canvas'); c2.width = canvas.width; c2.height = sh;
         const g = c2.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c2.width, sh); g.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh);
         if (n++) pdf.addPage();
-        pdf.addImage(c2.toDataURL('image/jpeg', 0.92), 'JPEG', 9, 9, 192, (cuts[i + 1] - cuts[i]) * 192 / PW);
+        pdf.addImage(c2.toDataURL('image/jpeg', 0.92), 'JPEG', 13, 14, 184, (cuts[i + 1] - cuts[i]) * 184 / PW);
       }
     }
     const a = document.createElement('a'); a.href = URL.createObjectURL(pdf.output('blob')); a.download = (name || '학생') + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
