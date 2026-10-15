@@ -157,6 +157,62 @@ a{color:var(--pri-t)}
 .ar2{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.ar2 b{flex:1}
 .ac .w{display:inline-block;flex-shrink:0;margin-top:1px;font-size:12.5px;color:var(--pri-t);background:var(--pri2);border-radius:8px;padding:2px 10px;white-space:nowrap}
 .wn{padding-left:20px;margin:6px 0 0;font-size:14.5px;line-height:1.65}
+/* ── 디자인 v2: 밝은 톤 유지, 깊이·위계·여백 정리 ── */
+:root{--bg:#f6f7f9;--ink:#111827;--sub:#6b7280;--line:#e6e9ee;--pri:#0f9a82;--pri-d:#0a8570;--pri2:#e9f6f3;--pri-t:#0a7a66;--shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px -10px rgba(16,24,40,.10)}
+*{scrollbar-width:thin;scrollbar-color:#cdd3dc transparent}
+body{letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+#main{max-width:1560px;margin:0 auto;width:100%;padding:34px 44px 56px}
+#main>*{animation:fin .28s ease both}
+@keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#side{background:#fff;padding:24px 16px;box-shadow:1px 0 0 var(--line)}
+.logo b{background:none;-webkit-text-fill-color:var(--pri-t);color:var(--pri-t);font-size:19px;letter-spacing:-.6px}
+.reg{background:linear-gradient(135deg,#17a88e,#0c8a75);box-shadow:0 6px 16px -6px rgba(12,138,117,.55);border-radius:12px;transition:transform .15s,box-shadow .15s}
+.reg:hover{filter:none;transform:translateY(-1px);box-shadow:0 10px 20px -8px rgba(12,138,117,.6)}
+.menu a{position:relative;border-radius:10px;padding:11px 14px;transition:background .15s,color .15s}
+.menu a:focus{outline:none}
+.menu a.on{background:var(--pri2);color:var(--pri-t);box-shadow:none;font-weight:700}
+.menu a.on::before{content:"";position:absolute;left:-16px;top:9px;bottom:9px;width:4px;border-radius:0 4px 4px 0;background:var(--pri)}
+.av{background:linear-gradient(135deg,#17a88e,#0c8a75)}
+.ph{margin-bottom:26px}
+.ph h2{font-size:28px;letter-spacing:-.8px}
+.ph p{font-size:13.5px;margin-top:6px}
+h2{font-size:18px;font-weight:800;letter-spacing:-.4px}
+#main>h2,#subv h2,#subv2 h2{margin:6px 0 14px}
+.card{border-radius:18px;padding:26px;margin-bottom:20px;border-color:var(--line)}
+.card>h3:first-child{font-size:16px;font-weight:800;padding-bottom:14px;border-bottom:1px solid #eef0f4;margin-bottom:18px!important}
+input,select,textarea{border-color:#dde1e7;border-radius:11px;padding:11px 13px;transition:border-color .15s,box-shadow .15s}
+input:hover,select:hover,textarea:hover{border-color:#c4cad4}
+input:focus,select:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 4px rgba(15,154,130,.13)}
+label{font-weight:600;color:#4b5563;font-size:13px}
+button{border-radius:10px;padding:10px 18px;background:linear-gradient(180deg,#14a58b,#0c8f78);box-shadow:0 1px 2px rgba(10,122,102,.35),inset 0 1px 0 rgba(255,255,255,.18);transition:transform .12s,box-shadow .15s,background .15s}
+button:hover{background:linear-gradient(180deg,#119c83,#0a8570);transform:translateY(-1px);box-shadow:0 6px 14px -6px rgba(10,122,102,.55)}
+button:active{transform:none}
+button:disabled{box-shadow:none;transform:none}
+button.line{background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.05);border-color:#dde1e7}
+button.line:hover{background:#fafbfc;border-color:#c4cad4;box-shadow:0 4px 10px -6px rgba(16,24,40,.25)}
+button.ghost{background:var(--pri2);box-shadow:none}
+button.ghost:hover{background:#dcf0eb;box-shadow:none}
+button.line.vw,button.line.fop{box-shadow:none}button.line.dx,button.line.dl,button.line.fdl,button.line.xdl{box-shadow:none}
+.stats{gap:18px;margin-bottom:22px}
+.stat{border-radius:18px;padding:18px 22px;transition:transform .15s,box-shadow .15s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 14px 30px -14px rgba(16,24,40,.22)}
+.stat:before{width:4px;top:18px;bottom:18px;border-radius:0 4px 4px 0}
+.stat span{font-size:12.5px;color:var(--sub);font-weight:600;letter-spacing:0}
+.stat b{font-size:32px;margin-top:4px;letter-spacing:-1px}
+.bar2{margin-bottom:18px;gap:12px}
+.tw{border-radius:18px;border-color:var(--line)}
+thead th{background:#fafbfc;color:#6b7280;font-size:12px;letter-spacing:.02em;border-bottom:1px solid var(--line)}
+th,td{padding:14px 16px;border-bottom:1px solid #f0f2f5}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:#fafcfc}
+tr.click:hover{background:#f4faf8}
+.chip{border-radius:8px}
+.pill{font-weight:700}
+.note{border-radius:12px}
+.flash{border-radius:12px}
+.tabs a{transition:background .15s,color .15s}
+.page{border-radius:18px}
+@media(max-width:900px){#main{padding:18px 14px}}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:900px){body{display:block}#side{position:static;width:auto;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px}.logo{padding:0}.menu{flex-direction:row}.prof{margin:0;border:0;padding:0;flex-direction:row;align-items:center;margin-left:auto}.reg{width:auto;margin:0;padding:9px 14px}#main{padding:18px 14px}.stats,.kpis{grid-template-columns:1fr 1fr}.cells{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 @media print{
@@ -664,7 +720,7 @@ async function viewBulk() {
   if (BULK.phase === 'run') { /* 진행 중 상태 유지 */ }
   else if (BULK.phase !== 'end') { app.innerHTML = '<div class="card">불러오는 중…</div>'; BULK.students = (await api('listStudents')).students.slice().sort((a, b) => a.name.localeCompare(b.name, 'ko')); }
   app.innerHTML = `
-  <div class="card" style="max-width:1100px">
+  <div class="card">
     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px"><b>학기가 같은 파일끼리만 한 번에 올려 주세요.</b> 학기가 다르면 나눠서 여러 번 올립니다. 진행 중에는 이 창을 닫지 마세요.</div>
     <div class="upg"><div><label>어느 학기까지 작성된 생기부인가요? *</label><select id="bstage"${BULK.phase === 'run' ? ' disabled' : ''}><option value="">선택하세요</option>${['A', 'B', 'C'].map((k) => `<option value="${k}"${BULK.stage === k ? ' selected' : ''}>${STAGE[k]} (${TERM_UP[k]})</option>`).join('')}</select></div>
     <div><label>생기부 PDF (여러 개 선택)</label><input id="bfiles" type="file" accept="application/pdf" multiple${BULK.phase === 'run' ? ' disabled' : ''}></div></div>
@@ -760,7 +816,7 @@ async function viewDiag() {
   const app = $('#subv2');
   if (DIAG.phase !== 'run') { app.innerHTML = '<div class="card">불러오는 중…</div>'; DIAG.items = (await api('listPendingRecords')).items; }
   app.innerHTML = `
-  <div class="card" style="max-width:1100px">
+  <div class="card">
     <div class="row" style="align-items:center;gap:12px;flex-wrap:wrap">
       <button class="line" id="dall">전체 선택</button><button class="line" id="dnone">전체 해제</button>
       <select id="dstage" style="width:auto"><option value="">모든 학기</option>${['A', 'B', 'C'].map((k) => `<option value="${k}"${DIAG.stage === k ? ' selected' : ''}>${TERM_UP[k]}</option>`).join('')}</select>
@@ -966,7 +1022,7 @@ async function viewEx() {
   if (!EX.loaded) { app.innerHTML = '<div class="card">불러오는 중…</div>'; EX.saved = (await api('listExemplars')).items; EX.loaded = true; }
   try { EX.files = (await api('listExemplarFiles')).items; } catch (_) { /* 원본 목록 실패는 무시 */ }
   app.innerHTML = head('합격 사례 업로드', '합격자 생기부에서 예시 문장·명칭을 뽑아 바로 저장하며, 저장된 사례는 학생 조언을 만들 때 예시로 쓰입니다.') + `
-  <div class="card" style="max-width:1060px">
+  <div class="card">
     <h3 style="margin:0 0 10px;font-size:15px">① 합격자 생기부 올리기 (업로드·PDF 변환·학교명 확인까지만)</h3>
     <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:14px;margin-bottom:14px"><b>합격 구분이 같은 파일끼리만 한 번에 올려 주세요.</b> 구분이 다르면(예: 과학고 서류 합격 / 최종 합격) 나눠서 여러 번 올립니다. 진행 중에는 이 창을 닫지 마세요.</div>
     <div class="upg"><div><label>합격 구분 *</label><select id="xo"><option value="">선택하세요</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>
@@ -977,18 +1033,18 @@ async function viewEx() {
     <div id="xlog" style="margin-top:12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px;height:120px;overflow:auto;font-size:13px;line-height:1.8"></div>
     <p class="muted" style="font-size:12.5px;margin:8px 0 0">원본 PDF는 비공개 저장소에 보관됩니다(관리자만 열람). 학생·학교 이름이 든 문장은 AI가 제외하도록 했지만, 저장 전에 꼭 확인해 주세요.</p>
   </div>
-  <div class="card" style="max-width:1060px">
+  <div class="card">
     <h3 style="margin:0 0 10px;font-size:15px">② 추출할 파일 선택</h3>
     <div class="row" style="align-items:center;gap:12px;flex-wrap:wrap"><button class="line" id="pall">전체 선택</button><button class="line" id="pnone">전체 해제</button><label style="display:flex;gap:6px;align-items:center;font-weight:400;margin:0"><input type="checkbox" id="pshow" style="width:auto"> 이미 사례가 저장된 파일도 보기(다시 추출)</label></div>
     <div style="overflow:auto;max-height:320px;margin-top:10px"><table style="font-size:14px"><thead><tr><th></th><th style="text-align:left">파일명</th><th style="text-align:left">구분</th><th style="text-align:left">올린 날</th><th style="text-align:left">상태</th></tr></thead><tbody id="xpt"></tbody></table></div>
     <div class="row" style="margin-top:12px;align-items:center"><button id="xpgo" disabled>선택한 0건 추출</button><span class="muted" style="font-size:13px">한 건에 몇 분 걸리며 2개씩 진행됩니다. 추출이 끝나면 바로 ③ 저장된 합격 사례에 저장됩니다.</span></div>
   </div>
-  <div class="card" style="max-width:1060px">
+  <div class="card">
     <h3 style="margin:0 0 10px;font-size:15px">③ 저장된 합격 사례</h3>
     <div class="row" style="align-items:center;flex-wrap:wrap"><select id="xfc" style="max-width:230px"></select><select id="xfo" style="max-width:190px"><option value="">구분 전체</option>${Object.entries(OUT_KO).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}<option value="none">기존 요약</option></select><input id="xfq" placeholder="내용 검색" style="max-width:220px"></div><div id="xcnt" class="muted" style="font-size:13px;margin-top:8px"></div>
     <div style="overflow:auto;max-height:520px;margin-top:10px"><table style="font-size:14px"><thead><tr><th>분류</th><th>구분</th><th>내용</th><th></th></tr></thead><tbody id="xst"></tbody></table></div>
   </div>
-  <div class="card" style="max-width:1060px">
+  <div class="card">
     <h3 style="margin:0 0 4px;font-size:15px">④ 보관된 원본 PDF</h3><div class="muted" id="xfn" style="font-size:13px;margin-bottom:8px"></div>
     <div style="overflow:auto;max-height:360px"><table style="font-size:14px"><thead><tr><th>파일명</th><th>구분</th><th>크기</th><th style="white-space:nowrap">올린 날</th><th>사례</th><th></th></tr></thead><tbody id="xft"></tbody></table></div>
   </div>`;
