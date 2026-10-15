@@ -445,7 +445,7 @@ async function viewStudent(id) {
     <p class="muted">진단에는 2~5분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div></div>
   <div class="card"><h2>업로드한 생기부</h2><table><tbody>
     ${files.map((f) => `<tr><td>${new Date(f.uploaded_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[f.stage]}</span></td><td>${esc(f.file_name)}</td>
-      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> <button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> <button class="line pv" data-id="${f.id}">파싱 보기</button> <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button></td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
+      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> ${f.storage_path ? `<button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> ` : ''}<button class="line pv" data-id="${f.id}">파싱 보기</button>${f.storage_path ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ' <span class="muted" style="font-size:13px">원본 PDF 삭제됨</span>'}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table class="ct"><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th>학부모용</th><th>교사용</th><th>관리자용</th><th>삭제</th></tr></thead><tbody>
     ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="parent">학부모용 열기</span></td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span></td><td style="white-space:nowrap"><span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 열기</span></td><td style="white-space:nowrap"><span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
@@ -484,7 +484,7 @@ async function viewStudent(id) {
   });
   app.querySelectorAll('.dx').forEach((b) => b.onclick = async () => {
     if (role !== 'director') return alert('관리자에게 문의하세요.');
-    if (!confirm('원본 PDF 파일을 완전히 삭제합니다. (파싱 텍스트와 진단 결과는 남습니다. 되돌릴 수 없습니다.)')) return;
+    if (!confirm('원본 PDF 파일을 삭제합니다.\n· 진단 기록이 없는 파일은 목록에서도 완전히 사라집니다.\n· 진단 기록이 있으면 파싱 텍스트와 진단 결과는 남습니다.\n되돌릴 수 없습니다.')) return;
     try { await api('deleteOriginal', { recordFileId: b.dataset.id }); viewStudent(id); } catch (e) { $('#e2').textContent = e.message; }
   });
   $('#editSt').onclick = () => { if (role !== 'director') return alert('관리자에게 문의하세요.'); $('#stEdit').style.display = $('#stEdit').style.display === 'none' ? 'block' : 'none'; };
