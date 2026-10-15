@@ -31,6 +31,7 @@ body.out #main{max-width:520px;margin:0 auto}
 .ph{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
 .ph h2{font-size:26px;font-weight:800;margin:0;letter-spacing:-.5px}
 .ph p{margin:4px 0 0;color:var(--sub);font-size:13px}
+.sn{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sn h2{border:2px solid var(--pri);border-radius:12px;padding:4px 18px;background:#fff}.sn .chip{font-size:14px;padding:5px 13px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
 h2.t{font-size:16px;margin:0 0 12px}
 h2{font-size:17px;margin:0 0 12px}
@@ -325,7 +326,7 @@ async function viewStudent(id) {
   const [{ students }, { analyses }, { files }] = await Promise.all([api('listStudents'), api('listAnalyses', { studentId: id }), api('listRecordFiles', { studentId: id })]);
   const s = students.find((x) => x.id === id); if (!s) { location.hash = '#/'; return; }
   app.innerHTML = `
-  ${head(esc(s.name), esc(s.school || '') + ' · ' + esc(s.center_name || ''), '<a href="#/">← 학생 목록</a>')}
+  <div class="ph" style="align-items:center"><div class="sn"><h2>${esc(s.name)}</h2>${s.school ? `<span class="chip">${esc(s.school)}</span>` : ''}${s.center_name ? `<span class="chip">${esc(s.center_name)}</span>` : ''}</div><div><a href="#/">← 학생 목록</a></div></div>
   <div class="card"><div class="row" style="justify-content:space-between;align-items:center">
     <div><h2 class="t" style="margin:0">${analyses[0] ? '현재 반영 학기 ' + TERM_UP[analyses[0].stage] + ' · ' + (analyses[0].total ?? '') + '점' : '아직 진단 기록이 없습니다'}</h2>
     <div class="muted" style="margin-top:4px">${analyses[0] ? '새 학기가 끝나면 최신 생기부로 업데이트하세요. 이전 진단은 이력에 남습니다.' : '생기부 PDF를 올려 첫 진단을 시작하세요.'}</div></div>
