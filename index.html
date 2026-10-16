@@ -419,7 +419,7 @@ async function openRecordViewer(title, getUrl, fileName) {
     const { url } = await getUrl(); await loadPdfJs();
     const pdf = await window.pdfjsLib.getDocument(url).promise; box.innerHTML = '';
     for (let n = 1; n <= pdf.numPages; n++) {
-      const pg = await pdf.getPage(n), vp = pg.getViewport({ scale: 1.3 }), cv = document.createElement('canvas');
+      const pg = await pdf.getPage(n), w0 = pg.getViewport({ scale: 1 }).width, vp = pg.getViewport({ scale: Math.min(4, Math.max(1, (box.clientWidth - 40) / w0)) }), cv = document.createElement('canvas');
       cv.width = vp.width; cv.height = vp.height; cv.style.cssText = 'display:block;margin:0 auto 20px;max-width:100%;box-shadow:0 4px 15px rgba(0,0,0,.5);border-radius:4px;background:#fff';
       box.appendChild(cv); await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
     }
