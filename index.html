@@ -143,7 +143,7 @@ a{color:var(--pri-t)}
 .cell .mb{height:5px;border-radius:3px;background:rgba(15,23,42,.08);margin-top:6px;overflow:hidden}.cell .mb i{display:block;height:100%;background:#10b981}
 .cell.done{background:#ecfdf3}.cell.improvable{background:#fff8eb}.cell.pending{background:#eef2ff}.cell.penalized{background:#fef2f2}
 .cell.safe,.cell.locked{background:#f8fafc}
-.cell.xp{cursor:pointer}.cell.xp:hover{box-shadow:0 2px 10px rgba(15,154,130,.25);border-color:#0f9a82}.cell.xp .ct:after{content:' ▸';color:#0f9a82}
+.cell.xp{cursor:pointer}.cell.xp:hover{box-shadow:0 2px 10px rgba(15,154,130,.25);border-color:#0f9a82}.cell.xp .ct:after{content:' ▸';color:#0f9a82;font-size:1.7em;font-weight:900;line-height:0;vertical-align:-.12em;margin-left:2px}
 .xmod{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
 .xbox{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.25)}
 .xbox .xh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px 10px;border-bottom:1px solid var(--line)}.xbox .xh b{font-size:16px;color:#0f172a}
@@ -1394,7 +1394,7 @@ async function xShow(no, title) {
   const isName = CAT_NAME.includes(cat);
   const pick = () => pool.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).slice(0, 7).map((x) => x[1]);
   const m = document.createElement('div'); m.className = 'xmod';
-  const draw = () => { m.innerHTML = `<div class="xbox"><div class="xh"><b>${esc(no + '. ' + title)} · 합격자 근거</b><button class="xx" aria-label="닫기">✕</button></div><div class="xb">${pool.length ? `<div class="xq"><ul>${pick().map((v) => `<li>${esc(v)}</li>`).join('')}</ul></div>` : '<p class="muted">이 항목에 저장된 합격 사례가 아직 없습니다.</p>'}</div><div class="xf"><span>${esc(CAT_KO[cat] || cat)} · 저장된 합격 사례 중 무작위${isName ? ' (이름)' : ''}</span>${pool.length > 7 ? '<button class="btn xn">다른 사례 보기</button>' : ''}</div></div>`; m.querySelector('.xx').onclick = close; const n = m.querySelector('.xn'); if (n) n.onclick = draw; };
+  const draw = () => { m.innerHTML = `<div class="xbox"><div class="xh"><b>${esc(no + '. ' + title)} · 합격자 근거</b><button class="xx" aria-label="닫기">✕</button></div><div class="xb">${pool.length ? `<div class="xq"><ul>${pick().map((v) => `<li>${esc(v)}</li>`).join('')}</ul></div>` : '<p class="muted">이 항목에 저장된 합격 사례가 아직 없습니다.</p>'}</div><div class="xf"><span>저장된 합격 사례 중 무작위 ${Math.min(7, pool.length)}개</span>${pool.length > 7 ? '<button class="btn xn">다른 사례 보기</button>' : ''}</div></div>`; m.querySelector('.xx').onclick = close; const n = m.querySelector('.xn'); if (n) n.onclick = draw; };
   const close = () => { m.remove(); document.removeEventListener('keydown', esck); };
   const esck = (e) => { if (e.key === 'Escape') close(); };
   m.onclick = (e) => { if (e.target === m) close(); };
