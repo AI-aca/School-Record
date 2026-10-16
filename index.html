@@ -1457,7 +1457,7 @@ async function viewResult(aid, mode = 'parent') {
   const foot = (n, m) => `<div class="pf"><span>${m || '생활기록부 진단 · ' + esc(stu.name)}</span><span></span></div>`;
 
   const rmNote = '<p class="muted" style="margin:2px 0 8px;font-size:13px">대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.</p>';
-  const gateNote = g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류 탈락 가능성이 매우 높습니다.</div>` : '';
+  const gateNote = g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 서류 평가에서 불리해질 가능성이 높습니다.</div>` : '';
   // 감점 주의는 AI 문장 대신 점수표(감점형 항목)에 근거한 고정 문구만 쓴다.
   const penaltyLines = [[[24], '무단(미인정) 결석·지각·조퇴가 생기지 않도록 출결을 관리하십시오.'], [[30], '학교폭력·징계 관련 기록이나 인성 결함을 지적하는 표현(예: 이기적, 산만함, \'~하려는 노력이 필요함\')이 생기부에 기재되지 않도록 학교생활을 관리하십시오.']].filter(([nos]) => nos.some((n) => itm(n))).map(([, t]) => t);
   const blk = (title, small, lines) => (lines.length ? `<div class="sub"><b>${title}</b><small>${small}</small></div><ul class="wn">${lines.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : '');
