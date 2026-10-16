@@ -1516,7 +1516,7 @@ async function viewResult(aid, mode = 'parent') {
   const ask = async (act) => await uiConfirm(`${par ? '학부모용' : '교사용'} 진단지입니다. ${act}하시겠습니까?` + (par ? '' : '\n(교사용은 학부모에게 제공하지 마세요.)'));
   if ($('#pdf')) $('#pdf').onclick = async () => { if (!await ask('인쇄')) return; const ot = document.title; document.title = fname; window.onafterprint = () => { document.title = ot; window.onafterprint = null; }; print(); };
   if ($('#pdfdl')) $('#pdfdl').onclick = async (ev) => { if (await ask('PDF 다운로드')) downloadPdf(ev.target, fname); };
-  $('#orig').onclick = () => openRecordViewer('원본 생기부', () => api('recordUrl', { analysisId: aid }), '원본_생기부.pdf');
+  $('#orig').onclick = () => openRecordViewer(stu.name + ' 학생 생기부 (' + TERM_KO[a.stage] + '까지)', () => api('recordUrl', { analysisId: aid }), safeFn('[생기부] ' + [stu.name, sch(stu.school), TERM_KO[a.stage] + '까지'].filter(Boolean).join(' ')) + '.pdf');
   const reAdv = async (btn) => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (몇 분 걸릴 수 있습니다)'; try { await apiJob('advise', { analysisId: aid }); viewResult(aid); } catch (e) { uiAlert(e.message); viewResult(aid); } };
   if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
   if ($('#reAdv2')) $('#reAdv2').onclick = async (ev) => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); if (await uiConfirm('조언(보완 방법·실행 계획)만 새로 만듭니다. 점수는 바뀌지 않습니다.')) reAdv(ev.target); };
