@@ -540,7 +540,7 @@ async function viewNew() {
   const opts = (first) => `<option value="">${first}</option>${centers.map((c) => `<option>${esc(c)}</option>`).join('')}`;
   const rowHtml = () => `<tr class="nr"><td><input class="rn" placeholder="이름"></td><td><input class="rsc" placeholder="학교"></td><td><select class="rce">${opts('기본 센터')}</select></td><td class="re" style="color:#dc2626;font-size:13px;min-width:90px"></td><td><button class="line rx" title="이 줄 삭제" style="padding:6px 10px">✕</button></td></tr>`;
   app.innerHTML = head('학생 등록', '한 명이든 여러 명이든 아래 표에 입력하고 한 번에 등록합니다. 등록 후 초기 화면으로 이동합니다.') + `
-  <div class="card" style="max-width:820px">
+  <div class="card">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><b>기본 센터 *</b><select id="dce" style="max-width:220px">${opts('선택')}</select><span class="muted" style="font-size:13px">줄마다 센터를 따로 고르지 않으면 이 센터로 등록됩니다.</span></div>
     <table id="nt" style="font-size:14px"><thead><tr><th style="text-align:left;width:26%">이름 *</th><th style="text-align:left;width:34%">학교</th><th style="text-align:left;width:24%">센터</th><th></th><th></th></tr></thead><tbody id="ntb">${rowHtml().repeat(3)}</tbody></table>
     <div class="err" id="e" style="margin-top:8px"></div>
