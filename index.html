@@ -54,7 +54,7 @@ button:disabled{opacity:.5;cursor:default}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .muted{color:var(--sub);font-size:13px}
 .err{color:var(--bad);font-size:14px;margin-top:8px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .stat:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--pri))}
 .stat span{font-size:12px;color:var(--sub);font-weight:600}.stat b{display:block;font-size:24px;font-weight:800;margin-top:0}
@@ -185,7 +185,7 @@ body{letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
 .menu a.on{background:var(--pri2);color:var(--pri-t);box-shadow:none;font-weight:700}
 .menu a.on::before{content:"";position:absolute;left:-16px;top:9px;bottom:9px;width:4px;border-radius:0 4px 4px 0;background:var(--pri)}
 .av{background:linear-gradient(135deg,#17a88e,#0c8a75)}
-.ph{margin-bottom:26px}
+.ph{margin-bottom:16px}.phl{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}.phl p{margin:0!important}
 .ph h2{font-size:28px;letter-spacing:-.8px}
 .ph p{font-size:13.5px;margin-top:6px}
 h2{font-size:18px;font-weight:800;letter-spacing:-.4px}
@@ -206,11 +206,11 @@ button.ghost{background:var(--pri2);box-shadow:none}
 button.ghost:hover{background:#dcf0eb;box-shadow:none}
 button.line.vw,button.line.fop{box-shadow:none}button.line.dx,button.line.dl,button.line.fdl,button.line.xdl{box-shadow:none}
 .stats{gap:18px;margin-bottom:22px}
-.stat{border-radius:18px;padding:18px 22px;transition:transform .15s,box-shadow .15s}
+.stat{border-radius:18px;padding:12px 20px;transition:transform .15s,box-shadow .15s}
 .stat:hover{transform:translateY(-2px);box-shadow:0 14px 30px -14px rgba(16,24,40,.22)}
-.stat:before{width:4px;top:18px;bottom:18px;border-radius:0 4px 4px 0}
+.stat:before{width:4px;top:12px;bottom:12px;border-radius:0 4px 4px 0}
 .stat span{font-size:12.5px;color:var(--sub);font-weight:600;letter-spacing:0}
-.stat b{font-size:32px;margin-top:4px;letter-spacing:-1px}
+.stat b{font-size:28px;margin-top:1px;letter-spacing:-1px}
 .bar2{margin-bottom:18px;gap:12px}
 .tw{border-radius:18px;border-color:var(--line)}
 thead th{background:#fafbfc;color:#6b7280;font-size:12px;letter-spacing:.02em;border-bottom:1px solid var(--line)}
@@ -431,7 +431,7 @@ const exList = (a) => (Array.isArray(a) ? a : []).map((t) => String(t ?? '').rep
 function logout() { token = ''; role = ''; sessionStorage.clear(); route(); }
 $('#logout').onclick = logout;
 const sch = (v) => String(v || '').trim().replace(/\s+/g, ' ').replace(/중학교$/, '중');
-const head = (t, sub, right = '') => `<div class="ph"><div><h2>${t}</h2><p>${sub || ''}</p></div><div>${right}</div></div>`;
+const head = (t, sub, right = '') => `<div class="ph"><div class="phl"><h2>${t}</h2><p>${sub || ''}</p></div><div>${right}</div></div>`;
 
 // ── 화면 전환 ──
 async function route() {
@@ -504,8 +504,9 @@ async function viewList() {
   <div class="stats">
     <div class="stat"><span>전체 학생</span><b>${students.length}</b></div>
     <div class="stat" style="--c:#06b6d4"><span>진단 완료</span><b>${done.length}</b></div>
-    <div class="stat" style="--c:#10b981"><span>목표 ${target}점 이상</span><b>${ok.length}</b></div>
-    <div class="stat" style="--c:#f59e0b"><span>내신 주의·위기</span><b>${bad.length}</b></div>
+    <div class="stat" style="--c:#94a3b8"><span>진단 전</span><b>${students.length - done.length}</b></div>
+    <div class="stat" style="--c:#ef4444"><span>내신 위기</span><b>${done.filter((x) => x.last.gate === 'fail').length}</b></div>
+    <div class="stat" style="--c:#f59e0b"><span>내신 주의</span><b>${done.filter((x) => x.last.gate === 'warn').length}</b></div>
   </div>
   <div class="bar2">
     <div class="sr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="q" placeholder="학생명 또는 학교 검색"></div>
