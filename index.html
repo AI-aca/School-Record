@@ -143,6 +143,9 @@ a{color:var(--pri-t)}
 .cell .mb{height:5px;border-radius:3px;background:rgba(15,23,42,.08);margin-top:6px;overflow:hidden}.cell .mb i{display:block;height:100%;background:#10b981}
 .cell.done{background:#ecfdf3}.cell.improvable{background:#fff8eb}.cell.pending{background:#eef2ff}.cell.penalized{background:#fef2f2}
 .cell.safe,.cell.locked{background:#f8fafc}
+.cell.done{background:#d9f7e6;border-color:#4ade80}.cell.improvable{background:#ffefc7;border-color:#f5b83d}.cell.pending{background:#e0e7ff;border-color:#8b9cf5}.cell.penalized{background:#fee2e2;border-color:#f87171}.cell.safe,.cell.locked{background:#e8edf3;border-color:#a8b3c2}
+.cell .cv span{color:#475569}
+.lg3{color:#1e293b;font-size:14px;font-weight:600;gap:8px 20px}.lg3 i{width:16px;height:16px;border-width:2px;border-radius:4px;vertical-align:-3px}
 .cell.xp{cursor:pointer}.cell.xp:hover{box-shadow:0 2px 10px rgba(15,154,130,.25);border-color:#0f9a82}.cell.xp .ct:after{content:' ▸';color:#0f9a82;font-size:1.7em;font-weight:900;line-height:0;vertical-align:-.12em;margin-left:2px}
 .xmod{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
 .xbox{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.25)}
@@ -1495,7 +1498,7 @@ async function viewResult(aid, mode = 'parent') {
   ${par ? '' : `  <section class="page">
     ${head3()}
     <div class="sec" style="margin-top:4px">④ 30개 항목 한눈에</div>
-    <div class="lg2"><span><i style="background:#ecfdf3;border-color:#86efac"></i>만점</span><span><i style="background:#fff8eb;border-color:#fcd34d"></i>보완하면 더 얻을 수 있음</span><span><i style="background:#eef2ff;border-color:#a5b4fc"></i>감점형(현재 감점 없음)</span><span><i style="background:#fef2f2;border-color:#fca5a5"></i>감점 발생</span><span><i style="background:#f8fafc"></i>더 올릴 수 없음</span></div>
+    <div class="lg2 lg3"><span><i style="background:#ffefc7;border-color:#f5b83d"></i>보완하면 더 얻을 수 있는 항목</span><span><i style="background:#e0e7ff;border-color:#8b9cf5"></i>현재 감점이 없는 감점형 항목</span><span><i style="background:#fee2e2;border-color:#f87171"></i>현재 감점이 발생한 감점형 항목</span><span><i style="background:#e8edf3;border-color:#a8b3c2"></i>더 올릴 수 없는 항목</span></div>
     ${grp}
     ${foot(2)}
   </section>`}
