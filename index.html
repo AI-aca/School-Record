@@ -614,7 +614,6 @@ async function viewStudent(id) {
   const busy = (m) => { $('#prog').innerHTML = m ? '<span class="spin"></span>' + m : ''; };
   app.querySelectorAll('.rxw').forEach((w) => rxPaint(w.dataset.id));
   app.querySelectorAll('.vw').forEach((b) => b.onclick = () => {
-    if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
     const stg = STAGE[b.dataset.stage].replace(/\s*완료$/, '');
     openRecordViewer(s.name + ' 학생 생기부 (' + stg + ')', () => api('recordFileUrl', { recordFileId: b.dataset.id }), safeFn('[생기부] ' + [s.name, sch(s.school), stg].filter(Boolean).join(' ')) + '.pdf');
   });
@@ -1329,7 +1328,7 @@ function viewGuide() {
       '<b>4쪽부터:</b> 남은 학기 실행 계획. 학기별로 쪽을 나누지 않고 한 구간에 이어서 나오며, 박스(항목 묶음)는 쪽이 바뀔 때 중간에서 잘리지 않고 통째로 다음 쪽으로 넘어갑니다. 마지막에 "전체 점검 및 감점 주의"가 있습니다.',
       '<b>보기 전환:</b> 진단지를 열면 기본은 학부모용 화면이고, 상단 탭으로 교사용 화면을 볼 수 있습니다.',
       '<b>인쇄·PDF:</b> 강사·관리자 화면에는 인쇄·PDF 버튼이 나오지 않습니다. 학부모에게 전달하는 인쇄물은 학부모용 화면에서만 인쇄할 수 있습니다.',
-      '<b>원본 확인:</b> <code>원본 생기부 PDF 열기</code>로 학생이 낸 생기부 원본을 볼 수 있습니다.'],
+      '<b>원본 확인:</b> 진단지 맨 위 오른쪽의 <code>원본 생기부 PDF 열기</code> 또는 학생 상세의 <code>생기부 보기</code>를 누르면 사이트 안에서 바로 열립니다. 받으려면 열린 창의 <code>다운로드</code>를 누르세요(강사도 가능).'],
       '진단지는 AI가 생기부에서 항목을 추출해 서버 코드로 채점한 결과입니다. 학부모에게 전달하기 전에 원본 생기부와 비교해 확인하세요. 교사용 화면의 달성 비율과 내용은 학부모에게 보여 주거나 전달하지 마세요.') +
     sec('3. 내신 관문과 점수 읽는 법', [
       '<b>위기:</b> 수학·과학에 B가 하나라도 있으면 해당됩니다. 그 외 핵심 과목은 B가 3개 이상이거나 C가 1개 이상이면 해당됩니다. (음악·미술·체육·생활외국어(중국어, 일본어 등)와 한문은 판정에서 제외됩니다.)',
@@ -1517,7 +1516,7 @@ async function viewResult(aid, mode = 'parent') {
   const ask = async (act) => await uiConfirm(`${par ? '학부모용' : '교사용'} 진단지입니다. ${act}하시겠습니까?` + (par ? '' : '\n(교사용은 학부모에게 제공하지 마세요.)'));
   if ($('#pdf')) $('#pdf').onclick = async () => { if (!await ask('인쇄')) return; const ot = document.title; document.title = fname; window.onafterprint = () => { document.title = ot; window.onafterprint = null; }; print(); };
   if ($('#pdfdl')) $('#pdfdl').onclick = async (ev) => { if (await ask('PDF 다운로드')) downloadPdf(ev.target, fname); };
-  $('#orig').onclick = async () => { try { const r = await api('recordUrl', { analysisId: aid }); window.open(r.url, '_blank'); } catch (e) { uiAlert(e.message); } };
+  $('#orig').onclick = () => openRecordViewer('원본 생기부', () => api('recordUrl', { analysisId: aid }), '원본_생기부.pdf');
   const reAdv = async (btn) => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); btn.disabled = true; btn.textContent = '만드는 중… (몇 분 걸릴 수 있습니다)'; try { await apiJob('advise', { analysisId: aid }); viewResult(aid); } catch (e) { uiAlert(e.message); viewResult(aid); } };
   if ($('#reAdv')) $('#reAdv').onclick = (ev) => reAdv(ev.target);
   if ($('#reAdv2')) $('#reAdv2').onclick = async (ev) => { if (role !== 'director') return uiAlert('관리자에게 문의하세요.'); if (await uiConfirm('조언(보완 방법·실행 계획)만 새로 만듭니다. 점수는 바뀌지 않습니다.')) reAdv(ev.target); };
