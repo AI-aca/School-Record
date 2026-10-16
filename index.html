@@ -321,6 +321,32 @@ const sb = (k, label, step) => `<span class="sb ${k}">${label}</span>${step ? `<
 const fmtDur = (s) => (s > 0 ? (s >= 60 ? Math.floor(s / 60) + '분 ' + (s % 60) + '초' : s + '초') : '');
 const elapsed = (o) => (o && o.t0 ? (o.dur || Math.round((Date.now() - o.t0) / 1000)) : 0);
 const tEnd = (o) => { if (o && o.t0 && !o.dur) o.dur = Math.max(1, Math.round((Date.now() - o.t0) / 1000)); };
+const RXS = {};
+function rxPaint(fid) {
+  const w = document.querySelector(`.rxw[data-id="${fid}"]`); if (!w) return;
+  const o = RXS[fid], btn = `<button class="line rx" data-id="${fid}" data-stage="${w.dataset.stage}">다시 진단</button>`;
+  w.innerHTML = o && o.state === 'run' ? sb('run', '진행 중', o.step) + `<span class="stp">${fmtDur(elapsed(o))}</span>`
+    : o && o.state === 'fail' ? sb('fail', '실패') + `<span class="stp">${esc(o.err)}</span> ` + btn : btn;
+  const b = w.querySelector('.rx'); if (b) b.onclick = () => rxRun(fid, w.dataset.stage);
+}
+let rxTk = null;
+function rxTick() {
+  if (rxTk) return;
+  rxTk = setInterval(() => { const ids = Object.keys(RXS).filter((k) => RXS[k].state === 'run'); ids.forEach(rxPaint); if (!ids.length) { clearInterval(rxTk); rxTk = null; } }, 1000);
+}
+async function rxRun(fid, stage) {
+  if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
+  if (RXS[fid] && RXS[fid].state === 'run') return;
+  const o = RXS[fid] = { state: 'run', step: '채점', t0: Date.now() }; rxPaint(fid); rxTick();
+  try {
+    const r = await apiJob('extract', { recordFileId: fid, stage });
+    o.step = '조언 생성'; rxPaint(fid);
+    try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
+    tEnd(o); delete RXS[fid];
+    const w = document.querySelector(`.rxw[data-id="${fid}"]`);
+    if (w) { w.innerHTML = sb('done', '완료') + `<span class="stp">${fmtDur(o.dur)}</span>`; location.hash = '#/result/' + r.analysis.id; }
+  } catch (e) { tEnd(o); o.state = 'fail'; o.err = e.message || '오류'; rxPaint(fid); }
+}
 async function stopFlow(btnId, what, info, setFlag, log) {
   const b = document.getElementById(btnId); if (!b || b.disabled) return;
   const a = info(), names = a.run.slice(0, 6).join(', ') + (a.run.length > 6 ? ' 외 ' + (a.run.length - 6) + '건' : '');
@@ -557,7 +583,7 @@ async function viewStudent(id) {
     <p class="muted">진단에는 2~5분 걸립니다. 창을 닫지 말고 기다려 주세요.</p></div></div>
   <div class="card"><h2>업로드한 생기부</h2><table><tbody>
     ${files.map((f) => `<tr><td>${new Date(f.uploaded_at).toLocaleString('ko-KR')}</td><td><span class="pill">${STAGE[f.stage]}</span></td><td>${esc(f.file_name)}</td>
-      <td style="text-align:right"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button> ${f.storage_path ? `<button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> ` : ''}<button class="line pv" data-id="${f.id}">파싱 보기</button>${f.storage_path ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ` <span class="muted" style="font-size:13px">원본 PDF 삭제됨</span> <button class="line dx" data-id="${f.id}">목록에서 삭제</button>`}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
+      <td style="text-align:right"><span class="rxw" data-id="${f.id}" data-stage="${f.stage}"><button class="line rx" data-id="${f.id}" data-stage="${f.stage}">다시 진단</button></span> ${f.storage_path ? `<button class="line vw" data-id="${f.id}" data-stage="${f.stage}">생기부 보기</button> ` : ''}<button class="line pv" data-id="${f.id}">파싱 보기</button>${f.storage_path ? ` <button class="line dx" data-id="${f.id}">원본 PDF 삭제</button>` : ` <span class="muted" style="font-size:13px">원본 PDF 삭제됨</span> <button class="line dx" data-id="${f.id}">목록에서 삭제</button>`}</td></tr>`).join('') || '<tr><td class="muted">없음</td></tr>'}
   </tbody></table><div class="err" id="e2"></div></div>
   <div class="card"><h2>진단 이력</h2><table class="ct"><thead><tr><th>진단 일시</th><th>반영 학기</th><th>점수</th><th>변화</th><th>학부모용</th><th>교사용</th><th>관리자용</th><th>삭제</th></tr></thead><tbody>
     ${analyses.map((a, i) => { const prev = analyses[i + 1]; const d = prev && a.total != null && prev.total != null ? a.total - prev.total : null; return `<tr class="click" data-id="${a.id}"><td>${new Date(a.created_at).toLocaleString('ko-KR')}</td><td><span class="pill">${TERM_UP[a.stage]}</span></td><td><b>${a.total ?? ''}점</b></td><td>${d === null ? '<span class="muted">-</span>' : `<span style="font-weight:700;color:${d >= 0 ? '#059669' : '#dc2626'}">${d >= 0 ? '+' : ''}${d}점</span> <span class="muted">(직전 대비)</span>`}</td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="parent">학부모용 열기</span></td><td style="white-space:nowrap"><span class="btn-s pv2" data-aid="${a.id}" data-m="teacher" style="background:#2563eb">교사용 열기</span></td><td style="white-space:nowrap"><span class="btn-s adm" data-aid="${a.id}" style="background:#334155">관리자용 열기</span></td><td style="white-space:nowrap"><span class="btn-s dla" data-aid="${a.id}" style="background:#fff;color:#dc2626;border:1px solid #fca5a5">삭제</span></td></tr>`; }).join('') || '<tr><td class="muted">이력이 없습니다.</td></tr>'}
@@ -574,16 +600,7 @@ async function viewStudent(id) {
   });
   if ($('#arch')) $('#arch').onclick = async () => { if (await uiConfirm('목록에서 숨깁니다. (설정 화면에서 복구할 수 있습니다)')) { await api('archiveStudent', { studentId: id }); location.hash = '#/'; } };
   const busy = (m) => { $('#prog').innerHTML = m ? '<span class="spin"></span>' + m : ''; };
-  app.querySelectorAll('.rx').forEach((b) => b.onclick = async () => {
-    if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
-    b.disabled = true; $('#e2').textContent = '';
-    try {
-      busy('저장된 생기부 텍스트로 다시 추출·채점 중… (몇 분 걸릴 수 있습니다)');
-      const r = await apiJob('extract', { recordFileId: b.dataset.id, stage: b.dataset.stage });
-      busy('학기별 조언을 만드는 중…'); try { await apiJob('advise', { analysisId: r.analysis.id }); } catch (e) { console.warn(e); }
-      location.hash = '#/result/' + r.analysis.id;
-    } catch (e) { busy(''); $('#e2').textContent = e.message; b.disabled = false; }
-  });
+  app.querySelectorAll('.rxw').forEach((w) => rxPaint(w.dataset.id));
   app.querySelectorAll('.vw').forEach((b) => b.onclick = () => {
     if (role !== 'director') return uiAlert('관리자에게 문의하세요.');
     const stg = STAGE[b.dataset.stage].replace(/\s*완료$/, '');
@@ -1398,7 +1415,7 @@ async function viewResult(aid, mode = 'parent') {
     <div class="sum">${T(adv.summary)}</div>
     <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
     ${(adv.itemAdvice || []).filter((x) => x.no !== 27).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
-      ${exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b>${[4, 5, 6, 9, 13, 25].includes(x.no) ? `<div class="chips">${exList(x.examples).map((e) => `<span>${esc(e)}</span>`).join('')}</div>` : `<ul>${exList(x.examples).map((e) => `<li>${esc(e)}</li>`).join('')}</ul>`}</div>` : ''}</div>`; }).join('')}`
+      ${exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><div class="chips">${exList(x.examples).map((e) => `<span>${esc(e)}</span>`).join('')}</div></div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
     ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${T(t)}</b></div></div>`
@@ -1414,7 +1431,7 @@ async function viewResult(aid, mode = 'parent') {
   const rmNote = '<p class="muted" style="margin:2px 0 8px;font-size:13px">대회·활동 이름은 예시이며 학교마다 개설 여부가 다릅니다. 합격을 보장하지 않습니다.</p>';
   const gateNote = g ? `<div class="gate ${g.status}" style="margin-top:0"><b>가장 먼저: 남은 학기 전 과목 올A 관리</b><br>남은 학기(${esc(g.remainingTerms.join(', '))})는 수학·과학 B 1개도 안 되고, 그 외 과목도 B 3개 이상 또는 C 1개 이상이면 1차 서류 탈락 가능성이 매우 높습니다.</div>` : '';
   // 감점 주의는 AI 문장 대신 점수표(감점형 항목)에 근거한 고정 문구만 쓴다.
-  const penaltyLines = [[[1, 2], '수학·과학 성취도는 남은 학기에 B 이하가 나오지 않도록 관리하십시오. (성취도 B 이하는 감점됩니다.)'], [[3], '국어·영어, 사회·역사·정보, 도덕·기술 과목의 성취 등급이 이전 학기보다 떨어지지 않도록 유지하십시오.'], [[24], '무단(미인정) 결석·지각·조퇴가 생기지 않도록 출결을 관리하십시오.'], [[30], '학교폭력·징계 관련 기록이나 인성 결함을 지적하는 표현(예: 이기적, 산만함, \'~하려는 노력이 필요함\')이 생기부에 기재되지 않도록 학교생활을 관리하십시오.']].filter(([nos]) => nos.some((n) => itm(n))).map(([, t]) => t);
+  const penaltyLines = [[[24], '무단(미인정) 결석·지각·조퇴가 생기지 않도록 출결을 관리하십시오.'], [[30], '학교폭력·징계 관련 기록이나 인성 결함을 지적하는 표현(예: 이기적, 산만함, \'~하려는 노력이 필요함\')이 생기부에 기재되지 않도록 학교생활을 관리하십시오.']].filter(([nos]) => nos.some((n) => itm(n))).map(([, t]) => t);
   const blk = (title, small, lines) => (lines.length ? `<div class="sub"><b>${title}</b><small>${small}</small></div><ul class="wn">${lines.map((t) => `<li>${T(t)}</li>`).join('')}</ul>` : '');
   const penalty = blk('감점 주의', '지켜야 할 점수', penaltyLines);
   const rmHead = `<div class="sec" style="margin-top:4px">${par ? '⑤' : '⑥'} ${newRm ? '남은 학기 실행 계획 (우선순위 순)' : '남은 학기별 실행 계획 추천'}</div>${rmNote}${newRm ? '<p class="muted" style="margin:0 0 8px;font-size:13px">권장 학기는 점수가 반영되는 학기 안에서 앞 학기부터 배정했습니다. 순서대로 실행하되, 학교 일정에 맞춰 같은 학기 안에서 조정해도 됩니다.</p>' : ''}${gateNote}`;
