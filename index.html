@@ -73,7 +73,7 @@ tbody tr:last-child td{border-bottom:0}
 tr.click{cursor:pointer}tr.click:hover{background:#f8fffd}
 .chip{display:inline-block;background:var(--pri2);color:var(--pri-t);font-weight:700;padding:3px 11px;border-radius:7px}
 .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:#eef2ff;color:#4338ca;white-space:nowrap}
-.pill.pass{background:#dcfce7;color:#15803d}.pill.warn{background:#fef3c7;color:#b45309}.pill.fail{background:#fee2e2;color:#b91c1c}.pill.none{background:#f1f5f9;color:#64748b}
+.pill.pass{background:#dcfce7;color:#15803d}.pill.warn{background:#fef3c7;color:#b45309}.pill.fail{background:#feeaea;color:#b91c1c}.pill.none{background:#f1f5f9;color:#64748b}
 .sc{font-weight:800;font-size:15px}
 .btn-s{display:inline-block;padding:6px 14px;border-radius:99px;background:var(--pri);color:#fff;font-weight:600;font-size:13px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -143,7 +143,7 @@ a{color:var(--pri-t)}
 .cell .mb{height:5px;border-radius:3px;background:rgba(15,23,42,.08);margin-top:6px;overflow:hidden}.cell .mb i{display:block;height:100%;background:#10b981}
 .cell.done{background:#ecfdf3}.cell.improvable{background:#fff8eb}.cell.pending{background:#eef2ff}.cell.penalized{background:#fef2f2}
 .cell.safe,.cell.locked{background:#f8fafc}
-.cell.done{background:#d9f7e6;border-color:#4ade80}.cell.improvable{background:#ffefc7;border-color:#f5b83d}.cell.pending{background:#e0e7ff;border-color:#8b9cf5}.cell.penalized{background:#fee2e2;border-color:#f87171}.cell.safe,.cell.locked{background:#e8edf3;border-color:#a8b3c2}
+.cell.done{background:#e2faec;border-color:#68e696}.cell.improvable{background:#fff3d9;border-color:#f8c645}.cell.pending{background:#e7ecff;border-color:#98a8f8}.cell.penalized{background:#feeaea;border-color:#fa8b8b}.cell.safe,.cell.locked{background:#f0f3f8;border-color:#c4ccd8}
 .cell .cv span{color:#475569}
 .lg3{color:#1e293b;font-size:14px;font-weight:600;gap:8px 20px}.lg3 i{width:16px;height:16px;border-width:2px;border-radius:4px;vertical-align:-3px}
 .cell.xp{cursor:pointer}.cell.xp:hover{box-shadow:0 2px 10px rgba(15,154,130,.25);border-color:#0f9a82}.cell.xp .ct:after{content:' ▸';color:#0f9a82;font-size:1.7em;font-weight:900;line-height:0;vertical-align:-.12em;margin-left:2px}
@@ -227,7 +227,7 @@ tr.click:hover{background:#f4faf8}
 @media(max-width:900px){#main{padding:18px 14px}}
 .uimo{position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px}.uibox{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,23,42,.3);max-width:520px;width:100%;padding:24px 24px 18px}.uimsg{white-space:pre-wrap;line-height:1.7;font-size:14.5px;color:#0f172a;max-height:60vh;overflow:auto}.uibtn{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 .sb{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;line-height:1.5}
-.sb.wait{background:#f1f5f9;color:#64748b}.sb.run{background:#e0f2fe;color:#0369a1}.sb.done{background:#dcfce7;color:#047857}.sb.fail{background:#fee2e2;color:#b91c1c}.sb.warn{background:#ffedd5;color:#c2410c}.sb.skip{background:#f1f5f9;color:#94a3b8}
+.sb.wait{background:#f1f5f9;color:#64748b}.sb.run{background:#e0f2fe;color:#0369a1}.sb.done{background:#dcfce7;color:#047857}.sb.fail{background:#feeaea;color:#b91c1c}.sb.warn{background:#ffedd5;color:#c2410c}.sb.skip{background:#f1f5f9;color:#94a3b8}
 .sb.run:before{content:'';width:7px;height:7px;border-radius:50%;background:#0284c7;animation:sbp 1s infinite}@keyframes sbp{50%{opacity:.25}}
 .stp{font-size:12px;color:#64748b;margin-left:6px;white-space:nowrap}
 .tsc{overflow:auto;max-height:max(220px,calc(100vh - 380px))}.tsc thead th{position:sticky;top:0;z-index:2;box-shadow:0 1px 0 var(--line)}
@@ -1498,7 +1498,7 @@ async function viewResult(aid, mode = 'parent') {
   ${par ? '' : `  <section class="page">
     ${head3()}
     <div class="sec" style="margin-top:4px">④ 30개 항목 한눈에</div>
-    <div class="lg2 lg3"><span><i style="background:#ffefc7;border-color:#f5b83d"></i>보완하면 더 얻을 수 있는 항목</span><span><i style="background:#e0e7ff;border-color:#8b9cf5"></i>현재 감점이 없는 감점형 항목</span><span><i style="background:#fee2e2;border-color:#f87171"></i>현재 감점이 발생한 감점형 항목</span><span><i style="background:#e8edf3;border-color:#a8b3c2"></i>더 올릴 수 없는 항목</span></div>
+    <div class="lg2 lg3"><span><i style="background:#fff3d9;border-color:#f8c645"></i>보완하면 더 얻을 수 있는 항목</span><span><i style="background:#e7ecff;border-color:#98a8f8"></i>현재 감점이 없는 감점형 항목</span><span><i style="background:#feeaea;border-color:#fa8b8b"></i>현재 감점이 발생한 감점형 항목</span><span><i style="background:#f0f3f8;border-color:#c4ccd8"></i>더 올릴 수 없는 항목</span></div>
     ${grp}
     ${foot(2)}
   </section>`}
