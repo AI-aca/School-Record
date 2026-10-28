@@ -1398,7 +1398,7 @@ async function xShow(no, title) {
   const isName = CAT_NAME.includes(cat);
   const pick = () => pool.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).slice(0, 7).map((x) => x[1]);
   const m = document.createElement('div'); m.className = 'xmod';
-  const draw = () => { m.innerHTML = `<div class="xbox"><div class="xh"><b>${esc(no + '. ' + title)} · 합격자 근거</b><button class="xx" aria-label="닫기">✕</button></div><div class="xb">${pool.length ? `<div class="xq"><ul>${pick().map((v) => `<li>${esc(v)}</li>`).join('')}</ul></div>` : '<p class="muted">이 항목에 저장된 합격 사례가 아직 없습니다.</p>'}</div><div class="xf"><span>저장된 합격 사례 중 무작위 ${Math.min(7, pool.length)}개</span>${pool.length > 7 ? '<button class="btn xn">다른 사례 보기</button>' : ''}</div></div>`; m.querySelector('.xx').onclick = close; const n = m.querySelector('.xn'); if (n) n.onclick = draw; };
+  const draw = () => { m.innerHTML = `<div class="xbox"><div class="xh"><b>${esc(no + '. ' + title)} · 합격자 근거</b><button class="xx" aria-label="닫기">✕</button></div><div class="xb">${pool.length ? `<div class="xq"><ul>${pick().map((v) => `<li>${esc(v)}</li>`).join('')}</ul></div>` : '<p class="muted">이 항목에 저장된 합격 사례가 아직 없습니다.</p>'}</div><div class="xf"><span>저장된 합격 사례 중 무작위 ${Math.min(7, pool.length)}개${[10, 11, 15, 16, 17].includes(no) ? '<br><small>※ 이 항목의 사례는 수학·과학 등 과목 구분 없이 함께 표시됩니다.</small>' : ''}</span>${pool.length > 7 ? '<button class="btn xn">다른 사례 보기</button>' : ''}</div></div>`; m.querySelector('.xx').onclick = close; const n = m.querySelector('.xn'); if (n) n.onclick = draw; };
   const close = () => { m.remove(); document.removeEventListener('keydown', esck); };
   const esck = (e) => { if (e.key === 'Escape') close(); };
   m.onclick = (e) => { if (e.target === m) close(); };
