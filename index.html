@@ -1450,7 +1450,7 @@ async function viewResult(aid, mode = 'parent') {
     <div class="sum">${T(adv.summary)}</div>
     <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
     ${(adv.itemAdvice || []).filter((x) => x.no !== 27).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
-      ${exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><div class="chips">${exList(x.examples).map((e) => `<span>${esc(e)}</span>`).join('')}</div></div>` : ''}</div>`; }).join('')}`
+      ${![10, 11, 15, 16, 17].includes(Number(x.no)) && exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><div class="chips">${exList(x.examples).map((e) => `<span>${esc(e)}</span>`).join('')}</div></div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
     ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${T(t)}</b></div></div>`
