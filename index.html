@@ -924,8 +924,8 @@ async function viewDiag() {
 
 // ── 합격 사례 관리 ──
 const OUT_KO = { sci_doc: '과학고 서류 합격', sci_final: '과학고 최종 합격', gifted_doc: '영재학교 서류 합격', gifted_final: '영재학교 최종 합격' };
-const CAT_KO = { sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '협업·토론', leadership_roles: '리더십·임원', teacher_top_rec: '교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망', help_share: '나눔·배려', rule_comply: '규칙 준수·성실', peer_good: '교우관계 우수', study_proactive: '주도적 탐구태도', arts_sports: '예체능 활동', all_awards: '수상 이름(전체)' };
-const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_deep', 'behavior_gifted', 'interest_activity', 'group_debate', 'leadership_roles', 'teacher_top_rec', 'help_share', 'rule_comply', 'peer_good', 'study_proactive'];
+const CAT_KO = { seteuk_math: '수학 세특', seteuk_sci: '과학 세특', rec_math: '수학 교사 추천', rec_sci: '과학 교사 추천', rec_info: '정보·기타 교사 추천', group_project: '협업·공동체', debate: '의사소통·토론', leadership: '리더십 역량', officer_roles: '학생회·임원', sci_research: '과학 탐구 주제', math_research: '수학 탐구 주제', seteuk_deep: '(이전) 세특 탐구 깊이', behavior_gifted: '행동특성 종합의견', interest_activity: '진로·체험 활동', group_debate: '(이전) 협업·토론', leadership_roles: '(이전) 리더십·임원', teacher_top_rec: '(이전) 교사 추천 표현', clubs: '동아리 이름', sci_awards: '수상·대회 이름', books_mathsci: '수학·과학 도서', books_general: '인문·일반 도서', career: '진로 희망', help_share: '나눔·배려', rule_comply: '규칙 준수·성실', peer_good: '교우관계 우수', study_proactive: '주도적 탐구태도', arts_sports: '예체능 활동', all_awards: '수상 이름(전체)' };
+const CAT_TEXT = ['sci_research', 'math_research', 'seteuk_math', 'seteuk_sci', 'behavior_gifted', 'interest_activity', 'rec_math', 'rec_sci', 'rec_info', 'study_proactive', 'group_project', 'debate', 'help_share', 'leadership', 'rule_comply', 'officer_roles', 'peer_good'];
 const CAT_NAME = ['clubs', 'sci_awards', 'books_mathsci', 'books_general', 'career', 'all_awards'];
 const EX = { loaded: false, saved: [], files: [], cands: [], logsU: [], logsX: [], busy: false, stop: false, stopX: false, runCx: '', xt: {}, xd: {}, f: { cat: 'sci_research', out: '', q: '' }, seq: 0 };
 const exN = (s) => String(s || '').replace(/\s+/g, ' ').trim();
@@ -1388,7 +1388,7 @@ function viewGuide() {
 
 // ── 결과 리포트 (4쪽): 1 진단 / 2 30개 항목 / 3 보완 항목 / 4 남은 학기 실행 계획 ──
 // ── 항목 카드 → 합격자 근거 팝업 (교사용·관리자용) ──
-const XCAT = { 4: 'clubs', 5: 'all_awards', 6: 'sci_awards', 7: 'math_research', 8: 'sci_research', 9: 'books_mathsci', 10: 'seteuk_deep', 11: 'seteuk_deep', 12: 'behavior_gifted', 13: 'career', 14: 'interest_activity', 15: 'teacher_top_rec', 16: 'teacher_top_rec', 17: 'teacher_top_rec', 18: 'study_proactive', 19: 'group_debate', 20: 'group_debate', 21: 'help_share', 22: 'leadership_roles', 23: 'rule_comply', 25: 'books_general', 28: 'leadership_roles', 29: 'peer_good' };
+const XCAT = { 4: 'clubs', 5: 'all_awards', 6: 'sci_awards', 7: 'math_research', 8: 'sci_research', 9: 'books_mathsci', 10: 'seteuk_math', 11: 'seteuk_sci', 12: 'behavior_gifted', 13: 'career', 14: 'interest_activity', 15: 'rec_math', 16: 'rec_sci', 17: 'rec_info', 18: 'study_proactive', 19: 'group_project', 20: 'debate', 21: 'help_share', 22: 'leadership', 23: 'rule_comply', 25: 'books_general', 28: 'officer_roles', 29: 'peer_good' };
 const xClean = (t) => String(t || '').replace(/\s*[(（\[][^)）\]]*\d{4}\s*[.\-\/년]\s*\d{1,2}[^)）\]]*[)）\]]/g, '').replace(/\d{4}\s*[.\-\/]\s*\d{1,2}\s*[.\-\/]\s*\d{1,2}\.?/g, '').replace(/\s{2,}/g, ' ').replace(/\s+([,.])/g, '$1').trim();
 let XLIST = null;
 async function xShow(no, title) {
@@ -1398,7 +1398,7 @@ async function xShow(no, title) {
   const isName = CAT_NAME.includes(cat);
   const pick = () => pool.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).slice(0, 7).map((x) => x[1]);
   const m = document.createElement('div'); m.className = 'xmod';
-  const draw = () => { m.innerHTML = `<div class="xbox"><div class="xh"><b>${esc(no + '. ' + title)} · 합격자 근거</b><button class="xx" aria-label="닫기">✕</button></div><div class="xb">${pool.length ? `<div class="xq"><ul>${pick().map((v) => `<li>${esc(v)}</li>`).join('')}</ul></div>` : '<p class="muted">이 항목에 저장된 합격 사례가 아직 없습니다.</p>'}</div><div class="xf"><span>저장된 합격 사례 중 무작위 ${Math.min(7, pool.length)}개${[10, 11, 15, 16, 17].includes(no) ? '<br><small>※ 이 항목의 사례는 수학·과학 등 과목 구분 없이 함께 표시됩니다.</small>' : ''}</span>${pool.length > 7 ? '<button class="btn xn">다른 사례 보기</button>' : ''}</div></div>`; m.querySelector('.xx').onclick = close; const n = m.querySelector('.xn'); if (n) n.onclick = draw; };
+  const draw = () => { m.innerHTML = `<div class="xbox"><div class="xh"><b>${esc(no + '. ' + title)} · 합격자 근거</b><button class="xx" aria-label="닫기">✕</button></div><div class="xb">${pool.length ? `<div class="xq"><ul>${pick().map((v) => `<li>${esc(v)}</li>`).join('')}</ul></div>` : '<p class="muted">이 항목에 저장된 합격 사례가 아직 없습니다.</p>'}</div><div class="xf"><span>저장된 합격 사례 중 무작위 ${Math.min(7, pool.length)}개</span>${pool.length > 7 ? '<button class="btn xn">다른 사례 보기</button>' : ''}</div></div>`; m.querySelector('.xx').onclick = close; const n = m.querySelector('.xn'); if (n) n.onclick = draw; };
   const close = () => { m.remove(); document.removeEventListener('keydown', esck); };
   const esck = (e) => { if (e.key === 'Escape') close(); };
   m.onclick = (e) => { if (e.target === m) close(); };
@@ -1450,7 +1450,7 @@ async function viewResult(aid, mode = 'parent') {
     <div class="sum">${T(adv.summary)}</div>
     <div class="sub"><b>우선 보완 항목별 방법</b><small>우선순위 순</small></div>
     ${(adv.itemAdvice || []).filter((x) => x.no !== 27).slice(0, 6).map((x) => { const it = itm(x.no); return `<div class="adv"><div class="ar2"><b>${par ? '' : x.no + '. '}${esc(x.title)}</b>${it ? (adm ? `<span class="w">현재 ${it.current}/${it.max}점 · 최대 +${it.remaining}점</span>` : it.max > 0 ? `<span class="w">달성 ${pc1(it.current, it.max)}</span>` : '') : ''}</div><div>${T(x.advice)}</div>
-      ${![10, 11, 15, 16, 17].includes(Number(x.no)) && exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><div class="chips">${exList(x.examples).map((e) => `<span>${esc(e)}</span>`).join('')}</div></div>` : ''}</div>`; }).join('')}`
+      ${exList(x.examples).length ? `<div class="ex"><b>합격자 기록 사례</b><div class="chips">${exList(x.examples).map((e) => `<span>${esc(e)}</span>`).join('')}</div></div>` : ''}</div>`; }).join('')}`
     : `<p class="muted">조언을 만들지 못했습니다. <button id="reAdv" class="ghost noprint">다시 만들기</button></p>`;
   const act = (t, i) => typeof t === 'string'
     ? `<div class="ac"><div class="n">${i + 1}</div><div><b>${T(t)}</b></div></div>`
